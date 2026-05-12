@@ -6,7 +6,8 @@
       "PowerShell(Copy-Item \"C:\\\\Users\\\\alaly\\\\OneDrive\\\\Desktop\\\\request_manager\\\\Logo png - Copy.png\" \"C:\\\\Users\\\\alaly\\\\OneDrive\\\\Desktop\\\\request_manager\\\\public\\\\herfy-logo.png\")",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }

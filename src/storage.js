@@ -118,6 +118,12 @@ export const updateRequest = async (id, updates) => {
   return fromDb(data);
 };
 
+export const deleteRequest = async (id) => {
+  const { error } = await supabase.from('requests').delete().eq('id', id);
+  if (error) { console.error('deleteRequest:', error); return false; }
+  return true;
+};
+
 export const addMajedComment = async (id, text) => {
   const { data: current } = await supabase
     .from('requests').select('majed_comments').eq('id', id).single();

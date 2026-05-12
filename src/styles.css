@@ -37,7 +37,7 @@ body {
   border-bottom: 1px solid rgba(255,255,255,.2);
 }
 .header-essa  { background: rgba(245,241,229,.96);  color: #1E293B; border-bottom: 1px solid #e8e2d0; }
-.header-majed { background: rgba(16,185,129,.92);  color: #fff; }
+.header-majed { background: rgba(245,241,229,.96);  color: #1E293B; border-bottom: 1px solid #e8e2d0; }
 .header-tariq { background: rgba(245,241,229,.96);  color: #1E293B; border-bottom: 1px solid #e8e2d0; }
 .header-login { background: rgba(248,250,252,.92); color: var(--gray-800); border-bottom: 1px solid var(--gray-200); }
 
@@ -110,7 +110,7 @@ body {
   background: rgba(0,0,0,.08); color: inherit; border: none;
   padding: 7px 12px; border-radius: 7px; font-size: 13px; font-weight: 600; cursor: pointer;
 }
-.header-majed .btn-logout { background: rgba(255,255,255,.2); color: #fff; }
+.header-majed .btn-logout { background: rgba(0,0,0,.08); color: #1E293B; }
 .header-tariq .btn-logout { background: rgba(0,0,0,.08); color: #1E293B; }
 
 /* ── Forms ───────────────────────────────────────── */

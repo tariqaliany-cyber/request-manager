@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createRequest, getRequests, compressImage, STATUS, formatDate } from '../storage';
+import { createRequest, getRequests, updateRequest, deleteRequest, compressImage, STATUS, formatDate } from '../storage';
 
 export default function EssaView({ user, onLogout }) {
   const [tab, setTab] = useState('new');
@@ -215,17 +215,110 @@ function EssaRequestList() {
 
 /* ── Request Detail ─────────────────────────────────── */
 function EssaRequestDetail({ req, onBack }) {
-  const [fresh, setFresh] = useState(req);
+  const [fresh, setFresh]       = useState(req);
+  const [editMode, setEditMode] = useState(false);
+  const [confirmDel, setConfirmDel] = useState(false);
+  const [saving, setSaving]     = useState(false);
+  // edit fields
+  const [branch, setBranch]     = useState(req.branchNumber);
+  const [location, setLocation] = useState(req.locationLink);
+  const [desc, setDesc]         = useState(req.problemDescription);
+  const [photos, setPhotos]     = useState(req.problemPhotos || []);
+  const fileRef = useRef();
 
   useEffect(() => {
     getRequests().then(all => {
       const found = all.find(r => r.id === req.id);
-      if (found) setFresh(found);
+      if (found) {
+        setFresh(found);
+        setBranch(found.branchNumber);
+        setLocation(found.locationLink);
+        setDesc(found.problemDescription);
+        setPhotos(found.problemPhotos || []);
+      }
     });
   }, [req.id]);
 
+  const canEdit = fresh.status === 'received';
+
+  const saveEdit = async () => {
+    if (!branch.trim() || !desc.trim()) return;
+    setSaving(true);
+    await updateRequest(fresh.id, {
+      branchNumber: branch.trim(),
+      locationLink: location.trim(),
+      problemDescription: desc.trim(),
+      problemPhotos: photos,
+    });
+    setSaving(false);
+    setEditMode(false);
+    const all = await getRequests();
+    const found = all.find(r => r.id === req.id);
+    if (found) setFresh(found);
+  };
+
+  const handleDelete = async () => {
+    setSaving(true);
+    await deleteRequest(fresh.id);
+    onBack();
+  };
+
+  const addPhotos = async (files) => {
+    const compressed = await Promise.all([...files].slice(0, 6).map(compressImage));
+    setPhotos(p => [...p, ...compressed].slice(0, 6));
+  };
+
   const s = STATUS[fresh.status];
 
+  /* ── Edit Mode ── */
+  if (editMode) {
+    return (
+      <div className="card">
+        <button className="back-btn mb16" onClick={() => setEditMode(false)} style={{ color: '#64748B' }}>
+          ← Cancel / إلغاء
+        </button>
+        <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 20 }}>
+          Edit Request / تعديل الطلب
+        </div>
+
+        <div className="form-group">
+          <label className="label">Herfy Number <span>/ رقم هرفي</span> *</label>
+          <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="label">Location Link <span>/ رابط الموقع</span></label>
+          <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="label">Problem Description <span>/ وصف المشكلة</span> *</label>
+          <textarea className="textarea" rows={4} value={desc} onChange={e => setDesc(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="label">Photos <span>/ الصور</span></label>
+          <div className="photo-upload-area" onClick={() => fileRef.current.click()}>
+            <div className="photo-upload-icon">📷</div>
+            <div className="photo-upload-text">Tap to add photos</div>
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={e => addPhotos(e.target.files)} />
+          {photos.length > 0 && (
+            <div className="photo-grid mt8">
+              {photos.map((src, i) => (
+                <div key={i} className="photo-thumb">
+                  <img src={src} alt="" />
+                  <button className="photo-remove" onClick={() => setPhotos(p => p.filter((_, j) => j !== i))}>×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <button className="btn btn-primary-essa" onClick={saveEdit} disabled={saving || !branch.trim() || !desc.trim()}>
+          {saving ? 'Saving...' : '💾 Save Changes / حفظ التعديلات'}
+        </button>
+      </div>
+    );
+  }
+
+  /* ── View Mode ── */
   return (
     <div className="card">
       <button className="back-btn mb16" onClick={onBack} style={{ color: '#64748B' }}>
@@ -308,6 +401,33 @@ function EssaRequestDetail({ req, onBack }) {
       )}
 
       <div className="card-date" style={{ marginTop: 20 }}>Submitted: {formatDate(fresh.createdAt)}</div>
+
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {canEdit && (
+          <button className="btn btn-outline" onClick={() => setEditMode(true)}>
+            ✏️ Edit Request / تعديل الطلب
+          </button>
+        )}
+        {!confirmDel
+          ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
+              onClick={() => setConfirmDel(true)}>
+              🗑️ Delete Request / حذف الطلب
+            </button>
+          : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
+                Are you sure? / هل أنت متأكد؟
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
+                  {saving ? '...' : 'Yes, Delete / نعم احذف'}
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
+                  Cancel / إلغاء
+                </button>
+              </div>
+            </div>
+        }
+      </div>
     </div>
   );
 }

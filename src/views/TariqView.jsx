@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getRequests, updateRequest, STATUS, formatDate } from '../storage';
+import { getRequests, updateRequest, deleteRequest, STATUS, formatDate } from '../storage';
 
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
@@ -160,6 +160,11 @@ function TariqDetail({ req, onClose }) {
   const [saving, setSaving]           = useState(false);
   const [saved, setSaved]             = useState(false);
   const [completing, setCompleting]   = useState(false);
+  // edit core fields
+  const [branch, setBranch]           = useState(req.branchNumber);
+  const [location, setLocation]       = useState(req.locationLink || '');
+  const [desc, setDesc]               = useState(req.problemDescription || '');
+  const [confirmDel, setConfirmDel]   = useState(false);
 
   useEffect(() => {
     getRequests().then(all => {
@@ -182,6 +187,9 @@ function TariqDetail({ req, onClose }) {
     setSaving(true);
     await updateRequest(fresh.id, {
       status,
+      branchNumber:               branch.trim(),
+      locationLink:               location.trim(),
+      problemDescription:         desc.trim(),
       assignedTo:                 assignedTo || null,
       internalNotes,
       notesToMajed,
@@ -193,6 +201,12 @@ function TariqDetail({ req, onClose }) {
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleDelete = async () => {
+    setSaving(true);
+    await deleteRequest(fresh.id);
+    onClose();
   };
 
   const markComplete = async () => {
@@ -231,8 +245,19 @@ function TariqDetail({ req, onClose }) {
           </div>
         )}
 
-        <div className="section-title">Problem / المشكلة</div>
-        <div style={{ fontSize: 15, lineHeight: 1.6 }}>{fresh.problemDescription}</div>
+        <div className="section-title">Edit Core Info / تعديل البيانات</div>
+        <div className="form-group">
+          <label className="label">Herfy Number / رقم هرفي</label>
+          <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="label">Location Link / رابط الموقع</label>
+          <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">Problem Description / وصف المشكلة</label>
+          <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
+        </div>
 
         {fresh.problemPhotos?.length > 0 && (
           <>
@@ -383,11 +408,31 @@ function TariqDetail({ req, onClose }) {
           {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
         </button>
         {status !== 'completed'
-          ? <button className="btn btn-primary-green" onClick={markComplete} disabled={completing}>
+          ? <button className="btn btn-primary-green mb8" onClick={markComplete} disabled={completing}>
               {completing ? '...' : '✅ Mark as Completed / إغلاق الطلب كمنجز'}
             </button>
           : <div style={{ textAlign: 'center', padding: '12px', color: '#16A34A', fontWeight: 700, fontSize: 15 }}>
               ✅ This request is completed / تم إغلاق هذا الطلب
+            </div>
+        }
+
+        {!confirmDel
+          ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
+              onClick={() => setConfirmDel(true)}>
+              🗑️ Delete Request / حذف الطلب
+            </button>
+          : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
+                Are you sure? / هل أنت متأكد؟
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
+                  {saving ? '...' : 'Yes, Delete / نعم احذف'}
+                </button>
+                <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
+                  Cancel / إلغاء
+                </button>
+              </div>
             </div>
         }
       </div>

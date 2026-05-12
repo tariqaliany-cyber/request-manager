@@ -23,9 +23,12 @@ export default function MajedView({ user, onLogout }) {
   return (
     <div>
       <header className="header header-majed">
-        <div>
-          <div className="header-title">🔧 My Jobs / أعمالي</div>
-          <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
+          <div>
+            <div className="header-title">My Jobs / أعمالي</div>
+            <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
+          </div>
         </div>
         <div className="header-right">
           <button className="btn-logout" onClick={onLogout}>Logout</button>
