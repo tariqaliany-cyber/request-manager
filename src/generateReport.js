@@ -67,7 +67,19 @@ function section(titleEn, titleAr, content) {
     </div>`;
 }
 
+async function loadCairoFont() {
+  if (document.getElementById('cairo-font-link')) return;
+  const link = document.createElement('link');
+  link.id = 'cairo-font-link';
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap';
+  document.head.appendChild(link);
+  await document.fonts.load('700 16px Cairo');
+  await document.fonts.load('400 14px Cairo');
+}
+
 export async function generateServiceReport(req) {
+  await loadCairoFont();
   const logoBase64 = await toBase64('/altasis-logo.png');
   const s = STATUS[req.status];
   const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
@@ -77,7 +89,7 @@ export async function generateServiceReport(req) {
     : `<div style="font-size:14px;font-weight:900;color:#2d2d2d;text-align:center;">ALTASIS<br/>ALISTRATIJI</div>`;
 
   const html = `
-    <div style="font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:32px 36px;width:760px;box-sizing:border-box;">
+    <div style="font-family:'Cairo','Segoe UI',Arial,sans-serif;background:#fff;padding:32px 36px;width:760px;box-sizing:border-box;">
 
       <!-- Header -->
       <div style="text-align:center;border-bottom:3px solid #2d2d2d;padding-bottom:18px;margin-bottom:20px;">
