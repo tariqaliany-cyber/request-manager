@@ -85,7 +85,7 @@ export async function generateServiceReport(req) {
   const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
   const logoImg = logoBase64
-    ? `<img src="${logoBase64}" style="height:72px;width:auto;object-fit:contain;" />`
+    ? `<img src="${logoBase64}" style="height:140px;width:auto;object-fit:contain;" />`
     : `<div style="font-size:14px;font-weight:900;color:#2d2d2d;text-align:center;">ALTASIS<br/>ALISTRATIJI</div>`;
 
   const html = `
