@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getRequests, updateRequest, deleteRequest, STATUS, formatDate } from '../storage';
+import { generateServiceReport } from '../generateReport';
 
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
@@ -165,6 +166,7 @@ function TariqDetail({ req, onClose }) {
   const [location, setLocation]       = useState(req.locationLink || '');
   const [desc, setDesc]               = useState(req.problemDescription || '');
   const [confirmDel, setConfirmDel]   = useState(false);
+  const [exporting, setExporting]     = useState(false);
 
   useEffect(() => {
     getRequests().then(all => {
@@ -404,6 +406,17 @@ function TariqDetail({ req, onClose }) {
 
       {/* Action buttons */}
       <div className="card">
+        <button
+          className="btn mb8"
+          style={{ background: '#1e293b', color: '#fff', border: 'none' }}
+          onClick={async () => {
+            setExporting(true);
+            await generateServiceReport(fresh);
+            setExporting(false);
+          }}
+          disabled={exporting}>
+          {exporting ? '⏳ Generating PDF...' : '📄 Export Report PDF / تصدير تقرير PDF'}
+        </button>
         <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
           {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
         </button>
