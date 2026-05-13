@@ -106,7 +106,7 @@ export async function generateServiceReport(req) {
               ● ${s.en} / ${s.ar}
             </span>`)}
           ${req.assignedTo ? infoRow('Assigned To', 'مسند إلى', '👷 Workshop Team / فريق الورشة') : ''}
-          ${req.locationLink ? infoRow('Location', 'الموقع', `<a href="${req.locationLink}" style="color:#563b2c;">📍 View Map</a>`) : ''}
+          ${req.locationLink ? infoRow('Google Maps', 'خرائط جوجل', `<a href="${req.locationLink}" style="color:#563b2c;">🗺️ View Map</a>`) : ''}
         </tbody>
       </table>
 

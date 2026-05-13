@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getRequests, updateRequest, deleteRequest, STATUS, formatDate } from '../storage';
 import { generateServiceReport } from '../generateReport';
+import { BRANCHES } from '../branchData';
+
+function getBranchInfo(num) {
+  return BRANCHES.find(b => b.num === String(num)) || null;
+}
 
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
@@ -239,10 +244,18 @@ function TariqDetail({ req, onClose }) {
           </span>
         </div>
 
+        {getBranchInfo(fresh.branchNumber) && (() => {
+          const info = getBranchInfo(fresh.branchNumber);
+          return (
+            <div className="mt12" style={{ fontSize: 13, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '8px 12px', border: '1px solid #bbf7d0' }}>
+              📍 {info.area} — {info.address}
+            </div>
+          );
+        })()}
         {fresh.locationLink && (
-          <div className="mt12">
+          <div className="mt8">
             <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
-              📍 View Location / الموقع
+              🗺️ Google Maps / خرائط جوجل
             </a>
           </div>
         )}
