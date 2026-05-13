@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { getRequests, updateRequest, addMajedComment, compressImage, STATUS, formatDate } from '../storage';
+import { BRANCHES } from '../branchData';
+
+function getBranchInfo(num) {
+  return BRANCHES.find(b => b.num === String(num)) || null;
+}
 
 export default function MajedView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
@@ -171,11 +176,22 @@ function MajedDetail({ req }) {
           </span>
         </div>
 
+        {getBranchInfo(fresh.branchNumber) && (() => {
+          const info = getBranchInfo(fresh.branchNumber);
+          return (
+            <>
+              <div className="section-title">Branch Location / موقع الفرع</div>
+              <div style={{ fontSize: 14, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0' }}>
+                📍 {info.area} — {info.address}
+              </div>
+            </>
+          );
+        })()}
         {fresh.locationLink && (
           <>
-            <div className="section-title">Location / الموقع</div>
+            <div className="section-title">Google Maps / خرائط جوجل</div>
             <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
-              📍 Open in Maps / فتح في الخريطة
+              🗺️ Open in Google Maps / فتح في خرائط جوجل
             </a>
           </>
         )}

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createRequest, getRequests, updateRequest, deleteRequest, compressImage, STATUS, formatDate } from '../storage';
+import { BRANCHES } from '../branchData';
 
 export default function EssaView({ user, onLogout }) {
   const [tab, setTab] = useState('new');
@@ -32,6 +33,84 @@ export default function EssaView({ user, onLogout }) {
         {tab === 'new'      && <EssaNewRequest onSubmit={() => setTab('requests')} />}
         {tab === 'requests' && <EssaRequestList />}
       </div>
+    </div>
+  );
+}
+
+/* ── Helper ─────────────────────────────────────────── */
+function getBranchInfo(num) {
+  return BRANCHES.find(b => b.num === String(num)) || null;
+}
+
+/* ── Branch Dropdown ────────────────────────────────── */
+function BranchDropdown({ value, onChange, onMapsFill, hasError }) {
+  const [query, setQuery] = useState(value ? `Herfy ${value}` : '');
+  const [open, setOpen]   = useState(false);
+  const wrapRef = useRef();
+
+  const filtered = query.length >= 1
+    ? BRANCHES.filter(b =>
+        b.label.toLowerCase().includes(query.toLowerCase()) ||
+        b.num.startsWith(query) ||
+        b.area.toLowerCase().includes(query.toLowerCase())
+      ).slice(0, 50)
+    : BRANCHES.slice(0, 50);
+
+  const pick = (b) => {
+    setQuery(b.label);
+    setOpen(false);
+    onChange(b.num);
+    if (onMapsFill) onMapsFill(b.mapsUrl || '');
+  };
+
+  const handleInput = (e) => {
+    setQuery(e.target.value);
+    setOpen(true);
+    onChange('');
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={wrapRef} style={{ position: 'relative' }}>
+      <input
+        className={`input ${hasError ? 'input-error' : ''}`}
+        type="text"
+        placeholder="Search branch / ابحث عن الفرع (e.g. 105 or Riyadh)"
+        value={query}
+        onChange={handleInput}
+        onFocus={() => setOpen(true)}
+        autoComplete="off"
+      />
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: 'absolute', zIndex: 999, top: '100%', left: 0, right: 0,
+          background: '#fff', border: '1.5px solid #e2e8f0', borderRadius: 10,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.12)', maxHeight: 220, overflowY: 'auto',
+          marginTop: 4,
+        }}>
+          {filtered.map(b => (
+            <div key={b.num}
+              onMouseDown={() => pick(b)}
+              style={{
+                padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid #f1f5f9',
+                fontSize: 14,
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+              onMouseLeave={e => e.currentTarget.style.background = '#fff'}
+            >
+              <div style={{ fontWeight: 700 }}>{b.label}</div>
+              <div style={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>{b.area} — {b.address}</div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -93,19 +172,23 @@ function EssaNewRequest({ onSubmit }) {
       </div>
 
       <div className="form-group">
-        <label className="label">Herfy Number <span>/ رقم هرفي</span> *</label>
-        <input
-          className={`input ${errors.branch ? 'input-error' : ''}`}
-          type="text"
-          placeholder="e.g. 105"
+        <label className="label">Herfy Branch <span>/ فرع هرفي</span> *</label>
+        <BranchDropdown
           value={branch}
-          onChange={e => { setBranch(e.target.value); setErrors(v => ({ ...v, branch: '' })); }}
+          onChange={(num) => { setBranch(num); setErrors(v => ({ ...v, branch: '' })); }}
+          onMapsFill={(url) => setLocation(url)}
+          hasError={!!errors.branch}
         />
         {errors.branch && <div className="error-msg">{errors.branch}</div>}
+        {branch && getBranchInfo(branch) && (
+          <div style={{ marginTop: 8, padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#166534' }}>
+            📍 {getBranchInfo(branch).area} — {getBranchInfo(branch).address}
+          </div>
+        )}
       </div>
 
       <div className="form-group">
-        <label className="label">Location / Google Maps Link <span>/ رابط الموقع (اختياري)</span></label>
+        <label className="label">Google Maps Link <span>/ رابط خرائط جوجل (اختياري)</span></label>
         <input
           className="input"
           type="url"
@@ -282,12 +365,17 @@ function EssaRequestDetail({ req, onBack }) {
         </div>
 
         <div className="form-group">
-          <label className="label">Herfy Number <span>/ رقم هرفي</span> *</label>
-          <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+          <label className="label">Herfy Branch <span>/ فرع هرفي</span> *</label>
+          <BranchDropdown value={branch} onChange={(num) => setBranch(num)} onMapsFill={(url) => setLocation(url)} hasError={false} />
+          {branch && getBranchInfo(branch) && (
+            <div style={{ marginTop: 8, padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#166534' }}>
+              📍 {getBranchInfo(branch).area} — {getBranchInfo(branch).address}
+            </div>
+          )}
         </div>
         <div className="form-group">
-          <label className="label">Location Link <span>/ رابط الموقع</span></label>
-          <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
+          <label className="label">Google Maps Link <span>/ رابط خرائط جوجل</span></label>
+          <input className="input" type="url" placeholder="https://maps.google.com/..." value={location} onChange={e => setLocation(e.target.value)} />
         </div>
         <div className="form-group">
           <label className="label">Problem Description <span>/ وصف المشكلة</span> *</label>
@@ -341,11 +429,23 @@ function EssaRequestDetail({ req, onBack }) {
         <div style={{ fontSize: 14, marginTop: 4, opacity: .8 }}>{s.en}</div>
       </div>
 
+      {getBranchInfo(fresh.branchNumber) && (() => {
+        const info = getBranchInfo(fresh.branchNumber);
+        return (
+          <>
+            <div className="section-title">Branch Location / موقع الفرع</div>
+            <div style={{ fontSize: 14, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0' }}>
+              📍 {info.area} — {info.address}
+            </div>
+          </>
+        );
+      })()}
+
       {fresh.locationLink && (
         <>
-          <div className="section-title">Location / الموقع</div>
+          <div className="section-title">Google Maps / خرائط جوجل</div>
           <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
-            📍 Open in Maps / فتح في الخريطة
+            🗺️ Open in Google Maps / فتح في خرائط جوجل
           </a>
         </>
       )}
