@@ -80,20 +80,10 @@ export async function generateServiceReport(req) {
     <div style="font-family:'Segoe UI',Arial,sans-serif;background:#fff;padding:32px 36px;width:760px;box-sizing:border-box;">
 
       <!-- Header -->
-      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;border-bottom:3px solid #2d2d2d;padding-bottom:18px;margin-bottom:20px;gap:16px;">
-        <!-- Left: empty spacer to balance the right column -->
-        <div></div>
-        <!-- Center: logo -->
-        <div style="display:flex;justify-content:center;align-items:center;">
-          ${logoImg}
-        </div>
-        <!-- Right: report title above request ID -->
-        <div style="text-align:right;">
-          <div style="font-size:11px;font-weight:600;color:#64748b;letter-spacing:0.8px;text-transform:uppercase;margin-bottom:2px;">Service Report</div>
-          <div style="font-size:10px;color:#94a3b8;margin-bottom:6px;" dir="rtl">تقرير الصيانة</div>
-          <div style="font-size:20px;font-weight:800;color:#2d2d2d;">${req.id}</div>
-          <div style="font-size:10px;color:#94a3b8;margin-top:3px;">${now}</div>
-        </div>
+      <div style="text-align:center;border-bottom:3px solid #2d2d2d;padding-bottom:18px;margin-bottom:20px;">
+        ${logoImg}
+        <div style="margin-top:10px;font-size:15px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT &nbsp;·&nbsp; <span dir="rtl">تقرير الصيانة</span></div>
+        <div style="margin-top:5px;font-size:11px;font-weight:600;color:#94a3b8;letter-spacing:1px;">${req.id} &nbsp;·&nbsp; ${now}</div>
       </div>
 
       <!-- Info Table -->
@@ -123,7 +113,6 @@ export async function generateServiceReport(req) {
           <div style="font-size:15px;font-weight:800;color:#10B981;margin-bottom:14px;display:flex;justify-content:space-between;">
             <span>Workshop Updates</span><span dir="rtl">تحديثات الورشة</span>
           </div>
-          ${commentRows(req.majedComments)}
           ${req.workDone ? section('Work Done', 'العمل المنجز',
             `<div style="padding:12px;font-size:13px;color:#334155;line-height:1.6;">${req.workDone}</div>`) : ''}
           ${photoRow(req.progressPhotos, 'Progress Photos', 'صور التقدم')}
