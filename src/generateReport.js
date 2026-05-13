@@ -94,7 +94,7 @@ export async function generateServiceReport(req) {
       <!-- Header -->
       <div style="text-align:center;border-bottom:3px solid #2d2d2d;padding-bottom:18px;margin-bottom:20px;">
         ${logoImg}
-        <div style="margin-top:10px;font-size:15px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT &nbsp;·&nbsp; <span dir="rtl">تقرير الصيانة</span></div>
+        <div style="margin-top:10px;font-size:15px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT</div>
         <div style="margin-top:5px;font-size:11px;font-weight:600;color:#94a3b8;letter-spacing:1px;">${req.id} &nbsp;·&nbsp; ${now}</div>
       </div>
 
