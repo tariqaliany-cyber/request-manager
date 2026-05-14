@@ -63,14 +63,14 @@ async function cropWhitespace(base64) {
 function photoRow(photos, label, labelAr) {
   if (!photos?.length) return '';
   const imgs = photos
-    .map(src => `<img src="${src}" style="width:130px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;" />`)
+    .map(src => `<img src="${src}" style="max-width:160px;max-height:130px;width:auto;height:auto;border-radius:6px;border:1px solid #e2e8f0;display:block;" />`)
     .join('');
   return `
     <div style="margin-top:10px;">
       <div style="font-size:12px;font-weight:700;color:#563b2c;border-bottom:1px solid #e2e8f0;padding-bottom:4px;margin-bottom:8px;display:flex;justify-content:space-between;">
         <span>${label}</span><span dir="rtl">${labelAr}</span>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">${imgs}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;">${imgs}</div>
     </div>`;
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { getRequests, updateRequest, deleteRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { BRANCHES } from '../branchData';
+import PhotoLightbox from '../components/PhotoLightbox';
 
 function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
@@ -282,6 +283,7 @@ function TariqDetail({ req, onClose }) {
   const [desc, setDesc]               = useState(req.problemDescription || '');
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
+  const [lightbox, setLightbox]       = useState(null);
 
   useEffect(() => {
     getRequests().then(all => {
@@ -341,6 +343,7 @@ function TariqDetail({ req, onClose }) {
 
   return (
     <div>
+      {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
       {/* Header card */}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -389,7 +392,7 @@ function TariqDetail({ req, onClose }) {
             <div className="section-title">Problem Photos / صور المشكلة</div>
             <div className="photo-grid">
               {fresh.problemPhotos.map((src, i) => (
-                <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
                   <img src={src} alt="" />
                 </div>
               ))}
@@ -462,7 +465,7 @@ function TariqDetail({ req, onClose }) {
               <div className="section-title">Progress Photos / صور التقدم</div>
               <div className="photo-grid">
                 {fresh.progressPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
                     <img src={src} alt="" />
                   </div>
                 ))}
@@ -482,7 +485,7 @@ function TariqDetail({ req, onClose }) {
               <div className="section-title">Completion Photos / صور الإنجاز</div>
               <div className="photo-grid">
                 {fresh.completionPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
                     <img src={src} alt="" />
                   </div>
                 ))}

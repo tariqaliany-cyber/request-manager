@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createRequest, getRequests, updateRequest, deleteRequest, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
+import PhotoLightbox from '../components/PhotoLightbox';
 
 export default function EssaView({ user, onLogout }) {
   const [tab, setTab] = useState('new');
@@ -351,6 +352,7 @@ function EssaRequestDetail({ req, onBack }) {
     setPhotos(p => [...p, ...compressed].slice(0, 6));
   };
 
+  const [lightbox, setLightbox] = useState(null);
   const s = STATUS[fresh.status];
 
   /* ── Edit Mode ── */
@@ -409,6 +411,7 @@ function EssaRequestDetail({ req, onBack }) {
   /* ── View Mode ── */
   return (
     <div className="card">
+      {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
       <button className="back-btn mb16" onClick={onBack} style={{ color: '#64748B' }}>
         ← Back / رجوع
       </button>
@@ -458,7 +461,7 @@ function EssaRequestDetail({ req, onBack }) {
           <div className="section-title">Photos / الصور</div>
           <div className="photo-grid">
             {fresh.problemPhotos.map((src, i) => (
-              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
                 <img src={src} alt="" />
               </div>
             ))}
@@ -485,7 +488,7 @@ function EssaRequestDetail({ req, onBack }) {
           <div className="section-title">Completion Photos / صور الإنجاز</div>
           <div className="photo-grid">
             {fresh.completionPhotos.map((src, i) => (
-              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
                 <img src={src} alt="" />
               </div>
             ))}
