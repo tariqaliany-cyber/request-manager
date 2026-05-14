@@ -153,7 +153,7 @@ export const getNotifications = async () => {
     .select('*')
     .order('created_at', { ascending: false })
     .limit(60);
-  if (error) { console.error('getNotifications:', error); return []; }
+  if (error) { console.error('getNotifications error:', JSON.stringify(error)); return []; }
   return data;
 };
 

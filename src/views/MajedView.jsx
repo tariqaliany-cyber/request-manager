@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getRequests, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
+import PhotoLightbox from '../components/PhotoLightbox';
 
 function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
@@ -172,11 +173,13 @@ function MajedDetail({ req }) {
     await reload();
   };
 
+  const [lightbox, setLightbox] = useState(null);
   const s = STATUS[fresh.status];
   const isCompleted = fresh.status === 'completed';
 
   return (
     <div>
+      {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
@@ -216,7 +219,7 @@ function MajedDetail({ req }) {
             <div className="section-title">Problem Photos / صور المشكلة</div>
             <div className="photo-grid">
               {fresh.problemPhotos.map((src, i) => (
-                <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
                   <img src={src} alt="" />
                 </div>
               ))}
@@ -254,7 +257,7 @@ function MajedDetail({ req }) {
             {fresh.progressPhotos?.length > 0 ? (
               <div className="photo-grid">
                 {fresh.progressPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
                     <img src={src} alt="" />
                   </div>
                 ))}
@@ -312,7 +315,7 @@ function MajedDetail({ req }) {
             {fresh.completionPhotos?.length > 0 ? (
               <div className="photo-grid">
                 {fresh.completionPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => window.open(src)}>
+                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
                     <img src={src} alt="" />
                   </div>
                 ))}
