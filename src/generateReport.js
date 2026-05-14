@@ -16,7 +16,7 @@ async function toBase64(url) {
   }
 }
 
-// Crop white/transparent margins from an image, return cropped base64
+// Crop background margins from an image by sampling corner color, return cropped base64
 async function cropWhitespace(base64) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -26,12 +26,17 @@ async function cropWhitespace(base64) {
       const ctx = c.getContext('2d');
       ctx.drawImage(img, 0, 0);
       const { data, width, height } = ctx.getImageData(0, 0, c.width, c.height);
+      // Sample background color from top-left corner pixel
+      const br = data[0], bg = data[1], bb = data[2];
+      const threshold = 18;
+      const isBg = (r, g, b, a) =>
+        a < 10 ||
+        (Math.abs(r - br) < threshold && Math.abs(g - bg) < threshold && Math.abs(b - bb) < threshold);
       let top = height, left = width, right = 0, bottom = 0;
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           const i = (y * width + x) * 4;
-          const r = data[i], g = data[i+1], b = data[i+2], a = data[i+3];
-          if (a > 10 && !(r > 245 && g > 245 && b > 245)) {
+          if (!isBg(data[i], data[i+1], data[i+2], data[i+3])) {
             if (x < left)   left   = x;
             if (x > right)  right  = x;
             if (y < top)    top    = y;
@@ -39,12 +44,16 @@ async function cropWhitespace(base64) {
           }
         }
       }
-      const pad = 4;
+      const pad = 6;
       const cw = right - left + 1 + pad * 2;
       const ch = bottom - top + 1 + pad * 2;
       const out = document.createElement('canvas');
       out.width = cw; out.height = ch;
-      out.getContext('2d').drawImage(c, left - pad, top - pad, cw, ch, 0, 0, cw, ch);
+      // Fill with white so JPEG background is clean
+      const octx = out.getContext('2d');
+      octx.fillStyle = '#ffffff';
+      octx.fillRect(0, 0, cw, ch);
+      octx.drawImage(c, left - pad, top - pad, cw, ch, 0, 0, cw, ch);
       resolve(out.toDataURL('image/png'));
     };
     img.src = base64;
@@ -129,7 +138,7 @@ export async function generateServiceReport(req) {
       <!-- Header -->
       <div style="text-align:center;border-bottom:3px solid #2d2d2d;padding-bottom:10px;margin-bottom:12px;">
         ${logoImg}
-        <div style="margin-top:6px;font-size:14px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT</div>
+        <div style="margin-top:0px;font-size:14px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT</div>
         <div style="margin-top:3px;font-size:11px;font-weight:600;color:#94a3b8;letter-spacing:1px;">${req.id} &nbsp;·&nbsp; ${now}</div>
       </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getRequests, updateRequest, deleteRequest, STATUS, formatDate } from '../storage';
+import { getRequests, updateRequest, deleteRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { BRANCHES } from '../branchData';
 
@@ -53,14 +53,27 @@ export default function TariqView({ user, onLogout }) {
 
 /* ── Dashboard ──────────────────────────────────────── */
 function TariqDashboard({ onSelect, tick }) {
-  const [all, setAll]       = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [all, setAll]           = useState([]);
+  const [notifs, setNotifs]     = useState([]);
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState('all');
 
   useEffect(() => {
     setLoading(true);
-    getRequests().then(data => { setAll(data); setLoading(false); });
+    Promise.all([getRequests(), getNotifications()]).then(([reqs, nfs]) => {
+      setAll(reqs);
+      setNotifs(nfs);
+      setLoading(false);
+    });
   }, [tick]);
+
+  const lastRead = getLastRead();
+  const unreadCount = notifs.filter(n => !lastRead || n.created_at > lastRead).length;
+
+  const openNotifications = () => {
+    setLastRead();
+    setFilter('updates');
+  };
 
   const counts = {
     all:         all.length,
@@ -86,6 +99,9 @@ function TariqDashboard({ onSelect, tick }) {
 
   if (loading) return <div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">Loading...</div></div>;
 
+  // Build a req lookup map for "Open Request" button in notifications
+  const reqMap = Object.fromEntries(all.map(r => [r.id, r]));
+
   return (
     <div>
       <div className="stats-bar mt16">
@@ -107,44 +123,138 @@ function TariqDashboard({ onSelect, tick }) {
         </div>
       </div>
 
-      <div className="filter-bar">
-        {FILTERS.map(f => (
-          <button key={f.key}
-            className={`chip ${filter === f.key ? 'active' : ''}`}
-            style={filter === f.key ? { color: f.color, borderColor: f.color, background: f.color + '15' } : {}}
-            onClick={() => setFilter(f.key)}>
-            {f.label} {counts[f.key] > 0 && <span style={{ opacity: .7 }}>({counts[f.key]})</span>}
-          </button>
-        ))}
-      </div>
+      {/* Notifications button */}
+      <button
+        onClick={filter === 'updates' ? () => setFilter('all') : openNotifications}
+        style={{
+          width: '100%', marginTop: 12,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 16px', borderRadius: 10, border: '1.5px solid',
+          borderColor: filter === 'updates' ? '#7C3AED' : (unreadCount > 0 ? '#7C3AED' : '#e2e8f0'),
+          background: filter === 'updates' ? '#F5F3FF' : (unreadCount > 0 ? '#faf5ff' : '#f8fafc'),
+          cursor: 'pointer', transition: 'all .15s',
+        }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14, color: filter === 'updates' ? '#7C3AED' : '#334155' }}>
+          🔔 Updates / التحديثات
+          {unreadCount > 0 && filter !== 'updates' && (
+            <span style={{ background: '#7C3AED', color: '#fff', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>
+              {unreadCount} new
+            </span>
+          )}
+        </span>
+        <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+          {filter === 'updates' ? '✕ Close' : `${notifs.length} total ›`}
+        </span>
+      </button>
 
-      {filtered.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-icon">📭</div>
-          <div className="empty-title">No requests here</div>
-        </div>
-      ) : filtered.map(req => {
-        const s = STATUS[req.status];
-        return (
-          <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
-            <div className="card-header">
-              <div>
-                <div className="card-id">{req.id}</div>
-                <div className="card-branch">Herfy {req.branchNumber}</div>
+      {filter === 'updates' ? (
+        <NotificationsPanel notifs={notifs} lastRead={lastRead} reqMap={reqMap} onSelect={onSelect} />
+      ) : (
+        <>
+          <div className="filter-bar">
+            {FILTERS.map(f => (
+              <button key={f.key}
+                className={`chip ${filter === f.key ? 'active' : ''}`}
+                style={filter === f.key ? { color: f.color, borderColor: f.color, background: f.color + '15' } : {}}
+                onClick={() => setFilter(f.key)}>
+                {f.label}{counts[f.key] > 0 && <span style={{ opacity: .7 }}> ({counts[f.key]})</span>}
+              </button>
+            ))}
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📭</div>
+              <div className="empty-title">No requests here</div>
+            </div>
+          ) : filtered.map(req => {
+            const s = STATUS[req.status];
+            return (
+              <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
+                <div className="card-header">
+                  <div>
+                    <div className="card-id">{req.id}</div>
+                    <div className="card-branch">Herfy {req.branchNumber}</div>
+                  </div>
+                  <span className="badge" style={{ color: s.color, background: s.bg }}>
+                    <span className="badge-dot" />{s.en}
+                  </span>
+                </div>
+                <div className="card-desc">{req.problemDescription}</div>
+                <div className="card-footer">
+                  <span className="card-date">{formatDate(req.createdAt)}</span>
+                  {req.assignedTo
+                    ? <span className="assigned-tag">👷 Assigned to Workshop</span>
+                    : req.status !== 'completed'
+                      ? <span className="unassigned-tag">○ Unassigned</span>
+                      : null}
+                </div>
               </div>
-              <span className="badge" style={{ color: s.color, background: s.bg }}>
-                <span className="badge-dot" />{s.en}
-              </span>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ── Notifications Panel ────────────────────────────── */
+function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
+  if (notifs.length === 0) return (
+    <div className="empty-state" style={{ marginTop: 20 }}>
+      <div className="empty-icon">🔔</div>
+      <div className="empty-title">No updates yet</div>
+      <div className="empty-sub">لا يوجد تحديثات من الورشة حتى الآن</div>
+    </div>
+  );
+
+  return (
+    <div style={{ marginTop: 12 }}>
+      {notifs.map((n, i) => {
+        const isUnread = !lastRead || n.created_at > lastRead;
+        const label = ACTION_LABELS_MAP[n.action] || { en: n.action, ar: '' };
+        const req = reqMap[n.req_id];
+        return (
+          <div key={n.id || i} style={{
+            background: isUnread ? '#faf5ff' : '#fff',
+            border: `1.5px solid ${isUnread ? '#c4b5fd' : '#e2e8f0'}`,
+            borderRadius: 10, padding: '12px 14px', marginBottom: 8,
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C3AED', display: 'inline-block', flexShrink: 0 }} />}
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED' }}>{n.req_id}</span>
+                <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· Herfy {n.branch_number}</span>
+              </div>
+              <span style={{ fontSize: 11, color: 'var(--gray-400)', whiteSpace: 'nowrap', marginLeft: 8 }}>{formatDate(n.created_at)}</span>
             </div>
-            <div className="card-desc">{req.problemDescription}</div>
-            <div className="card-footer">
-              <span className="card-date">{formatDate(req.createdAt)}</span>
-              {req.assignedTo
-                ? <span className="assigned-tag">👷 Assigned to Workshop</span>
-                : req.status !== 'completed'
-                  ? <span className="unassigned-tag">○ Unassigned</span>
-                  : null}
+
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
+              {label.en}
+              {label.ar && <span style={{ color: 'var(--gray-400)', fontWeight: 400, marginLeft: 6, fontSize: 12 }}>/ {label.ar}</span>}
             </div>
+
+            {n.detail && (
+              <div style={{ fontSize: 12, color: '#64748b', background: '#f1f5f9', borderRadius: 6, padding: '5px 8px', marginTop: 5 }}>
+                "{n.detail}"
+              </div>
+            )}
+
+            {n.problem_description && (
+              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 5 }}>{n.problem_description}</div>
+            )}
+
+            {req && (
+              <button
+                onClick={() => onSelect(req)}
+                style={{
+                  marginTop: 10, padding: '5px 14px', borderRadius: 6,
+                  border: '1px solid #7C3AED', background: '#fff',
+                  color: '#7C3AED', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                }}>
+                Open Request / فتح الطلب ›
+              </button>
+            )}
           </div>
         );
       })}
