@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequests, updateRequest, addMajedComment, compressImage, STATUS, formatDate } from '../storage';
+import { getRequests, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 
 function getBranchInfo(num) {
@@ -130,16 +130,25 @@ function MajedDetail({ req }) {
 
   useEffect(() => { reload(); }, [req.id]);
 
+  const notifBase = () => ({
+    reqId: fresh.id,
+    branchNumber: fresh.branchNumber,
+    problemDescription: fresh.problemDescription,
+  });
+
   const markStarted = async () => {
     setSaving(true);
     await updateRequest(fresh.id, { majedStarted: true, status: 'in_progress' });
+    await createNotification({ ...notifBase(), action: 'started' });
     await reload();
     setSaving(false);
   };
 
   const submitComment = async () => {
     if (!comment.trim()) return;
-    await addMajedComment(fresh.id, comment.trim());
+    const text = comment.trim();
+    await addMajedComment(fresh.id, text);
+    await createNotification({ ...notifBase(), action: 'comment', detail: text });
     setComment('');
     await reload();
   };
@@ -148,6 +157,7 @@ function MajedDetail({ req }) {
     if (!workDone.trim()) return;
     setSaving(true);
     await updateRequest(fresh.id, { workDone: workDone.trim() });
+    await createNotification({ ...notifBase(), action: 'work_done', detail: workDone.trim() });
     await reload();
     setSaving(false);
   };
@@ -155,8 +165,10 @@ function MajedDetail({ req }) {
   const addPhotos = async (files, type) => {
     const compressed = await Promise.all([...files].slice(0, 6).map(compressImage));
     const key = type === 'progress' ? 'progressPhotos' : 'completionPhotos';
+    const action = type === 'progress' ? 'progress_photos' : 'completion_photos';
     const existing = fresh[key] || [];
     await updateRequest(fresh.id, { [key]: [...existing, ...compressed].slice(0, 6) });
+    await createNotification({ ...notifBase(), action, detail: `${compressed.length} photo(s)` });
     await reload();
   };
 

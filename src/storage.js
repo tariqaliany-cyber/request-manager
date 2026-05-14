@@ -124,6 +124,44 @@ export const deleteRequest = async (id) => {
   return true;
 };
 
+// ── Notifications ─────────────────────────────────────
+const ACTION_LABELS = {
+  started:           { en: '🚀 Work started',              ar: 'بدأ العمل'              },
+  comment:           { en: '💬 Comment added',             ar: 'تعليق جديد'             },
+  progress_photos:   { en: '📷 Progress photos uploaded',  ar: 'صور التقدم'             },
+  completion_photos: { en: '📷 Completion photos uploaded',ar: 'صور الإنجاز'            },
+  work_done:         { en: '✅ Work description updated',   ar: 'وصف العمل المنجز'       },
+};
+
+export const ACTION_LABELS_MAP = ACTION_LABELS;
+
+export const createNotification = async ({ reqId, branchNumber, problemDescription, action, detail }) => {
+  const { error } = await supabase.from('notifications').insert({
+    req_id:              reqId,
+    branch_number:       branchNumber,
+    problem_description: problemDescription,
+    actor:               'Majed',
+    action,
+    detail:              detail || null,
+  });
+  if (error) console.error('createNotification:', error);
+};
+
+export const getNotifications = async () => {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(60);
+  if (error) { console.error('getNotifications:', error); return []; }
+  return data;
+};
+
+// localStorage-based last-read timestamp (per Tariq's browser)
+const LAST_READ_KEY = 'tariq_notif_last_read';
+export const getLastRead = () => localStorage.getItem(LAST_READ_KEY) || '';
+export const setLastRead = () => localStorage.setItem(LAST_READ_KEY, new Date().toISOString());
+
 export const addMajedComment = async (id, text) => {
   const { data: current } = await supabase
     .from('requests').select('majed_comments').eq('id', id).single();
