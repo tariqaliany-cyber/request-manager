@@ -16,100 +16,6 @@ async function toBase64(url) {
   }
 }
 
-// Crop background margins from an image by sampling corner color, return cropped base64
-async function cropWhitespace(base64) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement('canvas');
-      c.width = img.width; c.height = img.height;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      const { data, width, height } = ctx.getImageData(0, 0, c.width, c.height);
-      // Sample background color from top-left corner pixel
-      const br = data[0], bg = data[1], bb = data[2];
-      const threshold = 18;
-      const isBg = (r, g, b, a) =>
-        a < 10 ||
-        (Math.abs(r - br) < threshold && Math.abs(g - bg) < threshold && Math.abs(b - bb) < threshold);
-      let top = height, left = width, right = 0, bottom = 0;
-      for (let y = 0; y < height; y++) {
-        for (let x = 0; x < width; x++) {
-          const i = (y * width + x) * 4;
-          if (!isBg(data[i], data[i+1], data[i+2], data[i+3])) {
-            if (x < left)   left   = x;
-            if (x > right)  right  = x;
-            if (y < top)    top    = y;
-            if (y > bottom) bottom = y;
-          }
-        }
-      }
-      const pad = 6;
-      const cw = right - left + 1 + pad * 2;
-      const ch = bottom - top + 1 + pad * 2;
-      const out = document.createElement('canvas');
-      out.width = cw; out.height = ch;
-      // Fill with white so JPEG background is clean
-      const octx = out.getContext('2d');
-      octx.fillStyle = '#ffffff';
-      octx.fillRect(0, 0, cw, ch);
-      octx.drawImage(c, left - pad, top - pad, cw, ch, 0, 0, cw, ch);
-      resolve(out.toDataURL('image/png'));
-    };
-    img.src = base64;
-  });
-}
-
-function photoRow(photos, label, labelAr) {
-  if (!photos?.length) return '';
-  const imgs = photos
-    .map(src => `<img src="${src}" style="max-width:160px;max-height:130px;width:auto;height:auto;border-radius:6px;border:1px solid #e2e8f0;display:block;" />`)
-    .join('');
-  return `
-    <div style="margin-top:10px;">
-      <div style="font-size:12px;font-weight:700;color:#563b2c;border-bottom:1px solid #e2e8f0;padding-bottom:4px;margin-bottom:8px;display:flex;justify-content:space-between;">
-        <span>${label}</span><span dir="rtl">${labelAr}</span>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;">${imgs}</div>
-    </div>`;
-}
-
-function commentRows(comments) {
-  if (!comments?.length) return '';
-  const rows = comments
-    .map(c => `<div style="padding:8px 10px;background:#f8fafc;border-radius:6px;margin-bottom:6px;">
-      <div style="font-size:12px;color:#334155;">👷 ${c.text}</div>
-      <div style="font-size:10px;color:#94a3b8;margin-top:2px;">${formatDate(c.time)}</div>
-    </div>`)
-    .join('');
-  return `
-    <div style="margin-top:16px;">
-      <div style="font-size:13px;font-weight:700;color:#563b2c;border-bottom:1px solid #e2e8f0;padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between;">
-        <span>Workshop Comments</span><span dir="rtl">تعليقات الورشة</span>
-      </div>
-      ${rows}
-    </div>`;
-}
-
-function infoRow(labelEn, labelAr, value, valueStyle = '') {
-  return `
-    <tr>
-      <td style="padding:5px 10px;font-size:12px;font-weight:600;color:#64748b;width:160px;white-space:nowrap;">${labelEn}</td>
-      <td style="padding:5px 10px;font-size:12px;color:#94a3b8;width:140px;white-space:nowrap;text-align:right;" dir="rtl">${labelAr}</td>
-      <td style="padding:5px 10px;font-size:13px;color:#1e293b;font-weight:500;${valueStyle}">${value}</td>
-    </tr>`;
-}
-
-function section(titleEn, titleAr, content) {
-  return `
-    <div style="margin-top:10px;">
-      <div style="font-size:12px;font-weight:700;color:#563b2c;background:#fdf6f0;padding:6px 12px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;">
-        <span>${titleEn}</span><span dir="rtl">${titleAr}</span>
-      </div>
-      <div style="padding:2px 0;">${content}</div>
-    </div>`;
-}
-
 async function loadCairoFont() {
   if (document.getElementById('cairo-font-link')) return;
   const link = document.createElement('link');
@@ -121,80 +27,184 @@ async function loadCairoFont() {
   await document.fonts.load('400 14px Cairo');
 }
 
+function photoGrid(photos) {
+  if (!photos?.length) return '';
+  return `<div style="display:flex;flex-wrap:wrap;gap:8px;padding:10px 14px;">
+    ${photos.map(src =>
+      `<img src="${src}" style="height:105px;width:auto;max-width:145px;object-fit:cover;border-radius:4px;border:1px solid #ccc;" />`
+    ).join('')}
+  </div>`;
+}
+
+function fieldRow(labelEn, labelAr, valueLeft, labelEnR, labelArR, valueRight) {
+  return `
+    <div style="display:flex;border-bottom:1px solid #000;">
+      <div style="flex:1;padding:7px 14px;border-right:1px solid #000;">
+        <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">${labelEn} / ${labelAr}</div>
+        <div style="font-size:13px;font-weight:600;color:#000;">${valueLeft}</div>
+      </div>
+      <div style="flex:1;padding:7px 14px;">
+        <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">${labelEnR} / ${labelArR}</div>
+        <div style="font-size:13px;font-weight:600;color:#000;">${valueRight}</div>
+      </div>
+    </div>`;
+}
+
+function sectionBox(labelEn, labelAr, content, minHeight = '60px') {
+  return `
+    <div style="border-bottom:1px solid #000;">
+      <div style="padding:5px 14px;background:#f2f2f2;border-bottom:1px solid #aaa;">
+        <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#000;">${labelEn}:</span>
+        <span style="font-size:10px;font-weight:600;color:#444;margin-right:8px;"> / ${labelAr}</span>
+      </div>
+      <div style="min-height:${minHeight};">
+        ${content}
+      </div>
+    </div>`;
+}
+
+function photoSection(labelEn, labelAr, photos) {
+  if (!photos?.length) return '';
+  return `
+    <div style="border-bottom:1px solid #000;">
+      <div style="padding:5px 14px;background:#f2f2f2;border-bottom:1px solid #aaa;">
+        <span style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:0.7px;color:#000;">${labelEn} (${photos.length}):</span>
+        <span style="font-size:10px;font-weight:600;color:#444;margin-right:8px;"> / ${labelAr}</span>
+      </div>
+      ${photoGrid(photos)}
+    </div>`;
+}
+
 export async function generateServiceReport(req) {
   await loadCairoFont();
-  const rawLogo = await toBase64('/altasis-logo.png');
-  const logoBase64 = rawLogo ? await cropWhitespace(rawLogo) : null;
+  const herfyLogo = await toBase64('/herfy-logo.png');
+  const altasisLogo = await toBase64('/altasis-logo.png');
   const s = STATUS[req.status];
   const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  const logoImg = logoBase64
-    ? `<img src="${logoBase64}" style="height:160px;width:auto;object-fit:contain;" />`
-    : `<div style="font-size:14px;font-weight:900;color:#2d2d2d;text-align:center;">ALTASIS<br/>ALISTRATIJI</div>`;
+  const altasisImg = altasisLogo
+    ? `<img src="${altasisLogo}" style="height:168px;width:auto;object-fit:contain;display:block;" />`
+    : `<div style="font-size:16px;font-weight:900;color:#000;">ALTASIS</div>`;
+
+  const locationValue = req.locationLink
+    ? `<span style="font-size:11px;color:#1a56db;">${req.locationLink.slice(0, 45)}${req.locationLink.length > 45 ? '…' : ''}</span>`
+    : '—';
 
   const html = `
-    <div style="font-family:'Cairo','Segoe UI',Arial,sans-serif;background:#fff;padding:20px 28px;width:760px;box-sizing:border-box;">
+    <div style="font-family:'Cairo','Segoe UI',Arial,sans-serif;background:#fff;width:760px;box-sizing:border-box;padding:22px 30px;">
 
-      <!-- Header -->
-      <div style="text-align:center;border-bottom:3px solid #2d2d2d;padding-bottom:10px;margin-bottom:12px;">
-        ${logoImg}
-        <div style="margin-top:0px;font-size:14px;font-weight:700;color:#2d2d2d;letter-spacing:0.5px;">SERVICE REPORT</div>
-        <div style="margin-top:3px;font-size:11px;font-weight:600;color:#94a3b8;letter-spacing:1px;">${req.id} &nbsp;·&nbsp; ${now}</div>
+      <!-- ── Letterhead ── -->
+      <div style="display:flex;justify-content:center;align-items:center;margin-bottom:14px;">
+        ${altasisImg}
       </div>
 
-      <!-- Info Table -->
-      <table style="width:100%;border-collapse:collapse;background:#f8fafc;border-radius:8px;overflow:hidden;">
-        <tbody>
-          ${infoRow('Branch', 'الفرع', `Herfy ${req.branchNumber}`)}
-          ${infoRow('Date Created', 'تاريخ الإنشاء', formatDate(req.createdAt))}
-          ${infoRow('Status', 'الحالة',
-            `<span style="display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600;color:${s.color};background:${s.bg};">
-              ● ${s.en} / ${s.ar}
-            </span>`)}
-          ${req.assignedTo ? infoRow('Assigned To', 'مسند إلى', '👷 Workshop Team / فريق الورشة') : ''}
-          ${req.locationLink ? infoRow('Google Maps', 'خرائط جوجل', `<a href="${req.locationLink}" style="color:#563b2c;">🗺️ View Map</a>`) : ''}
-        </tbody>
-      </table>
+      <!-- ── Main bordered container ── -->
+      <div style="border:2px solid #000;border-radius:2px;">
 
-      <!-- Problem Description -->
-      ${section('Problem Description', 'وصف المشكلة',
-        `<div style="padding:8px 12px;font-size:13px;color:#334155;line-height:1.4;">${req.problemDescription || '—'}</div>`)}
-
-      <!-- Problem Photos -->
-      ${photoRow(req.problemPhotos, 'Problem Photos', 'صور المشكلة')}
-
-      <!-- Workshop Updates -->
-      ${req.majedStarted ? `
-        <div style="margin-top:12px;border-top:2px dashed #e2e8f0;padding-top:12px;">
-          <div style="font-size:13px;font-weight:800;color:#10B981;margin-bottom:8px;display:flex;justify-content:space-between;">
-            <span>Workshop Updates</span><span dir="rtl">تحديثات الورشة</span>
+        <!-- Title bar -->
+        <div style="display:flex;border-bottom:2px solid #000;">
+          <div style="flex:1;background:#000;color:#fff;padding:6px 16px;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;">
+            <span style="font-size:14px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;">Maintenance Report</span>
+            <span style="font-size:13px;font-weight:600;opacity:0.82;letter-spacing:0.3px;">/ تقرير الصيانة</span>
           </div>
-          ${req.workDone ? section('Work Done', 'العمل المنجز',
-            `<div style="padding:8px 12px;font-size:13px;color:#334155;line-height:1.4;">${req.workDone}</div>`) : ''}
-          ${photoRow(req.progressPhotos, 'Progress Photos', 'صور التقدم')}
-          ${photoRow(req.completionPhotos, 'Completion Photos', 'صور الإنجاز')}
-        </div>` : ''}
-
-      <!-- Notes to Client -->
-      ${req.notesToEssa ? section('Notes to Client', 'ملاحظات للعميل',
-        `<div style="padding:8px 12px;font-size:13px;color:#334155;line-height:1.4;">${req.notesToEssa}</div>`) : ''}
-
-      <!-- Final Summary -->
-      ${req.finalSummary ? `
-        <div style="margin-top:12px;background:#fdf6f0;border:2px solid #563b2c;border-radius:8px;padding:12px;">
-          <div style="font-size:12px;font-weight:700;color:#563b2c;margin-bottom:6px;display:flex;justify-content:space-between;">
-            <span>Final Summary</span><span dir="rtl">الملخص النهائي</span>
+          <div style="padding:6px 18px;display:flex;align-items:center;gap:10px;min-width:190px;border-left:2px solid #000;">
+            <span style="font-size:12px;font-weight:700;color:#555;">No.:</span>
+            <span style="font-size:14px;font-weight:800;color:#000;letter-spacing:0.5px;">${req.id}</span>
           </div>
-          <div style="font-size:13px;color:#1e293b;line-height:1.4;">${req.finalSummary}</div>
-        </div>` : ''}
-
-      <!-- Footer -->
-      <div style="margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:10px;color:#94a3b8;">
-          Generated by: <strong style="color:#563b2c;">Tariq / طارق</strong>
         </div>
-        <div style="font-size:10px;color:#94a3b8;">Herfy Maintenance System · ${now}</div>
+
+        <!-- Row: Branch | Date Submitted -->
+        ${fieldRow(
+          'Branch', 'الفرع',          `Herfy ${req.branchNumber}`,
+          'Date Submitted', 'تاريخ الإرسال', formatDate(req.createdAt)
+        )}
+
+        <!-- Row: Status | Work Started -->
+        <div style="display:flex;border-bottom:1px solid #000;">
+          <div style="flex:1;padding:7px 14px;border-right:1px solid #000;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Status / الحالة</div>
+            <div style="font-size:13px;font-weight:700;color:${req.status === 'completed' ? '#16A34A' : req.status === 'in_progress' ? '#92400E' : '#1D4ED8'};">
+              ${s.en} / ${s.ar}
+            </div>
+          </div>
+          <div style="flex:1;padding:7px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Work Started / بدأ العمل</div>
+            <div style="font-size:13px;font-weight:600;color:#000;">${req.majedStarted ? 'YES / نعم' : 'NO / لا'}</div>
+          </div>
+        </div>
+
+        ${req.locationLink ? `
+        <!-- Row: Google Maps (full width) -->
+        <div style="border-bottom:1px solid #000;padding:7px 14px;">
+          <span style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;">Google Maps / خرائط جوجل: </span>
+          <span style="font-size:11px;color:#1a56db;">${req.locationLink.slice(0, 80)}${req.locationLink.length > 80 ? '…' : ''}</span>
+        </div>` : ''}
+
+        <!-- Problem Description -->
+        ${sectionBox('Problem Description', 'وصف المشكلة',
+          `<div style="padding:10px 14px;font-size:13px;color:#1a1a1a;line-height:1.7;">${req.problemDescription || '—'}</div>`,
+          '70px'
+        )}
+
+        <!-- Problem Photos -->
+        ${photoSection('Problem Photos', 'صور المشكلة', req.problemPhotos)}
+
+        <!-- Work Completed -->
+        ${sectionBox('Work Completed', 'العمل المنجز',
+          req.workDone
+            ? `<div style="padding:10px 14px;font-size:13px;color:#1a1a1a;line-height:1.7;">${req.workDone}</div>`
+            : `<div style="padding:10px 14px;font-size:12px;color:#aaa;">—</div>`,
+          '70px'
+        )}
+
+        <!-- Progress Photos -->
+        ${photoSection('Progress Photos', 'صور التقدم', req.progressPhotos)}
+
+        <!-- Completion Photos -->
+        ${photoSection('Completion Photos', 'صور الإنجاز', req.completionPhotos)}
+
+        ${req.notesToEssa ? sectionBox('Notes to Client', 'ملاحظات للعميل',
+          `<div style="padding:10px 14px;font-size:13px;color:#1a1a1a;line-height:1.7;">${req.notesToEssa}</div>`,
+          '50px'
+        ) : ''}
+
+        <!-- ── Footer black bar ── -->
+        <div style="background:#000;color:#fff;padding:6px 14px;">
+          <span style="font-size:10.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;">Report Details</span>
+          <span style="font-size:10px;font-weight:600;opacity:0.8;margin-right:10px;"> / تفاصيل التقرير</span>
+        </div>
+
+        <!-- Footer row 1 -->
+        <div style="display:flex;border-top:none;">
+          <div style="flex:1;padding:8px 14px;border-right:1px solid #000;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Coordinator / المنسق</div>
+            <div style="font-size:12px;font-weight:600;color:#000;">Tariq / طارق</div>
+          </div>
+          <div style="flex:1;padding:8px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Print Date / تاريخ الطباعة</div>
+            <div style="font-size:12px;font-weight:600;color:#000;">${now}</div>
+          </div>
+        </div>
+
+        <!-- Footer row 2 -->
+        <div style="display:flex;border-top:1px solid #000;">
+          <div style="flex:1;padding:8px 14px;border-right:1px solid #000;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Report No. / رقم التقرير</div>
+            <div style="font-size:12px;font-weight:600;color:#000;">${req.id}</div>
+          </div>
+          <div style="flex:1;padding:8px 14px;">
+            <div style="font-size:9.5px;font-weight:700;color:#555;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:3px;">Signature / التوقيع</div>
+            <div style="border-bottom:1px solid #999;width:130px;height:22px;">&nbsp;</div>
+          </div>
+        </div>
+
       </div>
+
+      <!-- System watermark -->
+      <div style="margin-top:8px;text-align:center;font-size:9px;color:#bbb;letter-spacing:0.5px;">
+        Herfy Maintenance Management System · نظام إدارة صيانة هرفي
+      </div>
+
     </div>`;
 
   const container = document.createElement('div');
@@ -226,7 +236,7 @@ export async function generateServiceReport(req) {
       remaining -= pageH;
     }
 
-    pdf.save(`Service-Report-${req.id}.pdf`);
+    pdf.save(`Maintenance-Report-${req.id}.pdf`);
   } finally {
     document.body.removeChild(container);
   }

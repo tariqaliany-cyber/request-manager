@@ -117,9 +117,13 @@ function MajedList({ onSelect }) {
 /* ── Job Detail ─────────────────────────────────────── */
 function MajedDetail({ req }) {
   const [fresh, setFresh]       = useState(req);
-  const [comment, setComment]   = useState('');
-  const [workDone, setWorkDone] = useState(req.workDone || '');
-  const [saving, setSaving]     = useState(false);
+  const [comment, setComment]         = useState('');
+  const [workDone, setWorkDone]       = useState(req.workDone || '');
+  const [saving, setSaving]           = useState(false);
+  const [stagedProgress, setStagedProgress]     = useState([]);
+  const [stagedCompletion, setStagedCompletion] = useState([]);
+  const [photoSaving, setPhotoSaving] = useState('');
+  const [photoSaved, setPhotoSaved]   = useState('');
   const progressRef   = useRef();
   const completionRef = useRef();
 
@@ -163,14 +167,27 @@ function MajedDetail({ req }) {
     setSaving(false);
   };
 
-  const addPhotos = async (files, type) => {
-    const compressed = await Promise.all([...files].slice(0, 6).map(compressImage));
-    const key = type === 'progress' ? 'progressPhotos' : 'completionPhotos';
+  const stagePhotos = async (files, type) => {
+    const compressed = await Promise.all([...files].map(compressImage));
+    if (type === 'progress') setStagedProgress(p => [...p, ...compressed]);
+    else setStagedCompletion(p => [...p, ...compressed]);
+  };
+
+  const saveAllPhotos = async (type) => {
+    const staged = type === 'progress' ? stagedProgress : stagedCompletion;
+    if (!staged.length) return;
+    const key    = type === 'progress' ? 'progressPhotos' : 'completionPhotos';
     const action = type === 'progress' ? 'progress_photos' : 'completion_photos';
+    setPhotoSaving(type);
     const existing = fresh[key] || [];
-    await updateRequest(fresh.id, { [key]: [...existing, ...compressed].slice(0, 6) });
-    await createNotification({ ...notifBase(), action, detail: `${compressed.length} photo(s)` });
+    await updateRequest(fresh.id, { [key]: [...existing, ...staged] });
+    await createNotification({ ...notifBase(), action, detail: `${staged.length} photo(s)` });
+    if (type === 'progress') setStagedProgress([]);
+    else setStagedCompletion([]);
     await reload();
+    setPhotoSaving('');
+    setPhotoSaved(type);
+    setTimeout(() => setPhotoSaved(''), 3000);
   };
 
   const [lightbox, setLightbox] = useState(null);
@@ -248,21 +265,56 @@ function MajedDetail({ req }) {
           <div className="card">
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Progress Photos / صور التقدم</div>
             {!isCompleted && (
-              <button className="btn btn-outline mb8" onClick={() => progressRef.current.click()}>
-                📷 Add Progress Photos
-              </button>
-            )}
-            <input ref={progressRef} type="file" accept="image/*" multiple hidden
-              onChange={e => addPhotos(e.target.files, 'progress')} />
-            {fresh.progressPhotos?.length > 0 ? (
-              <div className="photo-grid">
-                {fresh.progressPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                    <img src={src} alt="" />
+              <>
+                <button className="btn btn-outline mb8" onClick={() => progressRef.current.click()}>
+                  📷 Add Progress Photos / إضافة صور تقدم
+                </button>
+                <input ref={progressRef} type="file" accept="image/*" multiple hidden
+                  onChange={e => stagePhotos(e.target.files, 'progress')} />
+
+                {stagedProgress.length > 0 && (
+                  <div style={{ marginTop: 8, padding: '12px', background: '#FFFBEB', borderRadius: 10, border: '1px solid #FDE68A' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>
+                      {stagedProgress.length} photo{stagedProgress.length > 1 ? 's' : ''} ready — not saved yet
+                      <span style={{ fontWeight: 400, marginRight: 4 }}> / لم يتم الحفظ بعد</span>
+                    </div>
+                    <div className="photo-grid">
+                      {stagedProgress.map((src, i) => (
+                        <div key={i} className="photo-thumb">
+                          <img src={src} alt="" />
+                          <button className="photo-remove" onClick={() => setStagedProgress(p => p.filter((_, j) => j !== i))}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button className="btn btn-primary-majed"
+                      onClick={() => saveAllPhotos('progress')}
+                      disabled={photoSaving === 'progress'}
+                      style={{ width: '100%', marginTop: 10 }}>
+                      {photoSaving === 'progress' ? '⏳ Saving... / جاري الحفظ...' : '💾 Save All Photos / حفظ جميع الصور'}
+                    </button>
                   </div>
-                ))}
-              </div>
-            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet</div>}
+                )}
+
+                {photoSaved === 'progress' && stagedProgress.length === 0 && (
+                  <div style={{ textAlign: 'center', color: '#16A34A', fontWeight: 700, marginTop: 8, fontSize: 14, padding: '8px', background: '#F0FDF4', borderRadius: 8 }}>
+                    ✅ Photos saved successfully! / تم حفظ الصور بنجاح!
+                  </div>
+                )}
+              </>
+            )}
+
+            {fresh.progressPhotos?.length > 0 ? (
+              <>
+                {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
+                <div className="photo-grid">
+                  {fresh.progressPhotos.map((src, i) => (
+                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
+                      <img src={src} alt="" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet / لا توجد صور</div>}
           </div>
 
           {!isCompleted && (
@@ -306,21 +358,56 @@ function MajedDetail({ req }) {
           <div className="card">
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Completion Photos / صور الإنجاز</div>
             {!isCompleted && (
-              <button className="btn btn-outline mb8" onClick={() => completionRef.current.click()}>
-                📷 Add Completion Photos
-              </button>
-            )}
-            <input ref={completionRef} type="file" accept="image/*" multiple hidden
-              onChange={e => addPhotos(e.target.files, 'completion')} />
-            {fresh.completionPhotos?.length > 0 ? (
-              <div className="photo-grid">
-                {fresh.completionPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                    <img src={src} alt="" />
+              <>
+                <button className="btn btn-outline mb8" onClick={() => completionRef.current.click()}>
+                  📷 Add Completion Photos / إضافة صور إنجاز
+                </button>
+                <input ref={completionRef} type="file" accept="image/*" multiple hidden
+                  onChange={e => stagePhotos(e.target.files, 'completion')} />
+
+                {stagedCompletion.length > 0 && (
+                  <div style={{ marginTop: 8, padding: '12px', background: '#FFFBEB', borderRadius: 10, border: '1px solid #FDE68A' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>
+                      {stagedCompletion.length} photo{stagedCompletion.length > 1 ? 's' : ''} ready — not saved yet
+                      <span style={{ fontWeight: 400, marginRight: 4 }}> / لم يتم الحفظ بعد</span>
+                    </div>
+                    <div className="photo-grid">
+                      {stagedCompletion.map((src, i) => (
+                        <div key={i} className="photo-thumb">
+                          <img src={src} alt="" />
+                          <button className="photo-remove" onClick={() => setStagedCompletion(p => p.filter((_, j) => j !== i))}>×</button>
+                        </div>
+                      ))}
+                    </div>
+                    <button className="btn btn-primary-majed"
+                      onClick={() => saveAllPhotos('completion')}
+                      disabled={photoSaving === 'completion'}
+                      style={{ width: '100%', marginTop: 10 }}>
+                      {photoSaving === 'completion' ? '⏳ Saving... / جاري الحفظ...' : '💾 Save All Photos / حفظ جميع الصور'}
+                    </button>
                   </div>
-                ))}
-              </div>
-            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet</div>}
+                )}
+
+                {photoSaved === 'completion' && stagedCompletion.length === 0 && (
+                  <div style={{ textAlign: 'center', color: '#16A34A', fontWeight: 700, marginTop: 8, fontSize: 14, padding: '8px', background: '#F0FDF4', borderRadius: 8 }}>
+                    ✅ Photos saved successfully! / تم حفظ الصور بنجاح!
+                  </div>
+                )}
+              </>
+            )}
+
+            {fresh.completionPhotos?.length > 0 ? (
+              <>
+                {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
+                <div className="photo-grid">
+                  {fresh.completionPhotos.map((src, i) => (
+                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
+                      <img src={src} alt="" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet / لا توجد صور</div>}
           </div>
 
           {isCompleted && (
