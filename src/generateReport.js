@@ -5,8 +5,8 @@ import { STATUS, formatDate } from './storage';
 // ── Constants ──────────────────────────────────────────────
 const RENDER_W   = 720;   // px width for html rendering
 const SCALE      = 1.8;   // canvas scale for quality
-const PHOTO_COLS = 5;     // photos per row
-const PHOTO_H    = 88;    // px thumbnail height
+const PHOTO_COLS = 4;     // photos per row
+const PHOTO_H    = 130;   // px thumbnail height
 const MM_MARGIN  = 8;     // mm page margin
 const FONT = "'Noto Sans Arabic','Cairo',Tahoma,Arial,sans-serif";
 
@@ -30,9 +30,15 @@ async function loadFonts() {
   link.rel = 'stylesheet';
   link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap';
   document.head.appendChild(link);
-  // Wait for fonts to be ready before any canvas rendering
   await document.fonts.ready;
-  await new Promise(r => setTimeout(r, 700));
+  // Explicitly load Arabic font weights so shaping is active before canvas capture
+  await Promise.allSettled([
+    document.fonts.load('400 14px "Noto Sans Arabic"'),
+    document.fonts.load('600 14px "Noto Sans Arabic"'),
+    document.fonts.load('700 14px "Noto Sans Arabic"'),
+  ]);
+  // Extra settle time for Arabic glyph shaping engine
+  await new Promise(r => setTimeout(r, 1000));
 }
 
 // Render an HTML string to a canvas — each call is independent
@@ -54,9 +60,9 @@ async function renderBlock(html) {
   }
 }
 
-// Arabic text: isolated RTL span so shaping works correctly
+// Arabic text: use real HTML dir/lang attributes — CSS-only RTL is not enough for html2canvas shaping
 const ar = (text) =>
-  `<span style="direction:rtl;unicode-bidi:isolate;font-family:${FONT};">${text}</span>`;
+  `<span dir="rtl" lang="ar" style="font-family:${FONT};unicode-bidi:embed;white-space:nowrap;text-rendering:optimizeLegibility;">${text}</span>`;
 
 // ── HTML block builders ────────────────────────────────────
 // Borders: header has full 2px border; middle blocks share sides only; footer closes with 2px bottom.
@@ -152,9 +158,11 @@ function photoRowBlock(photos) {
   const thumbW = Math.floor((RENDER_W - 30) / PHOTO_COLS) - 6;
   return `
   <div style="font-family:${FONT};width:${RENDER_W}px;${SIDE}background:#fff;">
-    <div style="display:flex;gap:5px;padding:6px 12px;flex-wrap:nowrap;">
+    <div style="display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;">
       ${photos.map(src =>
-        `<img src="${src}" style="width:${thumbW}px;height:${PHOTO_H}px;object-fit:cover;border-radius:3px;border:1px solid #ddd;flex-shrink:0;" />`
+        `<div style="width:${thumbW}px;height:${PHOTO_H}px;flex-shrink:0;border-radius:4px;overflow:hidden;border:1px solid #ddd;background:#f5f5f5;">
+          <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block;" />
+        </div>`
       ).join('')}
     </div>
   </div>`;
