@@ -1,277 +1,403 @@
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { STATUS, formatDate } from './storage';
 
-// ── Constants ──────────────────────────────────────────────
-const RENDER_W   = 720;   // px width for html rendering
-const SCALE      = 1.8;   // canvas scale for quality
-const PHOTO_COLS = 4;     // photos per row
-const PHOTO_H    = 130;   // px thumbnail height
-const MM_MARGIN  = 8;     // mm page margin
-const FONT = "'Noto Sans Arabic','Cairo',Tahoma,Arial,sans-serif";
-
-// ── Helpers ────────────────────────────────────────────────
-async function toBase64(url) {
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.readAsDataURL(blob);
-    });
-  } catch { return null; }
-}
-
-async function loadFonts() {
-  if (document.getElementById('pdf-fonts-link')) return;
-  const link = document.createElement('link');
-  link.id = 'pdf-fonts-link';
-  link.rel = 'stylesheet';
-  link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap';
-  document.head.appendChild(link);
-  await document.fonts.ready;
-  // Explicitly load Arabic font weights so shaping is active before canvas capture
-  await Promise.allSettled([
-    document.fonts.load('400 14px "Noto Sans Arabic"'),
-    document.fonts.load('600 14px "Noto Sans Arabic"'),
-    document.fonts.load('700 14px "Noto Sans Arabic"'),
-  ]);
-  // Extra settle time for Arabic glyph shaping engine
-  await new Promise(r => setTimeout(r, 1000));
-}
-
-// Render an HTML string to a canvas — each call is independent
-async function renderBlock(html) {
-  const wrap = document.createElement('div');
-  wrap.style.cssText = `position:fixed;left:-9999px;top:0;width:${RENDER_W}px;z-index:-1;background:#fff;`;
-  wrap.innerHTML = html;
-  document.body.appendChild(wrap);
-  try {
-    return await html2canvas(wrap.firstElementChild, {
-      scale: SCALE,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-      logging: false,
-      allowTaint: true,
-    });
-  } finally {
-    document.body.removeChild(wrap);
-  }
-}
-
-// Arabic text: use real HTML dir/lang attributes — CSS-only RTL is not enough for html2canvas shaping
-const ar = (text) =>
-  `<span dir="rtl" lang="ar" style="font-family:${FONT};unicode-bidi:embed;white-space:nowrap;text-rendering:optimizeLegibility;">${text}</span>`;
-
-// ── HTML block builders ────────────────────────────────────
-// Borders: header has full 2px border; middle blocks share sides only; footer closes with 2px bottom.
-const SIDE  = `border-left:2px solid #000;border-right:2px solid #000;`;
-const HDIV  = `border-bottom:1px solid #ccc;`;
-
-function labelStyle(extraStyle = '') {
-  return `font-size:8px;font-weight:700;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:2px;font-family:${FONT};${extraStyle}`;
-}
-
-function valueStyle(extraStyle = '') {
-  return `font-size:12px;font-weight:600;color:#000;font-family:${FONT};${extraStyle}`;
-}
-
-function sectionHeaderHtml(enLabel, arLabel, extra = '') {
-  return `<div style="padding:4px 12px;background:#efefef;border-bottom:1px solid #bbb;font-family:${FONT};">
-    <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:0.6px;color:#000;">${enLabel}${extra}:</span>
-    <span style="font-size:8.5px;font-weight:600;color:#555;"> / ${ar(arLabel)}</span>
-  </div>`;
-}
-
-// ── Block: Header (logo + title bar + info rows) ───────────
-function headerBlock(logoImg, id, req, s) {
-  const statusColor = req.status === 'completed' ? '#16A34A'
-    : req.status === 'in_progress' ? '#92400E' : '#1D4ED8';
-  const locationRow = req.locationLink ? `
-    <div style="${HDIV}padding:5px 12px;font-family:${FONT};">
-      <span style="${labelStyle()}">Google Maps / ${ar('خرائط جوجل')}: </span>
-      <span style="font-size:10px;color:#1a56db;">${req.locationLink.slice(0, 75)}${req.locationLink.length > 75 ? '…' : ''}</span>
-    </div>` : '';
-  return `
-  <div style="font-family:${FONT};background:#fff;width:${RENDER_W}px;box-sizing:border-box;">
-    <div style="display:flex;justify-content:center;padding-bottom:10px;">${logoImg}</div>
-    <div style="border:2px solid #000;">
-      <!-- Title bar -->
-      <div style="display:flex;border-bottom:2px solid #000;">
-        <div style="flex:1;background:#000;color:#fff;padding:5px 14px;display:flex;align-items:center;justify-content:center;gap:10px;">
-          <span style="font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;font-family:${FONT};">Maintenance Report</span>
-          <span style="font-size:12px;font-weight:600;opacity:0.85;font-family:${FONT};">/ ${ar('تقرير الصيانة')}</span>
-        </div>
-        <div style="padding:5px 14px;display:flex;align-items:center;gap:8px;min-width:180px;border-left:2px solid #000;">
-          <span style="font-size:10px;font-weight:700;color:#888;font-family:${FONT};">No.:</span>
-          <span style="font-size:12px;font-weight:800;color:#000;font-family:${FONT};">${id}</span>
-        </div>
-      </div>
-      <!-- Branch / Date -->
-      <div style="display:flex;${HDIV}">
-        <div style="flex:1;padding:6px 12px;border-right:1px solid #ccc;">
-          <div style="${labelStyle()}">Branch / ${ar('الفرع')}</div>
-          <div style="${valueStyle()}">Herfy ${req.branchNumber}</div>
-        </div>
-        <div style="flex:1;padding:6px 12px;">
-          <div style="${labelStyle()}">Date Submitted / ${ar('تاريخ الإرسال')}</div>
-          <div style="${valueStyle()}">${formatDate(req.createdAt)}</div>
-        </div>
-      </div>
-      <!-- Status / Work Started -->
-      <div style="display:flex;${req.locationLink ? HDIV : ''}">
-        <div style="flex:1;padding:6px 12px;border-right:1px solid #ccc;">
-          <div style="${labelStyle()}">Status / ${ar('الحالة')}</div>
-          <div style="${valueStyle(`color:${statusColor};`)}">${s.en} / ${ar(s.ar)}</div>
-        </div>
-        <div style="flex:1;padding:6px 12px;">
-          <div style="${labelStyle()}">Work Started / ${ar('بدأ العمل')}</div>
-          <div style="${valueStyle()}">${req.majedStarted ? `YES / ${ar('نعم')}` : `NO / ${ar('لا')}`}</div>
-        </div>
-      </div>
-      ${locationRow}
-    </div>
-  </div>`;
-}
-
-// ── Block: Text section (description, work done, notes) ────
-function textBlock(enLabel, arLabel, text, isFirst = false) {
-  const topBorder = isFirst ? '' : 'border-top:none;';
-  return `
-  <div style="font-family:${FONT};width:${RENDER_W}px;${SIDE}${topBorder}${HDIV}">
-    ${sectionHeaderHtml(enLabel, arLabel)}
-    <div style="padding:7px 12px;min-height:48px;font-size:12px;color:${text ? '#1a1a1a' : '#aaa'};line-height:1.65;">${text || '—'}</div>
-  </div>`;
-}
-
-// ── Block: Photo section header ─────────────────────────────
-function photoHeaderBlock(enLabel, arLabel, count) {
-  return `
-  <div style="font-family:${FONT};width:${RENDER_W}px;${SIDE}border-top:none;">
-    ${sectionHeaderHtml(enLabel, arLabel, ` (${count})`)}
-  </div>`;
-}
-
-// ── Block: One row of photos ────────────────────────────────
-function photoRowBlock(photos) {
-  const thumbW = Math.floor((RENDER_W - 30) / PHOTO_COLS) - 6;
-  return `
-  <div style="font-family:${FONT};width:${RENDER_W}px;${SIDE}background:#fff;">
-    <div style="display:flex;gap:6px;padding:8px 12px;flex-wrap:nowrap;">
-      ${photos.map(src =>
-        `<div style="width:${thumbW}px;height:${PHOTO_H}px;flex-shrink:0;border-radius:4px;overflow:hidden;border:1px solid #ddd;background:#f5f5f5;">
-          <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block;" />
-        </div>`
-      ).join('')}
-    </div>
-  </div>`;
-}
-
-// ── Block: Photo section bottom border closer ───────────────
-function photoBorderClose() {
-  return `<div style="width:${RENDER_W}px;${SIDE}border-bottom:1px solid #ccc;height:1px;"></div>`;
-}
-
-// ── Block: Footer ───────────────────────────────────────────
-function footerBlock(id, now) {
-  return `
-  <div style="font-family:${FONT};width:${RENDER_W}px;border:2px solid #000;border-top:none;">
-    <div style="background:#000;color:#fff;padding:5px 12px;display:flex;align-items:center;gap:8px;">
-      <span style="font-size:9.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;font-family:${FONT};">Report Details</span>
-      <span style="font-size:9px;font-weight:600;opacity:0.82;font-family:${FONT};">/ ${ar('تفاصيل التقرير')}</span>
-    </div>
-    <div style="display:flex;${HDIV}">
-      <div style="flex:1;padding:7px 12px;border-right:1px solid #ccc;">
-        <div style="${labelStyle()}">Coordinator / ${ar('المنسق')}</div>
-        <div style="${valueStyle()}">Tariq / ${ar('طارق')}</div>
-      </div>
-      <div style="flex:1;padding:7px 12px;">
-        <div style="${labelStyle()}">Print Date / ${ar('تاريخ الطباعة')}</div>
-        <div style="${valueStyle()}">${now}</div>
-      </div>
-    </div>
-    <div style="display:flex;">
-      <div style="flex:1;padding:7px 12px;border-right:1px solid #ccc;">
-        <div style="${labelStyle()}">Report No. / ${ar('رقم التقرير')}</div>
-        <div style="${valueStyle()}">${id}</div>
-      </div>
-      <div style="flex:1;padding:7px 12px;">
-        <div style="${labelStyle()}">Signature / ${ar('التوقيع')}</div>
-        <div style="border-bottom:1px solid #999;width:120px;height:20px;margin-top:4px;">&nbsp;</div>
-      </div>
-    </div>
-  </div>`;
-}
-
-// ── Block: Watermark ────────────────────────────────────────
-function watermarkBlock() {
-  return `
-  <div style="font-family:${FONT};width:${RENDER_W}px;text-align:center;font-size:8px;color:#bbb;letter-spacing:0.5px;padding:5px 0;">
-    Herfy Maintenance Management System · ${ar('نظام إدارة صيانة هرفي')}
-  </div>`;
-}
-
-// ── Add photo section (header + rows) to blocks array ───────
-function addPhotoSection(blocks, photos, enLabel, arLabel) {
-  if (!photos?.length) return;
-  blocks.push(photoHeaderBlock(enLabel, arLabel, photos.length));
-  for (let i = 0; i < photos.length; i += PHOTO_COLS) {
-    blocks.push(photoRowBlock(photos.slice(i, i + PHOTO_COLS)));
-  }
-  blocks.push(photoBorderClose());
-}
-
-// ── Main export ────────────────────────────────────────────
+// ── The only function that generates the exported PDF ──────
+// Called from TariqView.jsx when the "Export Report PDF" button is clicked.
+// Uses native browser print (window.print) instead of html2canvas/jsPDF so:
+//   • Arabic text is shaped and rendered correctly by the browser engine
+//   • CSS break-inside:avoid guarantees no photo row or section is ever split
+//   • Real base64 photos from Supabase render as-is (no re-encoding needed)
 export async function generateServiceReport(req) {
-  await loadFonts();
-
-  const altasisLogo = await toBase64('/altasis-logo.png');
-  const s = STATUS[req.status];
+  const s   = STATUS[req.status];
   const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
-  const logoImg = altasisLogo
-    ? `<img src="${altasisLogo}" style="height:120px;width:auto;object-fit:contain;display:block;" />`
-    : `<div style="font-size:20px;font-weight:900;font-family:${FONT};">ALTASIS</div>`;
+  const statusColor = req.status === 'completed' ? '#16A34A'
+    : req.status === 'in_progress' ? '#92400E' : '#1D4ED8';
 
-  // ── Assemble blocks ────────────────────────────────────────
-  const htmlBlocks = [];
+  // ── helpers ──────────────────────────────────────────────
+  const esc = (t) => String(t ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-  htmlBlocks.push(headerBlock(logoImg, req.id, req, s));
-  htmlBlocks.push(textBlock('Problem Description', 'وصف المشكلة', req.problemDescription));
-  addPhotoSection(htmlBlocks, req.problemPhotos,    'Problem Photos',    'صور المشكلة');
-  htmlBlocks.push(textBlock('Work Completed',       'العمل المنجز',     req.workDone));
-  addPhotoSection(htmlBlocks, req.progressPhotos,   'Progress Photos',   'صور التقدم');
-  addPhotoSection(htmlBlocks, req.completionPhotos, 'Completion Photos', 'صور الإنجاز');
-  if (req.notesToEssa) htmlBlocks.push(textBlock('Notes to Client', 'ملاحظات للعميل', req.notesToEssa));
-  htmlBlocks.push(footerBlock(req.id, now));
-  htmlBlocks.push(watermarkBlock());
-
-  // ── Render each block to canvas individually ───────────────
-  const canvases = [];
-  for (const html of htmlBlocks) {
-    canvases.push(await renderBlock(html));
+  function infoRow(labelEn, labelAr, value) {
+    return `
+      <tr>
+        <td class="label">${esc(labelEn)} / <span class="ar">${esc(labelAr)}</span></td>
+        <td class="value">${value}</td>
+      </tr>`;
   }
 
-  // ── Build PDF — place canvases page by page ────────────────
-  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-  const pageW = pdf.internal.pageSize.getWidth();   // 210mm
-  const pageH = pdf.internal.pageSize.getHeight();  // 297mm
-  const cW    = pageW - 2 * MM_MARGIN;              // content width in mm
-  let   y     = MM_MARGIN;
+  function sectionHeader(en, ar) {
+    return `<div class="sec-head"><strong>${esc(en)}</strong> / <span class="ar">${esc(ar)}</span></div>`;
+  }
 
-  for (const canvas of canvases) {
-    const blockH = (canvas.height / canvas.width) * cW;
-
-    // If block won't fit on the remaining page, start a new page
-    if (y + blockH > pageH - MM_MARGIN && y > MM_MARGIN) {
-      pdf.addPage();
-      y = MM_MARGIN;
+  function photoRows(photos, cols = 4) {
+    if (!photos?.length) return '';
+    let rows = '';
+    for (let i = 0; i < photos.length; i += cols) {
+      const chunk = photos.slice(i, i + cols);
+      rows += `<div class="photo-row">
+        ${chunk.map(src => `<div class="photo-cell"><img src="${src}" /></div>`).join('')}
+      </div>`;
     }
-
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', MM_MARGIN, y, cW, blockH);
-    y += blockH;
+    return rows;
   }
 
-  pdf.save(`Maintenance-Report-${req.id}.pdf`);
+  function photoSection(en, ar, photos) {
+    if (!photos?.length) return '';
+    return `
+      <div class="section no-break">
+        ${sectionHeader(`${en} (${photos.length})`, ar)}
+        <div class="photo-grid">${photoRows(photos)}</div>
+      </div>`;
+  }
+
+  function textSection(en, ar, text, minLines = 3) {
+    const content = text
+      ? `<p>${esc(text)}</p>`
+      : `<p class="empty">—</p>`;
+    return `
+      <div class="section">
+        ${sectionHeader(en, ar)}
+        <div class="text-body" style="min-height:${minLines * 1.65}em;">${content}</div>
+      </div>`;
+  }
+
+  // ── HTML document ────────────────────────────────────────
+  const html = `<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<title>Maintenance Report — ${esc(req.id)}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ── Base ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif;
+    font-size: 12px;
+    color: #111;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Arabic spans — browser handles shaping natively */
+  .ar {
+    font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif;
+    direction: rtl;
+    unicode-bidi: embed;
+    display: inline;
+  }
+
+  /* ── Print page setup ── */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm;
+  }
+
+  /* ── Layout ── */
+  .report-wrap {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* ── Logo ── */
+  .logo-wrap {
+    text-align: center;
+    padding-bottom: 12px;
+  }
+  .logo-wrap img {
+    height: 110px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  /* ── Title bar ── */
+  .title-bar {
+    display: flex;
+    border: 2px solid #000;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .title-main {
+    flex: 1;
+    background: #000;
+    color: #fff;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .title-main span { font-size: 13px; font-weight: 600; opacity: 0.88; }
+  .title-no {
+    min-width: 190px;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-left: 2px solid #000;
+    font-size: 13px;
+    font-weight: 800;
+  }
+  .title-no em { font-size: 11px; font-weight: 500; font-style: normal; color: #666; }
+
+  /* ── Info table ── */
+  .info-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #000;
+    border-top: none;
+  }
+  .info-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #ccc;
+    vertical-align: top;
+  }
+  .info-table tr:last-child td { border-bottom: none; }
+  .info-table td.label {
+    width: 38%;
+    font-size: 10px;
+    font-weight: 700;
+    color: #555;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-right: 1px solid #ccc;
+  }
+  .info-table td.value {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* ── Content sections ── */
+  .section {
+    border: 2px solid #000;
+    border-top: none;
+  }
+  .sec-head {
+    padding: 4px 12px;
+    background: #efefef;
+    border-bottom: 1px solid #bbb;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .text-body {
+    padding: 8px 12px;
+    font-size: 12px;
+    line-height: 1.7;
+  }
+  .text-body p { margin: 0; }
+  .text-body .empty { color: #aaa; }
+
+  /* ── Photos — key rules ── */
+  .photo-grid {
+    padding: 6px 10px 8px;
+  }
+  /* Each row of photos must stay on one page — never split */
+  .photo-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .photo-row:last-child { margin-bottom: 0; }
+  .photo-cell {
+    flex: 1;
+    height: 130px;
+    overflow: hidden;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    background: #f5f5f5;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .photo-cell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  /* Photo section header + first row must stay together */
+  .no-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* ── Report Details footer — never split ── */
+  .report-details {
+    border: 2px solid #000;
+    border-top: none;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .details-bar {
+    background: #000;
+    color: #fff;
+    padding: 5px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: none;
+  }
+  .details-cell {
+    padding: 7px 12px;
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+  }
+  .details-cell:nth-child(even) { border-right: none; }
+  .details-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .details-cell .dlabel {
+    font-size: 8px;
+    font-weight: 700;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 3px;
+  }
+  .details-cell .dvalue {
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .sig-line {
+    border-bottom: 1px solid #999;
+    width: 120px;
+    height: 24px;
+    margin-top: 6px;
+  }
+
+  /* ── Watermark ── */
+  .watermark {
+    text-align: center;
+    font-size: 8px;
+    color: #ccc;
+    padding: 6px 0 0;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+<div class="report-wrap">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <img src="/altasis-logo.png" onerror="this.style.display='none'" />
+  </div>
+
+  <!-- Title bar -->
+  <div class="title-bar">
+    <div class="title-main">
+      MAINTENANCE REPORT <span>/ <span class="ar">تقرير الصيانة</span></span>
+    </div>
+    <div class="title-no">
+      <em>No.:</em> ${esc(req.id)}
+    </div>
+  </div>
+
+  <!-- Info rows -->
+  <table class="info-table">
+    ${infoRow('Branch', 'الفرع', `Herfy ${esc(req.branchNumber)}`)}
+    ${infoRow('Date Submitted', 'تاريخ الإرسال', esc(formatDate(req.createdAt)))}
+    ${infoRow('Status', 'الحالة', `<span style="color:${statusColor};font-weight:700;">${esc(s.en)} / <span class="ar">${esc(s.ar)}</span></span>`)}
+    ${infoRow('Work Started', 'بدأ العمل', req.majedStarted ? `YES / <span class="ar">نعم</span>` : `NO / <span class="ar">لا</span>`)}
+    ${req.locationLink ? infoRow('Google Maps', 'خرائط جوجل', `<span style="color:#1a56db;font-size:10px;">${esc(req.locationLink)}</span>`) : ''}
+  </table>
+
+  <!-- Problem Description -->
+  ${textSection('Problem Description', 'وصف المشكلة', req.problemDescription)}
+
+  <!-- Problem Photos -->
+  ${photoSection('Problem Photos', 'صور المشكلة', req.problemPhotos)}
+
+  <!-- Work Completed -->
+  ${textSection('Work Completed', 'العمل المنجز', req.workDone)}
+
+  <!-- Progress Photos -->
+  ${photoSection('Progress Photos', 'صور التقدم', req.progressPhotos)}
+
+  <!-- Completion Photos -->
+  ${photoSection('Completion Photos', 'صور الإنجاز', req.completionPhotos)}
+
+  <!-- Notes to Client -->
+  ${req.notesToEssa ? textSection('Notes to Client', 'ملاحظات للعميل', req.notesToEssa) : ''}
+
+  <!-- Report Details — never split across pages -->
+  <div class="report-details">
+    <div class="details-bar">
+      REPORT DETAILS <span style="font-weight:600;opacity:0.85;">/ <span class="ar">تفاصيل التقرير</span></span>
+    </div>
+    <div class="details-grid">
+      <div class="details-cell">
+        <div class="dlabel">Coordinator / <span class="ar">المنسق</span></div>
+        <div class="dvalue">Tariq / <span class="ar">طارق</span></div>
+      </div>
+      <div class="details-cell">
+        <div class="dlabel">Print Date / <span class="ar">تاريخ الطباعة</span></div>
+        <div class="dvalue">${esc(now)}</div>
+      </div>
+      <div class="details-cell">
+        <div class="dlabel">Report No. / <span class="ar">رقم التقرير</span></div>
+        <div class="dvalue">${esc(req.id)}</div>
+      </div>
+      <div class="details-cell">
+        <div class="dlabel">Signature / <span class="ar">التوقيع</span></div>
+        <div class="sig-line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="watermark">
+    Herfy Maintenance Management System · <span class="ar">نظام إدارة صيانة هرفي</span>
+  </div>
+
+</div>
+
+<script>
+  // Wait for all images and fonts to load before printing
+  Promise.all([
+    document.fonts.ready,
+    new Promise(resolve => {
+      const imgs = document.querySelectorAll('img');
+      if (!imgs.length) return resolve();
+      let loaded = 0;
+      imgs.forEach(img => {
+        if (img.complete) { loaded++; if (loaded === imgs.length) resolve(); }
+        else {
+          img.onload = img.onerror = () => { loaded++; if (loaded === imgs.length) resolve(); };
+        }
+      });
+    })
+  ]).then(() => {
+    // Small extra delay for Arabic shaping to settle
+    setTimeout(() => { window.print(); }, 600);
+  });
+</script>
+</body>
+</html>`;
+
+  // Open in a new window and let the browser print natively
+  const win = window.open('', '_blank', 'width=820,height=1000,menubar=yes,toolbar=yes');
+  if (!win) {
+    alert('Pop-up blocked — please allow pop-ups for this site and try again.');
+    return;
+  }
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
 }
