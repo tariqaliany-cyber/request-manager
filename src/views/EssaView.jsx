@@ -128,8 +128,8 @@ function EssaNewRequest({ onSubmit }) {
   const fileRef = useRef();
 
   const addPhotos = async (files) => {
-    const compressed = await Promise.all([...files].slice(0, 6).map(compressImage));
-    setPhotos(p => [...p, ...compressed].slice(0, 6));
+    const compressed = await Promise.all([...files].map(compressImage));
+    setPhotos(p => [...p, ...compressed]);
   };
 
   const validate = () => {
@@ -216,7 +216,7 @@ function EssaNewRequest({ onSubmit }) {
         <div className="photo-upload-area" onClick={() => fileRef.current.click()}>
           <div className="photo-upload-icon">📷</div>
           <div className="photo-upload-text">Tap to add photos / اضغط لإضافة صور</div>
-          <div className="photo-upload-sub">Max 6 photos</div>
+          <div className="photo-upload-sub">Add as many photos as needed / أضف بقدر ما تحتاج</div>
         </div>
         <input ref={fileRef} type="file" accept="image/*" multiple hidden
           onChange={e => addPhotos(e.target.files)} />
@@ -348,8 +348,8 @@ function EssaRequestDetail({ req, onBack }) {
   };
 
   const addPhotos = async (files) => {
-    const compressed = await Promise.all([...files].slice(0, 6).map(compressImage));
-    setPhotos(p => [...p, ...compressed].slice(0, 6));
+    const compressed = await Promise.all([...files].map(compressImage));
+    setPhotos(p => [...p, ...compressed]);
   };
 
   const [lightbox, setLightbox] = useState(null);
