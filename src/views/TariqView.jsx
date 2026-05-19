@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import AladheedView from './AladheedView';
 import { getRequests, updateRequest, deleteRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { BRANCHES } from '../branchData';
@@ -9,9 +10,18 @@ function getBranchInfo(num) {
 }
 
 export default function TariqView({ user, onLogout }) {
-  const [selected, setSelected] = useState(null);
-  const [tick, setTick] = useState(0);
+  const [selected, setSelected]         = useState(null);
+  const [tick, setTick]                 = useState(0);
+  const [aladheedMode, setAladheedMode] = useState(false);
+  const [aladheedJob, setAladheedJob]   = useState(null);
   const refresh = () => setTick(n => n + 1);
+
+  const openAladheed  = (job = null) => { setAladheedJob(job); setAladheedMode(true); };
+  const closeAladheed = ()           => { setAladheedJob(null); setAladheedMode(false); };
+
+  if (aladheedMode) {
+    return <AladheedView job={aladheedJob} onClose={closeAladheed} />;
+  }
 
   if (selected) {
     return (
@@ -21,11 +31,14 @@ export default function TariqView({ user, onLogout }) {
             ← All Requests
           </button>
           <div className="header-right">
+            <button className="btn-outline" onClick={() => openAladheed(null)} style={{ marginRight: 8, fontSize: 13, fontWeight: 700 }}>
+              🦅 Aladheed
+            </button>
             <button className="btn-logout" onClick={onLogout}>Logout</button>
           </div>
         </header>
         <div className="page">
-          <TariqDetail req={selected} onClose={() => { setSelected(null); refresh(); }} />
+          <TariqDetail req={selected} onClose={() => { setSelected(null); refresh(); }} onOpenAladheed={openAladheed} />
         </div>
       </div>
     );
@@ -42,6 +55,9 @@ export default function TariqView({ user, onLogout }) {
           </div>
         </div>
         <div className="header-right">
+          <button className="btn-outline" onClick={() => openAladheed(null)} style={{ marginRight: 8, fontSize: 13, fontWeight: 700 }}>
+            🦅 Aladheed
+          </button>
           <button className="btn-logout" onClick={onLogout}>Logout</button>
         </div>
       </header>
@@ -264,7 +280,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
 }
 
 /* ── Request Detail ─────────────────────────────────── */
-function TariqDetail({ req, onClose }) {
+function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
   const [assignedTo, setAssignedTo]   = useState(req.assignedTo || '');
@@ -554,6 +570,14 @@ function TariqDetail({ req, onClose }) {
               ✅ This request is completed / تم إغلاق هذا الطلب
             </div>
         }
+
+        {fresh.status === 'completed' && onOpenAladheed && (
+          <button className="btn mb8"
+            style={{ background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 700, fontSize: 14 }}
+            onClick={() => onOpenAladheed(fresh)}>
+            🦅 Open Aladheed | العضيد — Prepare Documents
+          </button>
+        )}
 
         {!confirmDel
           ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
