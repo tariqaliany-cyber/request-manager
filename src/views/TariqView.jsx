@@ -9,6 +9,12 @@ function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
 }
 
+function formatSAR(amount) {
+  const n = Number(amount);
+  if (isNaN(n)) return null;
+  return 'SAR ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected]         = useState(null);
   const [tick, setTick]                 = useState(0);
@@ -194,9 +200,20 @@ function TariqDashboard({ onSelect, tick }) {
                     <div className="card-branch">Herfy {req.branchNumber}</div>
                     {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                   </div>
-                  <span className="badge" style={{ color: s.color, background: s.bg }}>
-                    <span className="badge-dot" />{s.en}
-                  </span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                    <span className="badge" style={{ color: s.color, background: s.bg }}>
+                      <span className="badge-dot" />{s.en}
+                    </span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                      color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
+                      background: req.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
+                      border: '1px solid ' + (req.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
+                      padding: '2px 8px', borderRadius: 20,
+                    }}>
+                      {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : 'No invoice'}
+                    </span>
+                  </div>
                 </div>
                 <div className="card-desc">{req.problemDescription}</div>
                 <div className="card-footer">
@@ -239,10 +256,15 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
             borderRadius: 10, padding: '12px 14px', marginBottom: 8,
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C3AED', display: 'inline-block', flexShrink: 0 }} />}
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED' }}>{n.req_id}</span>
                 <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· Herfy {n.branch_number}</span>
+                {req?.invoiceAmount != null && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: '#166534', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: 20 }}>
+                    {formatSAR(req.invoiceAmount)}
+                  </span>
+                )}
               </div>
               <span style={{ fontSize: 11, color: 'var(--gray-400)', whiteSpace: 'nowrap', marginLeft: 8 }}>{formatDate(n.created_at)}</span>
             </div>
@@ -301,6 +323,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
   const [lightbox, setLightbox]       = useState(null);
+  const [invoiceAmount, setInvoiceAmt] = useState(req.invoiceAmount ?? '');
 
   useEffect(() => {
     getRequests().then(all => {
@@ -315,6 +338,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
         setSummary(found.finalSummary || '');
         setShowWork(found.showWorkDoneToEssa || false);
         setShowComp(found.showCompletionPhotosToEssa || false);
+        setInvoiceAmt(found.invoiceAmount ?? '');
       }
     });
   }, [req.id]);
@@ -333,6 +357,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
       finalSummary,
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
+      invoiceAmount:              invoiceAmount !== '' ? parseFloat(invoiceAmount) : null,
     });
     setSaving(false);
     setSaved(true);
@@ -369,9 +394,20 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
             <div className="card-branch">Herfy {fresh.branchNumber}</div>
             <div className="card-date mt4">{formatDate(fresh.createdAt)}</div>
           </div>
-          <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
-            <span className="badge-dot" />{STATUS[status].en}
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+            <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
+              <span className="badge-dot" />{STATUS[status].en}
+            </span>
+            <span style={{
+              fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
+              color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
+              background: fresh.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
+              border: '1px solid ' + (fresh.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
+              padding: '3px 10px', borderRadius: 20,
+            }}>
+              {fresh.invoiceAmount != null ? `💰 ${formatSAR(fresh.invoiceAmount)}` : '💰 Invoice: Not added'}
+            </span>
+          </div>
         </div>
 
         {getBranchInfo(fresh.branchNumber) && (() => {
@@ -436,6 +472,22 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
             <option value="">— Not Assigned / غير مسند —</option>
             <option value="majed">Workshop Team / فريق الورشة</option>
           </select>
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">💰 Invoice Amount / قيمة الفاتورة <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— Admin only</span></label>
+          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+            <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
+            <input
+              className="input"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={invoiceAmount}
+              onChange={e => setInvoiceAmt(e.target.value)}
+              style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
+            />
+          </div>
         </div>
       </div>
 
