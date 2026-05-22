@@ -200,78 +200,94 @@ async function extractPdfText(dataUrl) {
 
 /* ── Invoice text parser ──────────────────────────── */
 function parseInvoice(text) {
-  const lines    = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const full     = lines.join('\n');
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
-  const grab = (patterns) => {
-    for (const p of patterns) {
-      const m = full.match(p);
-      if (m) return m[1]?.trim() || null;
+  // ── Grand Total (only value we extract and display) ──
+  // Ordered by specificity: most specific Arabic/English labels first
+  const TOTAL_LABELS = [
+    'المبلغ المستحق',
+    'الإجمالي شامل الضريبة',
+    'الإجمالي الكلي',
+    'إجمالي الفاتورة',
+    'المجموع الكلي',
+    'Grand Total',
+    'Total Amount Due',
+    'Total Including VAT',
+    'Total Incl. VAT',
+    'Total Incl VAT',
+    'Amount Due',
+    'Net Amount',
+    'Total Due',
+    'Total Payable',
+    'Total Amount',
+    'الإجمالي',
+    'TOTAL',
+  ];
+
+  const numRe = str => {
+    const escaped = str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*');
+    return new RegExp(escaped + '\\s*[:\\-]?\\s*(?:SAR|SR|ر\\.?س\\.?)?\\s*([\\d,]+\\.\\d+)', 'i');
+  };
+
+  let grandTotal = null;
+  for (const label of TOTAL_LABELS) {
+    const m = text.match(numRe(label));
+    if (m) {
+      const n = parseFloat(m[1].replace(/,/g, ''));
+      if (!isNaN(n) && n > 0) { grandTotal = n; break; }
     }
-    return null;
-  };
+  }
 
-  const grabNum = (patterns) => {
-    const v = grab(patterns);
-    if (!v) return null;
-    const n = parseFloat(v.replace(/,/g, ''));
-    return isNaN(n) ? null : n;
-  };
+  // Fallback: largest decimal number preceded by SAR/SR on a "total"-looking line
+  if (!grandTotal) {
+    for (const line of lines) {
+      if (/(?:total|إجمالي|مجموع|مستحق|payable|due)/i.test(line)) {
+        const m = line.match(/(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.\d{2})/);
+        if (m) {
+          const n = parseFloat(m[1].replace(/,/g, ''));
+          if (!isNaN(n) && n > 0) { grandTotal = n; break; }
+        }
+      }
+    }
+  }
 
-  const invoiceNumber = grab([
-    /(?:Invoice\s*(?:No\.?|Number|#)|فاتورة\s*رقم|رقم\s*الفاتورة)\s*[:\-]?\s*([A-Z0-9\-\/]+)/i,
-    /(?:Inv\.?\s*No\.?)\s*[:\-]?\s*([A-Z0-9\-\/]+)/i,
-  ]);
+  // Fallback: subtotal + VAT sum
+  if (!grandTotal) {
+    const vM = text.match(/(?:VAT|ضريبة\s*(?:القيمة\s*المضافة)?)\s*[:\-]?\s*(?:SAR|SR)?\s*([\d,]+\.\d+)/i);
+    const sM = text.match(/(?:Sub\s*Total|Amount\s*Before\s*VAT|المجموع\s*قبل\s*الضريبة)\s*[:\-]?\s*(?:SAR|SR)?\s*([\d,]+\.\d+)/i);
+    if (vM && sM) {
+      const sum = parseFloat(sM[1].replace(/,/g, '')) + parseFloat(vM[1].replace(/,/g, ''));
+      if (!isNaN(sum) && sum > 0) grandTotal = Math.round(sum * 100) / 100;
+    }
+  }
 
-  const invoiceDate = grab([
-    /(?:Invoice\s*Date|Date\s*of\s*Invoice|التاريخ|تاريخ\s*الفاتورة)\s*[:\-]?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
-    /(?:Date)\s*[:\-]\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
-    /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,
-  ]);
+  // ── Service descriptions (strict whitelist) ────────
+  // Only lines that look like actual service/work descriptions.
+  // Never fallback to raw OCR text.
+  const HAS_DECIMAL   = /[\d,]+\.\d{2}/;                   // any price-like number
+  const IS_FINANCIAL  = /(?:total|subtotal|grand|vat|tax|amount\s*due|مجموع|إجمالي|ضريبة|مستحق|مبلغ|رصيد|خصم|discount|balance|payable|invoice\s*(?:no|#|number|date)|فاتورة\s*رقم|تاريخ\s*الفاتورة|payment|دفع)/i;
+  const IS_METADATA   = /(?:bill\s*to|sold\s*to|customer|client|address|عنوان|tel|fax|email|www\.|@|P\.O\.|CR\s*No|رقم\s*(?:ضريبي|سجل)|company|شركة|branch\s*no|page\s*\d|copyright|الرقم\s*الضريبي)/i;
+  const IS_HEADER_ROW = /^(?:description|qty|quantity|unit\s*price|unit|price|serial|no\.|item|#|الوصف|الكمية|السعر|البند|م\.?$|المبلغ)\b/i;
+  const IS_DATE       = /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$|^\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2}$/;
+  const IS_PURE_NUM   = /^[\d,\s\.]+$/;
 
-  const customerName = grab([
-    /(?:Bill\s*To|Billed\s*To|Customer|Client|Sold\s*To|To\s*:|إلى)\s*[:\-]?\s*\n?\s*([^\n]{3,80})/i,
-  ]);
-
-  const branchNumber = grab([
-    /(?:Herfy|هرفي)\s*(?:Branch\s*)?#?\s*(\d{2,4})/i,
-  ]);
-
-  const grandTotal = grabNum([
-    /(?:Grand\s*Total|Total\s*(?:Amount\s*)?(?:incl\.?|including|with|شامل)\s*(?:VAT|Tax|ضريبة)|الإجمالي\s*(?:الكلي|النهائي|شامل)|المبلغ\s*الإجمالي)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
-    /(?:Total\s*(?:Due|Payable)|المستحق)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
-    /(?:TOTAL)\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/,
-  ]);
-
-  const vatAmount = grabNum([
-    /(?:VAT\s*(?:Amount)?|Tax\s*Amount|ضريبة\s*(?:القيمة\s*المضافة)?|الضريبة)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
-  ]);
-
-  const subtotal = grabNum([
-    /(?:Sub\s*[-\s]?Total|Amount\s*(?:Before\s*VAT|Excl\.?\s*VAT)|المجموع\s*(?:قبل\s*الضريبة|الفرعي)|قبل\s*الضريبة)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
-  ]);
-
-  // Derive grand total if missing but sub+vat are present
-  const computedGrandTotal = grandTotal ?? (subtotal != null && vatAmount != null ? subtotal + vatAmount : null);
-
-  // Extract service description lines
-  const amountRe   = /^[\d,\.\s]+(?:SAR|SR|ر\.?س\.?)?$/i;
-  const headerRe   = /^(?:description|qty|quantity|unit|price|amount|total|subtotal|vat|tax|#|item|no\.|serial|رقم|الوصف|الكمية|السعر|المبلغ)/i;
-  const skipRe     = /(?:tel|fax|email|www\.|@|P\.O\.|VAT\s*No|CR\s*No|رقم\s*(?:ضريبي|سجل)|Invoice|فاتورة|Page\s*\d)/i;
+  const SERVICE_HINT  = /(?:supply|install|replac|repair|maintenance|provision|fabricat|fix|clean|paint|weld|تركيب|إمداد|صيانة|توريد|تصنيع|تنظيف|إصلاح|طلاء|تلحيم|signage|sign|panel|logo|sticker|banner|light|lamp|led|neon|channel|unipole|pylon|board|structure)/i;
 
   const serviceLines = lines.filter(line => {
-    if (line.length < 5) return false;
-    if (amountRe.test(line)) return false;
-    if (headerRe.test(line)) return false;
-    if (skipRe.test(line)) return false;
-    if (/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/.test(line)) return false;
-    const words = line.split(/\s+/).filter(w => w.length > 2);
-    return words.length >= 2;
+    if (line.length < 10 || line.length > 120) return false;
+    if (HAS_DECIMAL.test(line))   return false;  // contains price-like number
+    if (IS_FINANCIAL.test(line))  return false;
+    if (IS_METADATA.test(line))   return false;
+    if (IS_HEADER_ROW.test(line)) return false;
+    if (IS_DATE.test(line))       return false;
+    if (IS_PURE_NUM.test(line))   return false;
+    // Must contain at least one service/work keyword OR 3+ meaningful words
+    const words = line.split(/\s+/).filter(w => w.length >= 4 && /[a-zA-Z؀-ۿ]/.test(w));
+    if (words.length < 2) return false;
+    return SERVICE_HINT.test(line) || words.length >= 4;
   });
 
-  const confidence = computedGrandTotal != null ? 'high' : subtotal != null ? 'medium' : 'low';
-
-  return { invoiceNumber, invoiceDate, customerName, branchNumber, subtotal, vatAmount, grandTotal: computedGrandTotal, serviceLines, confidence };
+  return { grandTotal, serviceLines, confidence: grandTotal != null ? 'high' : 'low' };
 }
 
 /* ── Load xlsx-populate browser build on demand ─── */
@@ -430,28 +446,30 @@ td{border:1.5px solid #000;padding:5px 8px;height:30px;vertical-align:middle;fon
 /* ════════════════════════════════════════════════════
    INVOICE ANALYSIS CARD
 ════════════════════════════════════════════════════ */
-function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
-  const [saving, setSaving]       = useState(false);
-  const [amountSaved, setAmtSaved] = useState(false);
-  const [manualAmt, setManualAmt] = useState('');
+function InvoiceAnalysisCard({ data, parsing, error, job }) {
+  const [saving, setSaving]     = useState(false);
+  const [saved, setSaved]       = useState(false);
+  const [manualAmt, setManual]  = useState('');
 
   const fmt = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-  const detectedTotal = data?.grandTotal ?? null;
-  const effectiveAmt  = detectedTotal ?? (manualAmt !== '' ? parseFloat(manualAmt) : null);
+  const detected    = data?.grandTotal ?? null;
+  const effective   = detected ?? (manualAmt.trim() !== '' ? parseFloat(manualAmt) : null);
+  const canSave     = effective != null && !isNaN(effective) && effective > 0;
 
   const saveAmount = async () => {
-    if (effectiveAmt == null || isNaN(effectiveAmt)) return;
+    if (!canSave) return;
     setSaving(true);
-    await updateRequest(job.id, { invoiceAmount: effectiveAmt });
+    await updateRequest(job.id, { invoiceAmount: effective });
     setSaving(false);
-    setAmtSaved(true);
+    setSaved(true);
   };
 
+  // Loading
   if (parsing) return (
     <div className="card" style={{ borderLeft: '4px solid #D4A843' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <span style={{ fontSize: 22 }}>⏳</span>
+        <span style={{ fontSize: 20 }}>⏳</span>
         <div>
           <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Reading Invoice…</div>
           <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Detecting grand total amount</div>
@@ -460,73 +478,64 @@ function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
     </div>
   );
 
+  // Error
   if (error) return (
     <div className="card" style={{ borderLeft: '4px solid #EF4444' }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>⚠️ Invoice Read Failed</div>
-      <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{error}</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626', marginBottom: 4 }}>⚠️ Invoice Read Failed</div>
+      <div style={{ fontSize: 12, color: '#64748B' }}>{error}</div>
     </div>
   );
 
   if (!data) return null;
 
-  const isImage    = !!data.isImage;
-  const hasTotal   = detectedTotal != null;
-  const canSave    = effectiveAmt != null && !isNaN(effectiveAmt);
-
   return (
     <div className="card" style={{ borderLeft: '4px solid #D4A843' }}>
-      <div style={{ fontSize: 10, color: '#D4A843', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
-        🦅 Aladheed — Invoice Grand Total
+      <div style={{ fontSize: 10, color: '#D4A843', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 12 }}>
+        🦅 Invoice Grand Total
       </div>
 
-      {/* Grand Total display */}
-      {hasTotal ? (
-        <div style={{ background: '#0F172A', borderRadius: 10, padding: '18px', marginBottom: 14, textAlign: 'center' }}>
+      {/* Detected */}
+      {detected != null ? (
+        <div style={{ background: '#0F172A', borderRadius: 10, padding: '20px', marginBottom: 14, textAlign: 'center' }}>
           <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600, marginBottom: 6 }}>Invoice Grand Total</div>
-          <div style={{ fontSize: 30, fontWeight: 900, color: '#D4A843' }}>SAR {fmt(detectedTotal)}</div>
+          <div style={{ fontSize: 32, fontWeight: 900, color: '#D4A843', letterSpacing: '-0.5px' }}>SAR {fmt(detected)}</div>
         </div>
       ) : (
-        <div style={{ background: '#FEF9C3', borderRadius: 10, padding: '14px', marginBottom: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#D97706', marginBottom: 6 }}>
-            {isImage ? '📷 Image invoice — manual entry required' : '⚠️ Grand Total not detected. Please enter manually.'}
+        /* Not detected — manual input */
+        <div style={{ background: '#FEF9C3', borderRadius: 10, padding: '14px 14px 16px', marginBottom: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#D97706', marginBottom: 10 }}>
+            {data.isImage ? '📷 Image invoice — enter total manually' : '⚠️ Grand Total not detected. Please enter manually.'}
           </div>
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
-            <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
+          <div style={{ display: 'flex', alignItems: 'stretch' }}>
+            <span style={{
+              padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B',
+              background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none',
+              borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center',
+            }}>SAR</span>
             <input
               className="input"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
+              type="number" step="0.01" min="0" placeholder="0.00"
               value={manualAmt}
-              onChange={e => { setManualAmt(e.target.value); setAmtSaved(false); }}
-              style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1, background: '#fff' }}
+              onChange={e => { setManual(e.target.value); setSaved(false); }}
+              style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
             />
           </div>
         </div>
       )}
 
-      {/* Pre-fill Work Receiving Paper (silent, no items displayed) */}
-      {data.serviceLines?.length > 0 && (
-        <button onClick={() => onUseItems(data.serviceLines.join('\n'))}
-          style={{ width: '100%', padding: '10px', marginBottom: 10, background: '#047857', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-          📋 Pre-fill Work Receiving Paper from Invoice
-        </button>
-      )}
-
-      {/* Save to request */}
-      <button onClick={saveAmount} disabled={saving || amountSaved || !canSave}
+      {/* Save button */}
+      <button onClick={saveAmount} disabled={saving || saved || !canSave}
         style={{
-          width: '100%', padding: '11px', borderRadius: 10, border: 'none',
-          cursor: canSave && !amountSaved ? 'pointer' : 'not-allowed',
-          background: amountSaved ? '#166534' : canSave ? '#0F172A' : '#E2E8F0',
-          color:      amountSaved ? '#fff'    : canSave ? '#D4A843' : '#94A3B8',
+          width: '100%', padding: '12px', borderRadius: 10, border: 'none',
+          cursor: canSave && !saved ? 'pointer' : 'not-allowed',
+          background: saved ? '#166534' : canSave ? '#0F172A' : '#E2E8F0',
+          color:      saved ? '#fff'    : canSave ? '#D4A843' : '#94A3B8',
           fontWeight: 700, fontSize: 13,
         }}>
-        {amountSaved ? '✅ Saved to Request'
-          : saving    ? '⏳ Saving…'
-          : canSave   ? `💰 Save SAR ${fmt(effectiveAmt)} to Request`
-          : '💰 Enter amount above to save'}
+        {saved    ? '✅ Invoice Amount Saved to Request'
+         : saving ? '⏳ Saving…'
+         : canSave ? `💰 Save SAR ${fmt(effective)} to Request`
+         : '💰 Enter amount above to save'}
       </button>
     </div>
   );
@@ -926,6 +935,7 @@ function AladheedSession({ job }) {
         const text   = await extractPdfText(dataUrl);
         const parsed = parseInvoice(text);
         setInvoiceData(parsed);
+        if (parsed.serviceLines?.length > 0) setPrefilledText(parsed.serviceLines.join('\n'));
       } else {
         // Try treating as text (Excel text export, CSV, etc.)
         const parsed = parseInvoice(atob(dataUrl.split(',')[1] || ''));
@@ -1177,7 +1187,6 @@ function AladheedSession({ job }) {
               parsing={invoiceParsing}
               error={invoiceError}
               job={job}
-              onUseItems={text => setPrefilledText(text)}
             />
           )}
 
