@@ -433,11 +433,17 @@ td{border:1.5px solid #000;padding:5px 8px;height:30px;vertical-align:middle;fon
 function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
   const [saving, setSaving]       = useState(false);
   const [amountSaved, setAmtSaved] = useState(false);
+  const [manualAmt, setManualAmt] = useState('');
+
+  const fmt = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const detectedTotal = data?.grandTotal ?? null;
+  const effectiveAmt  = detectedTotal ?? (manualAmt !== '' ? parseFloat(manualAmt) : null);
 
   const saveAmount = async () => {
-    if (!data?.grandTotal) return;
+    if (effectiveAmt == null || isNaN(effectiveAmt)) return;
     setSaving(true);
-    await updateRequest(job.id, { invoiceAmount: data.grandTotal });
+    await updateRequest(job.id, { invoiceAmount: effectiveAmt });
     setSaving(false);
     setAmtSaved(true);
   };
@@ -447,8 +453,8 @@ function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <span style={{ fontSize: 22 }}>⏳</span>
         <div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Analyzing Invoice…</div>
-          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Aladheed is reading the invoice file</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Reading Invoice…</div>
+          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Detecting grand total amount</div>
         </div>
       </div>
     </div>
@@ -456,120 +462,71 @@ function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
 
   if (error) return (
     <div className="card" style={{ borderLeft: '4px solid #EF4444' }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>⚠️ Invoice Analysis Failed</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>⚠️ Invoice Read Failed</div>
       <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{error}</div>
-    </div>
-  );
-
-  if (data?.isImage) return (
-    <div className="card" style={{ borderLeft: '4px solid #D97706', background: '#FFFBEB' }}>
-      <div style={{ fontSize: 13, fontWeight: 700, color: '#D97706', marginBottom: 6 }}>📷 Image Invoice — Manual Entry Required</div>
-      <div style={{ fontSize: 12, color: '#92400E', lineHeight: 1.6 }}>
-        Automatic text extraction is not available for image-based invoices. Please use a PDF version for automatic analysis, or paste the service items and amounts manually.
-      </div>
     </div>
   );
 
   if (!data) return null;
 
-  const hasTotal  = data.grandTotal != null;
-  const lowConf   = data.confidence === 'low';
-  const fmt       = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const isImage    = !!data.isImage;
+  const hasTotal   = detectedTotal != null;
+  const canSave    = effectiveAmt != null && !isNaN(effectiveAmt);
 
   return (
     <div className="card" style={{ borderLeft: '4px solid #D4A843' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-        <div>
-          <div style={{ fontSize: 10, color: '#D4A843', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>
-            🦅 Aladheed — Invoice Analysis
-          </div>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Extracted Invoice Data</div>
+      <div style={{ fontSize: 10, color: '#D4A843', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 10 }}>
+        🦅 Aladheed — Invoice Grand Total
+      </div>
+
+      {/* Grand Total display */}
+      {hasTotal ? (
+        <div style={{ background: '#0F172A', borderRadius: 10, padding: '18px', marginBottom: 14, textAlign: 'center' }}>
+          <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600, marginBottom: 6 }}>Invoice Grand Total</div>
+          <div style={{ fontSize: 30, fontWeight: 900, color: '#D4A843' }}>SAR {fmt(detectedTotal)}</div>
         </div>
-        <span style={{
-          fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-          background: lowConf ? '#FEF9C3' : '#F0FDF4',
-          color:      lowConf ? '#D97706' : '#16A34A',
-        }}>
-          {lowConf ? '⚠️ Low confidence' : '✓ Detected'}
-        </span>
-      </div>
-
-      {/* Grand Total — the most important field */}
-      <div style={{
-        borderRadius: 10, padding: '16px', marginBottom: 14, textAlign: 'center',
-        background: hasTotal ? '#0F172A' : '#FEF9C3',
-      }}>
-        <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: hasTotal ? '#94A3B8' : '#D97706' }}>
-          {hasTotal ? 'Grand Total (incl. VAT)' : '⚠️ Grand Total Not Detected'}
-        </div>
-        {hasTotal
-          ? <div style={{ fontSize: 28, fontWeight: 900, color: '#D4A843' }}>SAR {fmt(data.grandTotal)}</div>
-          : <div style={{ fontSize: 12, color: '#92400E', lineHeight: 1.5 }}>
-              Invoice total amount could not be detected clearly. Please review the invoice manually.
-            </div>
-        }
-      </div>
-
-      {/* Details grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
-        {[
-          { label: 'Invoice No',   value: data.invoiceNumber },
-          { label: 'Invoice Date', value: data.invoiceDate },
-          { label: 'Sub Total',    value: data.subtotal  != null ? `SAR ${fmt(data.subtotal)}`  : null },
-          { label: 'VAT Amount',   value: data.vatAmount != null ? `SAR ${fmt(data.vatAmount)}` : null },
-        ].map((f, i) => (
-          <div key={i} style={{ background: '#F8FAFC', borderRadius: 8, padding: '8px 10px', border: '1px solid #E2E8F0' }}>
-            <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{f.label}</div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: f.value ? '#1E293B' : '#CBD5E1', marginTop: 2 }}>{f.value || 'Not found'}</div>
+      ) : (
+        <div style={{ background: '#FEF9C3', borderRadius: 10, padding: '14px', marginBottom: 14 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#D97706', marginBottom: 6 }}>
+            {isImage ? '📷 Image invoice — manual entry required' : '⚠️ Grand Total not detected. Please enter manually.'}
           </div>
-        ))}
-      </div>
-
-      {/* Customer */}
-      {data.customerName && (
-        <div style={{ padding: '8px 12px', background: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 12, color: '#334155', marginBottom: 12 }}>
-          <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600 }}>CUSTOMER — </span>
-          {data.customerName}
+          <div style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+            <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
+            <input
+              className="input"
+              type="number"
+              step="0.01"
+              min="0"
+              placeholder="0.00"
+              value={manualAmt}
+              onChange={e => { setManualAmt(e.target.value); setAmtSaved(false); }}
+              style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1, background: '#fff' }}
+            />
+          </div>
         </div>
       )}
 
-      {/* Service items */}
+      {/* Pre-fill Work Receiving Paper (silent, no items displayed) */}
       {data.serviceLines?.length > 0 && (
-        <div style={{ marginBottom: 14 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#047857', marginBottom: 8 }}>
-            📋 Detected Service Items ({data.serviceLines.length})
-            <span style={{ fontSize: 11, fontWeight: 400, color: '#64748B', marginLeft: 6 }}>— for Work Receiving Paper only</span>
-          </div>
-          <div style={{ background: '#F0FDF4', borderRadius: 8, padding: '10px 12px', border: '1px solid #BBF7D0' }}>
-            {data.serviceLines.slice(0, 10).map((line, i) => (
-              <div key={i} style={{ fontSize: 12, color: '#166534', padding: '3px 0', borderBottom: i < Math.min(data.serviceLines.length, 10) - 1 ? '1px solid #D1FAE5' : 'none' }}>
-                {i + 1}. {line}
-              </div>
-            ))}
-            {data.serviceLines.length > 10 && (
-              <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>+{data.serviceLines.length - 10} more items</div>
-            )}
-          </div>
-          <button onClick={() => onUseItems(data.serviceLines.join('\n'))}
-            style={{ marginTop: 8, width: '100%', padding: '10px', background: '#047857', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
-            📋 Use These Items for Work Receiving Paper
-          </button>
-        </div>
+        <button onClick={() => onUseItems(data.serviceLines.join('\n'))}
+          style={{ width: '100%', padding: '10px', marginBottom: 10, background: '#047857', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+          📋 Pre-fill Work Receiving Paper from Invoice
+        </button>
       )}
 
-      {/* Save amount */}
-      <button onClick={saveAmount} disabled={saving || amountSaved || !hasTotal}
+      {/* Save to request */}
+      <button onClick={saveAmount} disabled={saving || amountSaved || !canSave}
         style={{
-          width: '100%', padding: '11px', borderRadius: 10, border: 'none', cursor: hasTotal ? 'pointer' : 'not-allowed',
-          background: amountSaved ? '#166534' : hasTotal ? '#0F172A' : '#E2E8F0',
-          color: amountSaved ? '#fff' : hasTotal ? '#D4A843' : '#94A3B8',
+          width: '100%', padding: '11px', borderRadius: 10, border: 'none',
+          cursor: canSave && !amountSaved ? 'pointer' : 'not-allowed',
+          background: amountSaved ? '#166534' : canSave ? '#0F172A' : '#E2E8F0',
+          color:      amountSaved ? '#fff'    : canSave ? '#D4A843' : '#94A3B8',
           fontWeight: 700, fontSize: 13,
         }}>
-        {amountSaved ? '✅ Invoice Amount Saved to Request'
-          : saving ? '⏳ Saving…'
-          : hasTotal ? `💰 Save SAR ${fmt(data.grandTotal)} to Request`
-          : '💰 No Amount to Save'}
+        {amountSaved ? '✅ Saved to Request'
+          : saving    ? '⏳ Saving…'
+          : canSave   ? `💰 Save SAR ${fmt(effectiveAmt)} to Request`
+          : '💰 Enter amount above to save'}
       </button>
     </div>
   );
