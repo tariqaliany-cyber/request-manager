@@ -166,11 +166,53 @@ const EXCLUDE_RE = /\b(transport|transfer|crane|mobiliz|mobilisati|mob\b|externa
 function isExcluded(text) { return EXCLUDE_RE.test(text); }
 function hasArabic(text)  { return /[؀-ۿ]/.test(text); }
 
+/* ── Load xlsx-populate browser build on demand ─── */
+function loadXlsxPopulate() {
+  if (window.XlsxPopulate) return Promise.resolve(window.XlsxPopulate);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = '/xlsx-populate.min.js';
+    s.onload = () => resolve(window.XlsxPopulate);
+    s.onerror = () => reject(new Error('Failed to load xlsx-populate'));
+    document.head.appendChild(s);
+  });
+}
+
+/* ── Excel template filler (xlsx-populate) ───────── */
+async function downloadFilledExcel(job, items, date) {
+  const XlsxPopulate = await loadXlsxPopulate();
+  const res = await fetch('/work-receiving-template.xlsx');
+  const buf = await res.arrayBuffer();
+  const wb  = await XlsxPopulate.fromDataAsync(buf);
+  const ws  = wb.sheet('Work Receiving Note');
+
+  // Fill date (D4 = English date next to "Date :", E4 = Arabic date side)
+  ws.cell('D4').value(date);
+  ws.cell('E4').value(date);
+
+  // Fill work descriptions D11–D34 (24 rows total)
+  for (let i = 0; i < 24; i++) {
+    const cell = ws.cell(`D${11 + i}`);
+    cell.value(i < items.length ? items[i].english : '');
+  }
+
+  const outBuf = await wb.outputAsync();
+  const blob   = new Blob([outBuf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url    = URL.createObjectURL(blob);
+  const a      = document.createElement('a');
+  a.href       = url;
+  a.download   = `Work-Receiving-Note-Herfy${job.branchNumber}-${date.replace(/\//g, '-')}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 /* ── Work Receiving Paper — Herfy template print ─── */
 function printWorkReceivingFilled(job, items, date, branchDisplay) {
   const logoUrl = `${window.location.origin}/herfy-logo.png`;
   const rows = [...items];
-  while (rows.length < 10) rows.push(null);
+  while (rows.length < 24) rows.push(null);
 
   const win = window.open('', '_blank');
   if (!win) { alert('Please allow popups to generate PDF.'); return; }
@@ -286,7 +328,7 @@ function WorkReceivingSection({ job }) {
     return (
       <button className="btn mb8" style={{ background: '#047857', color: '#fff', border: 'none' }}
         onClick={() => setOpen(true)}>
-        📋 Fill Work Receiving Paper PDF
+        📋 Fill Work Receiving Paper
       </button>
     );
   }
@@ -305,6 +347,8 @@ function WorkReceivingFiller({ job, onClose }) {
   const [rawInput, setRawInput]   = useState('');
   const [items, setItems]         = useState([]);
   const [date, setDate]           = useState(new Date().toLocaleDateString('en-GB'));
+  const [xlsxLoading, setXlsxLoading] = useState(false);
+  const [xlsxError, setXlsxError]     = useState('');
   const b = BRANCHES.find(b => b.num === String(job.branchNumber));
   const branchDisplay             = b ? `Herfy ${job.branchNumber} – ${b.area}` : `Herfy ${job.branchNumber}`;
 
@@ -331,6 +375,18 @@ function WorkReceivingFiller({ job, onClose }) {
   const needsTranslation = included.some(it => it.isArabic && !it.english.trim());
 
   const generate = () => printWorkReceivingFilled(job, included, date, branchDisplay);
+
+  const handleDownloadExcel = async () => {
+    setXlsxLoading(true);
+    setXlsxError('');
+    try {
+      await downloadFilledExcel(job, included, date);
+    } catch (err) {
+      setXlsxError('Failed to generate Excel: ' + err.message);
+    } finally {
+      setXlsxLoading(false);
+    }
+  };
 
   /* ─── STEP 1: Enter invoice items ─── */
   if (step === 1) return (
@@ -442,17 +498,32 @@ function WorkReceivingFiller({ job, onClose }) {
         </div>
       )}
 
-      {included.length > 10 && (
+      {included.length > 24 && (
         <div style={{ padding: '10px 14px', background: '#EFF6FF', borderRadius: 8, border: '1px solid #BFDBFE', fontSize: 12, color: '#1D4ED8', marginBottom: 12 }}>
-          ℹ️ The template has 10 rows. Only the first 10 items will appear. Consider splitting into two documents.
+          ℹ️ The template has 24 rows. Only the first 24 items will appear. Consider splitting into two documents.
         </div>
       )}
 
-      <button className="btn" onClick={generate}
-        disabled={included.length === 0 || needsTranslation}
-        style={{ width: '100%', background: '#047857', color: '#fff', border: 'none', fontWeight: 800, fontSize: 14, padding: '13px' }}>
-        🖨️ Fill Work Receiving PDF — Open Print Dialog
-      </button>
+      {xlsxError && (
+        <div style={{ padding: '10px 14px', background: '#FEF2F2', borderRadius: 8, border: '1px solid #FECACA', fontSize: 12, color: '#DC2626', marginBottom: 12 }}>
+          ⚠️ {xlsxError}
+        </div>
+      )}
+
+      {/* Output buttons */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <button className="btn" onClick={handleDownloadExcel}
+          disabled={included.length === 0 || needsTranslation || xlsxLoading}
+          style={{ width: '100%', background: '#047857', color: '#fff', border: 'none', fontWeight: 800, fontSize: 14, padding: '13px' }}>
+          {xlsxLoading ? '⏳ Generating Excel…' : '📥 Download Filled Excel (.xlsx)'}
+        </button>
+
+        <button className="btn" onClick={generate}
+          disabled={included.length === 0 || needsTranslation}
+          style={{ width: '100%', background: '#1E293B', color: '#94A3B8', border: 'none', fontWeight: 700, fontSize: 13, padding: '11px' }}>
+          🖨️ Print / Export PDF
+        </button>
+      </div>
     </div>
   );
 }
