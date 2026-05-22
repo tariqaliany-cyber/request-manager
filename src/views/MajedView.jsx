@@ -72,6 +72,7 @@ function MajedList({ onSelect }) {
           <div>
             <div className="card-id">{req.id}</div>
             <div className="card-branch">Herfy {req.branchNumber}</div>
+            {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
           </div>
           <span className="badge" style={{ color: s.color, background: s.bg }}>
             <span className="badge-dot" />{s.en}

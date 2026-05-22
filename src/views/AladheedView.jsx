@@ -575,6 +575,7 @@ function AladheedDashboard({ jobs, onSelectJob }) {
                   <div>
                     <div className="card-id">{job.id}</div>
                     <div className="card-branch">Herfy {job.branchNumber}</div>
+                    {(() => { const info = BRANCHES.find(b => b.num === String(job.branchNumber)); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                     <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>{formatDate(job.createdAt)}</div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
