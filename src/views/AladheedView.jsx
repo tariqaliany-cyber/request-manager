@@ -156,6 +156,307 @@ ${job.workDone ? `<div class="stitle">Work Completed / العمل المنجز</
   win.document.close();
 }
 
+/* ── HTML escape helper ───────────────────────────── */
+function esc(str) {
+  return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/* ── Excluded item detection ──────────────────────── */
+const EXCLUDE_RE = /\b(transport|transfer|crane|mobiliz|mobilisati|mob\b|external\s*support|ext\.?\s*support|admin\s*fee|freight|shipping|delivery|site\s*visit|call\s*out|call-out|رافعة|نقل|تعبئة|تنقل|شحن|زيارة|رسوم)\b/i;
+function isExcluded(text) { return EXCLUDE_RE.test(text); }
+function hasArabic(text)  { return /[؀-ۿ]/.test(text); }
+
+/* ── Work Receiving Paper — Herfy template print ─── */
+function printWorkReceivingFilled(job, items, date, branchDisplay) {
+  const logoUrl = `${window.location.origin}/herfy-logo.png`;
+  const rows = [...items];
+  while (rows.length < 10) rows.push(null);
+
+  const win = window.open('', '_blank');
+  if (!win) { alert('Please allow popups to generate PDF.'); return; }
+
+  win.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Work Receiving Note – Herfy ${job.branchNumber}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#000}
+.page{display:flex;width:100%;min-height:100vh}
+.sidebar{width:44px;background:#1a56db;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.sidebar span{color:#fff;font-size:8.5px;font-weight:bold;letter-spacing:2.5px;writing-mode:vertical-rl;transform:rotate(180deg);white-space:nowrap;text-transform:uppercase}
+.main{flex:1;padding:20px 24px 28px}
+.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.co-ar{font-size:17px;font-weight:bold;direction:rtl;line-height:1.4}
+.co-en{font-size:13px;font-weight:bold;letter-spacing:.4px;margin-top:2px}
+.logo{height:58px;width:auto;object-fit:contain}
+.date-row{display:flex;justify-content:space-between;align-items:center;border-top:1.5px solid #000;border-bottom:1.5px solid #000;padding:5px 0;margin-bottom:8px}
+.title{text-align:center;font-size:15px;font-weight:bold;padding:6px 0;border-bottom:1.5px solid #000;margin-bottom:8px}
+.subtitle{display:flex;justify-content:space-between;font-size:11px;margin-bottom:10px;gap:12px}
+.subtitle .ar{direction:rtl;text-align:right}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{border:1.5px solid #000;padding:6px 8px;font-weight:bold;text-align:center;font-size:12px}
+td{border:1.5px solid #000;padding:5px 8px;height:30px;vertical-align:middle;font-size:12px}
+.nc{width:38px;text-align:center}
+.rc{width:100px}
+.btm{display:flex;justify-content:flex-end;margin-top:6px}
+.stamp-wrap{text-align:left;font-size:11px;font-weight:bold}
+.stamp-box{border:1.5px solid #000;height:100px;width:240px;margin-top:4px}
+.sigs{display:flex;gap:16px;margin-top:24px}
+.sig-box{flex:1;border:1.5px solid #000;padding:12px 14px;min-height:90px;display:flex;flex-direction:column;justify-content:space-between}
+.sig-line{border-bottom:1px dotted #555;height:18px;margin:4px 0}
+.sig-label{font-size:11.5px;font-weight:bold;text-align:center;margin-top:8px}
+@media print{html,body,page{height:auto;min-height:0}button{display:none!important}}
+</style></head><body>
+<div class="page">
+  <div class="sidebar"><span>ADVERTISING INSTALLATION SIGNAGE</span></div>
+  <div class="main">
+    <div class="hdr">
+      <div>
+        <div class="co-ar">شـركـة هـرفـي للخدمـات الغـذائيـة(ذ.م.م)</div>
+        <div class="co-en">HERFY FOOD SERVICES CO.LTD.</div>
+      </div>
+      <img class="logo" src="${logoUrl}" onerror="this.style.display='none'" alt="Herfy" />
+    </div>
+
+    <div class="date-row">
+      <div>Date : &nbsp;${esc(date)}</div>
+      <div style="direction:rtl">التاريخ : &nbsp;${esc(date)} &nbsp; ٢٠م</div>
+    </div>
+
+    <div class="title">
+      استـــلام اعمـــال &nbsp;&nbsp;&nbsp; Work Receiving Note
+    </div>
+
+    <div class="subtitle">
+      <div>I the undersigned hereby have received following</div>
+      <div class="ar">استلامت انا المـوقع ادناه اعمـال الدعايـة و الاعلان التـالى ذكرهـا</div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th class="nc">#</th>
+          <th>Work Description</th>
+          <th class="rc">Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((item, i) => `<tr>
+          <td class="nc">${item ? i + 1 : ''}</td>
+          <td>${item ? esc(item.english) : ''}</td>
+          <td></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+
+    <div class="btm">
+      <div class="stamp-wrap">Rest.Stamp<div class="stamp-box"></div></div>
+    </div>
+
+    <div class="sigs">
+      <div class="sig-box">
+        <div>
+          <div style="font-size:11px;color:#555">Signature</div>
+          <div class="sig-line"></div>
+        </div>
+        <div class="sig-label">Advertising Installation Supervisor</div>
+      </div>
+      <div class="sig-box">
+        <div>
+          <div style="font-size:11px;color:#555">Signature</div>
+          <div class="sig-line"></div>
+          <div style="font-size:11px;color:#555;margin-top:8px">Name</div>
+          <div class="sig-line"></div>
+        </div>
+        <div class="sig-label">Restaurant Manager/In-charge</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>window.onload=()=>setTimeout(()=>window.print(),400);</script>
+</body></html>`);
+  win.document.close();
+}
+
+/* ════════════════════════════════════════════════════
+   WORK RECEIVING SECTION (toggle wrapper)
+════════════════════════════════════════════════════ */
+function WorkReceivingSection({ job }) {
+  const [open, setOpen] = useState(false);
+  if (!open) {
+    return (
+      <button className="btn mb8" style={{ background: '#047857', color: '#fff', border: 'none' }}
+        onClick={() => setOpen(true)}>
+        📋 Fill Work Receiving Paper PDF
+      </button>
+    );
+  }
+  return (
+    <div className="card" style={{ border: '2px solid #047857', marginBottom: 0 }}>
+      <WorkReceivingFiller job={job} onClose={() => setOpen(false)} />
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════
+   WORK RECEIVING FILLER (3-step workflow)
+════════════════════════════════════════════════════ */
+function WorkReceivingFiller({ job, onClose }) {
+  const [step, setStep]           = useState(1);
+  const [rawInput, setRawInput]   = useState('');
+  const [items, setItems]         = useState([]);
+  const [date, setDate]           = useState(new Date().toLocaleDateString('en-GB'));
+  const b = BRANCHES.find(b => b.num === String(job.branchNumber));
+  const branchDisplay             = b ? `Herfy ${job.branchNumber} – ${b.area}` : `Herfy ${job.branchNumber}`;
+
+  /* ── Step 1 → 2: parse and classify ── */
+  const processItems = () => {
+    const lines = rawInput.split('\n').map(l => l.trim()).filter(Boolean);
+    const processed = lines.map((line, i) => ({
+      id: i,
+      original: line,
+      english: hasArabic(line) ? '' : line,
+      include: !isExcluded(line),
+      isArabic: hasArabic(line),
+      excludeReason: isExcluded(line) ? 'Non-service charge (transport/crane/admin)' : null,
+    }));
+    setItems(processed);
+    setStep(2);
+  };
+
+  const updateItem = (id, field, val) =>
+    setItems(prev => prev.map(it => it.id === id ? { ...it, [field]: val } : it));
+
+  const included = items.filter(it => it.include);
+  const excluded = items.filter(it => !it.include);
+  const needsTranslation = included.some(it => it.isArabic && !it.english.trim());
+
+  const generate = () => printWorkReceivingFilled(job, included, date, branchDisplay);
+
+  /* ─── STEP 1: Enter invoice items ─── */
+  if (step === 1) return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, padding: 0 }}>← Cancel</button>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#047857' }}>📋 Fill Work Receiving Paper</div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">Date / التاريخ</label>
+          <input className="input" value={date} onChange={e => setDate(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">Branch</label>
+          <input className="input" value={branchDisplay} readOnly style={{ background: '#F8FAFC', color: '#64748B' }} />
+        </div>
+      </div>
+
+      <div className="form-group">
+        <label className="label">Invoice Items / بنود الفاتورة *</label>
+        <div style={{ fontSize: 12, color: '#64748B', marginBottom: 8, lineHeight: 1.5 }}>
+          Paste all invoice items below — one per line. Include everything; Aladheed will filter out transportation, crane, and non-service charges automatically.
+        </div>
+        <textarea
+          className="textarea"
+          rows={10}
+          placeholder={`Example:\nLED module replacement\nDriver replacement\nSignage cleaning\nTransportation\nCrane hire`}
+          value={rawInput}
+          onChange={e => setRawInput(e.target.value)}
+          style={{ fontFamily: 'inherit', lineHeight: 1.7 }}
+        />
+      </div>
+
+      <button className="btn" style={{ width: '100%', background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 800, fontSize: 14 }}
+        onClick={processItems} disabled={!rawInput.trim()}>
+        Process Items →
+      </button>
+    </div>
+  );
+
+  /* ─── STEP 2: Review & edit ─── */
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+        <button onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer', fontSize: 13, padding: 0 }}>← Edit Items</button>
+        <div style={{ fontSize: 14, fontWeight: 800, color: '#047857' }}>Review & Confirm</div>
+      </div>
+
+      {/* Included items */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#15803D', marginBottom: 8 }}>
+          ✅ Items to Include — {included.length} service item{included.length !== 1 ? 's' : ''}
+        </div>
+        {included.length === 0 && (
+          <div style={{ fontSize: 12, color: '#94A3B8', padding: '10px 14px', background: '#F8FAFC', borderRadius: 8 }}>
+            No service items found. Go back and add items.
+          </div>
+        )}
+        {included.map((item, i) => (
+          <div key={item.id} style={{ marginBottom: 10, padding: '10px 12px', background: '#F0FDF4', borderRadius: 8, border: '1px solid #BBF7D0' }}>
+            <div style={{ fontSize: 11, color: '#64748B', marginBottom: 6 }}>
+              {i + 1}. Original: <span style={{ color: '#334155', fontWeight: 600 }}>{item.original}</span>
+              {item.isArabic && (
+                <span style={{ marginLeft: 8, background: '#FEF9C3', color: '#D97706', fontSize: 10, padding: '1px 7px', borderRadius: 4, fontWeight: 600 }}>
+                  Arabic → needs English
+                </span>
+              )}
+            </div>
+            <input
+              className="input"
+              style={{ fontSize: 13 }}
+              placeholder="English description for Work Receiving Paper..."
+              value={item.english}
+              onChange={e => updateItem(item.id, 'english', e.target.value)}
+            />
+            <button onClick={() => updateItem(item.id, 'include', false)}
+              style={{ fontSize: 11, color: '#EF4444', background: 'none', border: 'none', cursor: 'pointer', marginTop: 5, padding: 0 }}>
+              ✕ Remove from Work Receiving Paper
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Excluded items */}
+      {excluded.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626', marginBottom: 8 }}>
+            ❌ Excluded — {excluded.length} non-service item{excluded.length !== 1 ? 's' : ''}
+          </div>
+          {excluded.map(item => (
+            <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: '#FEF2F2', borderRadius: 8, marginBottom: 6, border: '1px solid #FECACA' }}>
+              <span style={{ fontSize: 12, color: '#64748B', flex: 1 }}>{item.original}</span>
+              <span style={{ fontSize: 10, color: '#DC2626', fontWeight: 600, whiteSpace: 'nowrap' }}>Non-service</span>
+              <button onClick={() => updateItem(item.id, 'include', true)}
+                style={{ fontSize: 11, color: '#0369A1', background: 'none', border: '1px solid #BAE6FD', borderRadius: 6, padding: '2px 8px', cursor: 'pointer', flexShrink: 0 }}>
+                Include
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Warnings */}
+      {needsTranslation && (
+        <div style={{ padding: '10px 14px', background: '#FFFBEB', borderRadius: 8, border: '1px solid #FDE68A', fontSize: 12, color: '#92400E', marginBottom: 12 }}>
+          ⚠️ Some items need an English translation. Please fill in the English text above before generating.
+        </div>
+      )}
+
+      {included.length > 10 && (
+        <div style={{ padding: '10px 14px', background: '#EFF6FF', borderRadius: 8, border: '1px solid #BFDBFE', fontSize: 12, color: '#1D4ED8', marginBottom: 12 }}>
+          ℹ️ The template has 10 rows. Only the first 10 items will appear. Consider splitting into two documents.
+        </div>
+      )}
+
+      <button className="btn" onClick={generate}
+        disabled={included.length === 0 || needsTranslation}
+        style={{ width: '100%', background: '#047857', color: '#fff', border: 'none', fontWeight: 800, fontSize: 14, padding: '13px' }}>
+        🖨️ Fill Work Receiving PDF — Open Print Dialog
+      </button>
+    </div>
+  );
+}
+
 /* ════════════════════════════════════════════════════
    MAIN EXPORT
 ════════════════════════════════════════════════════ */
@@ -274,6 +575,7 @@ function AladheedDashboard({ jobs, onSelectJob }) {
                   <div>
                     <div className="card-id">{job.id}</div>
                     <div className="card-branch">Herfy {job.branchNumber}</div>
+                    {(() => { const info = BRANCHES.find(b => b.num === String(job.branchNumber)); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                     <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 3 }}>{formatDate(job.createdAt)}</div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
@@ -551,10 +853,7 @@ function AladheedSession({ job }) {
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: '#0F172A' }}>📄 Generate Documents</div>
             <div style={{ fontSize: 12, color: '#64748B', marginBottom: 14 }}>Generate standard paperwork for this job.</div>
 
-            <button className="btn mb8" style={{ background: '#047857', color: '#fff', border: 'none' }}
-              onClick={() => printWorkReceiving(job)}>
-              📋 Generate Work Receiving Paper PDF
-            </button>
+            <WorkReceivingSection job={job} />
 
             {completionPhotos.length > 0 && (
               <button className="btn mb8" style={{ background: '#0369A1', color: '#fff', border: 'none' }}
