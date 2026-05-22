@@ -45,6 +45,7 @@ const FIELD_MAP = {
   completionPhotos:             'completion_photos',
   workDone:                     'work_done',
   finalSummary:                 'final_summary',
+  invoiceAmount:                'invoice_amount',
 };
 
 const toDb = (obj) => {
@@ -74,6 +75,7 @@ const fromDb = (row) => ({
   completionPhotos:             row.completion_photos   || [],
   workDone:                     row.work_done           || '',
   finalSummary:                 row.final_summary       || '',
+  invoiceAmount:                row.invoice_amount      ?? null,
 });
 
 // ── CRUD ─────────────────────────────────────────────
@@ -103,6 +105,7 @@ export const createRequest = async (input) => {
     completion_photos:          [],
     work_done:                  '',
     final_summary:              '',
+    invoice_amount:             null,
     ...toDb(input),
   };
   const { data, error } = await supabase
