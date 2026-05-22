@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequests, formatDate } from '../storage';
+import { getRequests, updateRequest, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 
 /* ── Document type config ─────────────────────────── */
@@ -166,6 +166,114 @@ const EXCLUDE_RE = /\b(transport|transfer|crane|mobiliz|mobilisati|mob\b|externa
 function isExcluded(text) { return EXCLUDE_RE.test(text); }
 function hasArabic(text)  { return /[؀-ۿ]/.test(text); }
 
+/* ── PDF.js lazy loader ───────────────────────────── */
+function loadPdfJs() {
+  if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+    s.onload = () => {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = () => reject(new Error('Failed to load PDF.js'));
+    document.head.appendChild(s);
+  });
+}
+
+async function extractPdfText(dataUrl) {
+  const lib = await loadPdfJs();
+  const b64 = dataUrl.split(',')[1];
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const pdf = await lib.getDocument({ data: bytes }).promise;
+  let text = '';
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page    = await pdf.getPage(p);
+    const content = await page.getTextContent();
+    text += content.items.map(it => it.str).join(' ') + '\n';
+  }
+  return text;
+}
+
+/* ── Invoice text parser ──────────────────────────── */
+function parseInvoice(text) {
+  const lines    = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const full     = lines.join('\n');
+
+  const grab = (patterns) => {
+    for (const p of patterns) {
+      const m = full.match(p);
+      if (m) return m[1]?.trim() || null;
+    }
+    return null;
+  };
+
+  const grabNum = (patterns) => {
+    const v = grab(patterns);
+    if (!v) return null;
+    const n = parseFloat(v.replace(/,/g, ''));
+    return isNaN(n) ? null : n;
+  };
+
+  const invoiceNumber = grab([
+    /(?:Invoice\s*(?:No\.?|Number|#)|فاتورة\s*رقم|رقم\s*الفاتورة)\s*[:\-]?\s*([A-Z0-9\-\/]+)/i,
+    /(?:Inv\.?\s*No\.?)\s*[:\-]?\s*([A-Z0-9\-\/]+)/i,
+  ]);
+
+  const invoiceDate = grab([
+    /(?:Invoice\s*Date|Date\s*of\s*Invoice|التاريخ|تاريخ\s*الفاتورة)\s*[:\-]?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
+    /(?:Date)\s*[:\-]\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i,
+    /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,
+  ]);
+
+  const customerName = grab([
+    /(?:Bill\s*To|Billed\s*To|Customer|Client|Sold\s*To|To\s*:|إلى)\s*[:\-]?\s*\n?\s*([^\n]{3,80})/i,
+  ]);
+
+  const branchNumber = grab([
+    /(?:Herfy|هرفي)\s*(?:Branch\s*)?#?\s*(\d{2,4})/i,
+  ]);
+
+  const grandTotal = grabNum([
+    /(?:Grand\s*Total|Total\s*(?:Amount\s*)?(?:incl\.?|including|with|شامل)\s*(?:VAT|Tax|ضريبة)|الإجمالي\s*(?:الكلي|النهائي|شامل)|المبلغ\s*الإجمالي)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
+    /(?:Total\s*(?:Due|Payable)|المستحق)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
+    /(?:TOTAL)\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/,
+  ]);
+
+  const vatAmount = grabNum([
+    /(?:VAT\s*(?:Amount)?|Tax\s*Amount|ضريبة\s*(?:القيمة\s*المضافة)?|الضريبة)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
+  ]);
+
+  const subtotal = grabNum([
+    /(?:Sub\s*[-\s]?Total|Amount\s*(?:Before\s*VAT|Excl\.?\s*VAT)|المجموع\s*(?:قبل\s*الضريبة|الفرعي)|قبل\s*الضريبة)\s*[:\-]?\s*(?:SAR|SR|ر\.?س\.?)?\s*([\d,]+\.?\d*)/i,
+  ]);
+
+  // Derive grand total if missing but sub+vat are present
+  const computedGrandTotal = grandTotal ?? (subtotal != null && vatAmount != null ? subtotal + vatAmount : null);
+
+  // Extract service description lines
+  const amountRe   = /^[\d,\.\s]+(?:SAR|SR|ر\.?س\.?)?$/i;
+  const headerRe   = /^(?:description|qty|quantity|unit|price|amount|total|subtotal|vat|tax|#|item|no\.|serial|رقم|الوصف|الكمية|السعر|المبلغ)/i;
+  const skipRe     = /(?:tel|fax|email|www\.|@|P\.O\.|VAT\s*No|CR\s*No|رقم\s*(?:ضريبي|سجل)|Invoice|فاتورة|Page\s*\d)/i;
+
+  const serviceLines = lines.filter(line => {
+    if (line.length < 5) return false;
+    if (amountRe.test(line)) return false;
+    if (headerRe.test(line)) return false;
+    if (skipRe.test(line)) return false;
+    if (/^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/.test(line)) return false;
+    const words = line.split(/\s+/).filter(w => w.length > 2);
+    return words.length >= 2;
+  });
+
+  const confidence = computedGrandTotal != null ? 'high' : subtotal != null ? 'medium' : 'low';
+
+  return { invoiceNumber, invoiceDate, customerName, branchNumber, subtotal, vatAmount, grandTotal: computedGrandTotal, serviceLines, confidence };
+}
+
 /* ── Load xlsx-populate browser build on demand ─── */
 function loadXlsxPopulate() {
   if (window.XlsxPopulate) return Promise.resolve(window.XlsxPopulate);
@@ -320,21 +428,170 @@ td{border:1.5px solid #000;padding:5px 8px;height:30px;vertical-align:middle;fon
 }
 
 /* ════════════════════════════════════════════════════
+   INVOICE ANALYSIS CARD
+════════════════════════════════════════════════════ */
+function InvoiceAnalysisCard({ data, parsing, error, job, onUseItems }) {
+  const [saving, setSaving]       = useState(false);
+  const [amountSaved, setAmtSaved] = useState(false);
+
+  const saveAmount = async () => {
+    if (!data?.grandTotal) return;
+    setSaving(true);
+    await updateRequest(job.id, { invoiceAmount: data.grandTotal });
+    setSaving(false);
+    setAmtSaved(true);
+  };
+
+  if (parsing) return (
+    <div className="card" style={{ borderLeft: '4px solid #D4A843' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 22 }}>⏳</span>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A' }}>Analyzing Invoice…</div>
+          <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>Aladheed is reading the invoice file</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="card" style={{ borderLeft: '4px solid #EF4444' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>⚠️ Invoice Analysis Failed</div>
+      <div style={{ fontSize: 12, color: '#64748B', marginTop: 4 }}>{error}</div>
+    </div>
+  );
+
+  if (data?.isImage) return (
+    <div className="card" style={{ borderLeft: '4px solid #D97706', background: '#FFFBEB' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, color: '#D97706', marginBottom: 6 }}>📷 Image Invoice — Manual Entry Required</div>
+      <div style={{ fontSize: 12, color: '#92400E', lineHeight: 1.6 }}>
+        Automatic text extraction is not available for image-based invoices. Please use a PDF version for automatic analysis, or paste the service items and amounts manually.
+      </div>
+    </div>
+  );
+
+  if (!data) return null;
+
+  const hasTotal  = data.grandTotal != null;
+  const lowConf   = data.confidence === 'low';
+  const fmt       = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  return (
+    <div className="card" style={{ borderLeft: '4px solid #D4A843' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+        <div>
+          <div style={{ fontSize: 10, color: '#D4A843', fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 }}>
+            🦅 Aladheed — Invoice Analysis
+          </div>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Extracted Invoice Data</div>
+        </div>
+        <span style={{
+          fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+          background: lowConf ? '#FEF9C3' : '#F0FDF4',
+          color:      lowConf ? '#D97706' : '#16A34A',
+        }}>
+          {lowConf ? '⚠️ Low confidence' : '✓ Detected'}
+        </span>
+      </div>
+
+      {/* Grand Total — the most important field */}
+      <div style={{
+        borderRadius: 10, padding: '16px', marginBottom: 14, textAlign: 'center',
+        background: hasTotal ? '#0F172A' : '#FEF9C3',
+      }}>
+        <div style={{ fontSize: 11, fontWeight: 600, marginBottom: 6, color: hasTotal ? '#94A3B8' : '#D97706' }}>
+          {hasTotal ? 'Grand Total (incl. VAT)' : '⚠️ Grand Total Not Detected'}
+        </div>
+        {hasTotal
+          ? <div style={{ fontSize: 28, fontWeight: 900, color: '#D4A843' }}>SAR {fmt(data.grandTotal)}</div>
+          : <div style={{ fontSize: 12, color: '#92400E', lineHeight: 1.5 }}>
+              Invoice total amount could not be detected clearly. Please review the invoice manually.
+            </div>
+        }
+      </div>
+
+      {/* Details grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 14 }}>
+        {[
+          { label: 'Invoice No',   value: data.invoiceNumber },
+          { label: 'Invoice Date', value: data.invoiceDate },
+          { label: 'Sub Total',    value: data.subtotal  != null ? `SAR ${fmt(data.subtotal)}`  : null },
+          { label: 'VAT Amount',   value: data.vatAmount != null ? `SAR ${fmt(data.vatAmount)}` : null },
+        ].map((f, i) => (
+          <div key={i} style={{ background: '#F8FAFC', borderRadius: 8, padding: '8px 10px', border: '1px solid #E2E8F0' }}>
+            <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>{f.label}</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: f.value ? '#1E293B' : '#CBD5E1', marginTop: 2 }}>{f.value || 'Not found'}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Customer */}
+      {data.customerName && (
+        <div style={{ padding: '8px 12px', background: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0', fontSize: 12, color: '#334155', marginBottom: 12 }}>
+          <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 600 }}>CUSTOMER — </span>
+          {data.customerName}
+        </div>
+      )}
+
+      {/* Service items */}
+      {data.serviceLines?.length > 0 && (
+        <div style={{ marginBottom: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#047857', marginBottom: 8 }}>
+            📋 Detected Service Items ({data.serviceLines.length})
+            <span style={{ fontSize: 11, fontWeight: 400, color: '#64748B', marginLeft: 6 }}>— for Work Receiving Paper only</span>
+          </div>
+          <div style={{ background: '#F0FDF4', borderRadius: 8, padding: '10px 12px', border: '1px solid #BBF7D0' }}>
+            {data.serviceLines.slice(0, 10).map((line, i) => (
+              <div key={i} style={{ fontSize: 12, color: '#166534', padding: '3px 0', borderBottom: i < Math.min(data.serviceLines.length, 10) - 1 ? '1px solid #D1FAE5' : 'none' }}>
+                {i + 1}. {line}
+              </div>
+            ))}
+            {data.serviceLines.length > 10 && (
+              <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 6 }}>+{data.serviceLines.length - 10} more items</div>
+            )}
+          </div>
+          <button onClick={() => onUseItems(data.serviceLines.join('\n'))}
+            style={{ marginTop: 8, width: '100%', padding: '10px', background: '#047857', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            📋 Use These Items for Work Receiving Paper
+          </button>
+        </div>
+      )}
+
+      {/* Save amount */}
+      <button onClick={saveAmount} disabled={saving || amountSaved || !hasTotal}
+        style={{
+          width: '100%', padding: '11px', borderRadius: 10, border: 'none', cursor: hasTotal ? 'pointer' : 'not-allowed',
+          background: amountSaved ? '#166534' : hasTotal ? '#0F172A' : '#E2E8F0',
+          color: amountSaved ? '#fff' : hasTotal ? '#D4A843' : '#94A3B8',
+          fontWeight: 700, fontSize: 13,
+        }}>
+        {amountSaved ? '✅ Invoice Amount Saved to Request'
+          : saving ? '⏳ Saving…'
+          : hasTotal ? `💰 Save SAR ${fmt(data.grandTotal)} to Request`
+          : '💰 No Amount to Save'}
+      </button>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════
    WORK RECEIVING SECTION (toggle wrapper)
 ════════════════════════════════════════════════════ */
-function WorkReceivingSection({ job }) {
+function WorkReceivingSection({ job, prefilledText }) {
   const [open, setOpen] = useState(false);
   if (!open) {
     return (
       <button className="btn mb8" style={{ background: '#047857', color: '#fff', border: 'none' }}
         onClick={() => setOpen(true)}>
         📋 Fill Work Receiving Paper
+        {prefilledText && <span style={{ fontSize: 10, marginLeft: 6, opacity: 0.85 }}>· Items ready from invoice ✓</span>}
       </button>
     );
   }
   return (
     <div className="card" style={{ border: '2px solid #047857', marginBottom: 0 }}>
-      <WorkReceivingFiller job={job} onClose={() => setOpen(false)} />
+      <WorkReceivingFiller job={job} prefilledText={prefilledText} onClose={() => setOpen(false)} />
     </div>
   );
 }
@@ -342,9 +599,9 @@ function WorkReceivingSection({ job }) {
 /* ════════════════════════════════════════════════════
    WORK RECEIVING FILLER (3-step workflow)
 ════════════════════════════════════════════════════ */
-function WorkReceivingFiller({ job, onClose }) {
+function WorkReceivingFiller({ job, prefilledText, onClose }) {
   const [step, setStep]           = useState(1);
-  const [rawInput, setRawInput]   = useState('');
+  const [rawInput, setRawInput]   = useState(prefilledText || '');
   const [items, setItems]         = useState([]);
   const [date, setDate]           = useState(new Date().toLocaleDateString('en-GB'));
   const [xlsxLoading, setXlsxLoading] = useState(false);
@@ -695,6 +952,35 @@ function AladheedSession({ job }) {
   const [dragActive, setDragActive]     = useState(false);
   const fileInputRef = useRef();
 
+  // Invoice analysis state
+  const [invoiceData, setInvoiceData]     = useState(null);
+  const [invoiceParsing, setInvParsing]   = useState(false);
+  const [invoiceError, setInvError]       = useState('');
+  const [prefilledText, setPrefilledText] = useState('');
+
+  const analyzeInvoice = async (dataUrl, mimeType) => {
+    setInvParsing(true);
+    setInvError('');
+    setInvoiceData(null);
+    try {
+      if (mimeType?.startsWith('image/')) {
+        setInvoiceData({ isImage: true });
+      } else if (mimeType === 'application/pdf' || dataUrl.startsWith('data:application/pdf')) {
+        const text   = await extractPdfText(dataUrl);
+        const parsed = parseInvoice(text);
+        setInvoiceData(parsed);
+      } else {
+        // Try treating as text (Excel text export, CSV, etc.)
+        const parsed = parseInvoice(atob(dataUrl.split(',')[1] || ''));
+        setInvoiceData(parsed);
+      }
+    } catch (err) {
+      setInvError('Could not analyze the invoice file: ' + err.message);
+    } finally {
+      setInvParsing(false);
+    }
+  };
+
   // Load saved email session
   useEffect(() => {
     const s = loadSession(job.id);
@@ -731,6 +1017,9 @@ function AladheedSession({ job }) {
     setDocs(prev => [...prev, ...newDocs]);
     const firstUnknown = newDocs.find(d => d.classification === 'unknown');
     if (firstUnknown) setClassifyModal(firstUnknown);
+    // Auto-analyze invoice files
+    const invoiceDoc = newDocs.find(d => d.classification === 'invoice');
+    if (invoiceDoc) analyzeInvoice(invoiceDoc.data, invoiceDoc.type);
   };
 
   const removeDoc = id => setDocs(prev => prev.filter(d => d.id !== id));
@@ -739,6 +1028,11 @@ function AladheedSession({ job }) {
     setDocs(prev => prev.map(d => d.id === docId ? { ...d, classification: cls } : d));
     const remaining = docs.filter(d => d.classification === 'unknown' && d.id !== docId);
     setClassifyModal(remaining[0] || null);
+    // If user manually classified as invoice, trigger analysis
+    if (cls === 'invoice') {
+      const doc = docs.find(d => d.id === docId);
+      if (doc) analyzeInvoice(doc.data, doc.type);
+    }
   };
 
   const prepareEmail = () => {
@@ -919,12 +1213,23 @@ function AladheedSession({ job }) {
             </div>
           )}
 
+          {/* Invoice Analysis */}
+          {(invoiceParsing || invoiceError || invoiceData) && (
+            <InvoiceAnalysisCard
+              data={invoiceData}
+              parsing={invoiceParsing}
+              error={invoiceError}
+              job={job}
+              onUseItems={text => setPrefilledText(text)}
+            />
+          )}
+
           {/* PDF Actions */}
           <div className="card">
             <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 4, color: '#0F172A' }}>📄 Generate Documents</div>
             <div style={{ fontSize: 12, color: '#64748B', marginBottom: 14 }}>Generate standard paperwork for this job.</div>
 
-            <WorkReceivingSection job={job} />
+            <WorkReceivingSection job={job} prefilledText={prefilledText} />
 
             {completionPhotos.length > 0 && (
               <button className="btn mb8" style={{ background: '#0369A1', color: '#fff', border: 'none' }}
