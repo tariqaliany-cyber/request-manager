@@ -905,6 +905,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [showCompletion, setShowComp] = useState(req.showCompletionPhotosToEssa || false);
   const [saving, setSaving]           = useState(false);
   const [saved, setSaved]             = useState(false);
+  const [saveError, setSaveError]     = useState('');
   const [completing, setCompleting]   = useState(false);
   const [branch, setBranch]           = useState(req.branchNumber);
   const [location, setLocation]       = useState(req.locationLink || '');
@@ -933,6 +934,9 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
 
   const save = async () => {
     setSaving(true);
+    setSaveError('');
+    const pct = Math.min(100, Math.max(0, Number(progressPercentage) || 0));
+    console.log('[save] Saving request', fresh.id, '— progressPercentage:', pct);
     const updated = await updateRequest(fresh.id, {
       status,
       branchNumber:               branch.trim(),
@@ -943,12 +947,19 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
       invoiceAmount:              invoiceAmount !== '' ? parseFloat(invoiceAmount) : null,
-      progressPercentage:         Math.min(100, Math.max(0, Number(progressPercentage) || 0)),
+      progressPercentage:         pct,
     });
-    if (updated) setFresh(updated);
     setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    if (updated) {
+      console.log('[save] SUCCESS — progress_percentage in DB response:', updated.progressPercentage);
+      setFresh(updated);
+      setProgress(updated.progressPercentage ?? 0);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } else {
+      console.error('[save] FAILED — updateRequest returned null. Check console for Supabase error above.');
+      setSaveError('❌ Save failed. The progress_percentage column may be missing from Supabase. Open browser console (F12) for details.');
+    }
   };
 
   const handleDelete = async () => {
@@ -1314,6 +1325,17 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
             <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
               {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
             </button>
+            {saveError && (
+              <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 10, fontSize: 12, color: '#DC2626', lineHeight: 1.5 }}>
+                {saveError}
+                <div style={{ marginTop: 6, fontWeight: 700 }}>
+                  Run this in Supabase SQL editor:<br />
+                  <code style={{ background: '#fff', padding: '4px 8px', borderRadius: 4, display: 'block', marginTop: 4, wordBreak: 'break-all' }}>
+                    ALTER TABLE requests ADD COLUMN IF NOT EXISTS progress_percentage INTEGER DEFAULT 0;
+                  </code>
+                </div>
+              </div>
+            )}
             {status !== 'completed'
               ? <button className="btn btn-primary-green mb8" onClick={markComplete} disabled={completing}>
                   {completing ? '...' : '✅ Mark as Completed / إغلاق الطلب كمنجز'}
