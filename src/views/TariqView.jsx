@@ -9,6 +9,23 @@ function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
 }
 
+function ProgressBar({ value }) {
+  const pct = Math.min(100, Math.max(0, Number(value) || 0));
+  const color = pct >= 95 ? '#15803D' : pct >= 51 ? '#22C55E' : pct >= 26 ? '#EAB308' : '#EF4444';
+  const bg    = pct >= 95 ? 'linear-gradient(90deg,#15803D,#16A34A)'
+    : pct >= 51 ? 'linear-gradient(90deg,#16A34A,#4ADE80)'
+    : pct >= 26 ? 'linear-gradient(90deg,#CA8A04,#EAB308)'
+    :             'linear-gradient(90deg,#DC2626,#EF4444)';
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '6px 0' }}>
+      <div style={{ flex: 1, background: '#E2E8F0', borderRadius: 99, height: 7, overflow: 'hidden' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: bg, borderRadius: 99, transition: 'width .3s' }} />
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 800, color, minWidth: 30, textAlign: 'right' }}>{pct}%</span>
+    </div>
+  );
+}
+
 function formatSAR(amount) {
   const n = Number(amount);
   if (isNaN(n)) return null;
@@ -553,6 +570,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                         </div>
                       </div>
                       <div className="card-desc">{req.problemDescription}</div>
+                      <ProgressBar value={req.progressPercentage ?? 0} />
                       <div className="card-footer">
                         <span className="card-date">{formatDate(req.createdAt)}</span>
                         {req.assignedTo
@@ -733,6 +751,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                     <th>Branch</th>
                     <th>Location</th>
                     <th>Problem</th>
+                    <th>Progress</th>
                     <th>Status</th>
                     <th>Invoice</th>
                     <th>Assigned</th>
@@ -760,6 +779,9 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--gray-600)' }}>
                             {req.problemDescription || '—'}
                           </div>
+                        </td>
+                        <td style={{ minWidth: 110 }}>
+                          <ProgressBar value={req.progressPercentage ?? 0} />
                         </td>
                         <td>
                           <span className="badge" style={{ color: s.color, background: s.bg, fontSize: 11 }}>
@@ -911,7 +933,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
 
   const save = async () => {
     setSaving(true);
-    await updateRequest(fresh.id, {
+    const updated = await updateRequest(fresh.id, {
       status,
       branchNumber:               branch.trim(),
       locationLink:               location.trim(),
@@ -923,6 +945,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
       invoiceAmount:              invoiceAmount !== '' ? parseFloat(invoiceAmount) : null,
       progressPercentage:         Math.min(100, Math.max(0, Number(progressPercentage) || 0)),
     });
+    if (updated) setFresh(updated);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
