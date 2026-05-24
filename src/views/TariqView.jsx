@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AladheedView from './AladheedView';
-import { getRequests, updateRequest, deleteRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate } from '../storage';
+import { getRequests, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
@@ -23,7 +23,7 @@ const SIDEBAR_FILTERS = [
   { key: 'completed',   icon: '✅', label: 'Completed',   labelAr: 'مكتملة'    },
 ];
 
-function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, unreadCount }) {
+function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, onNewRequest, unreadCount }) {
   return (
     <aside className="tariq-sidebar">
       {/* Brand */}
@@ -77,6 +77,14 @@ function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, unre
 
         <div className="sidebar-section-label">أدوات</div>
 
+        <button
+          className={`sidebar-item ${activeFilter === 'new' ? 'active' : ''}`}
+          onClick={onNewRequest}
+          style={{ background: 'rgba(212,168,67,.15)', marginBottom: 4 }}>
+          <span className="sidebar-item-icon">➕</span>
+          طلب جديد / New Request
+        </button>
+
         <button className="sidebar-item" onClick={onAladheed}>
           <span className="sidebar-item-icon">🦅</span>
           العضيد / Aladheed
@@ -111,7 +119,14 @@ export default function TariqView({ user, onLogout }) {
   const [aladheedJob, setAladheedJob]   = useState(null);
   const [filter, setFilter]             = useState('all');
   const [unreadCount, setUnreadCount]   = useState(0);
+  const [newReqMode, setNewReqMode]     = useState(false);
   const refresh = () => setTick(n => n + 1);
+
+  const openNewRequest = () => { setNewReqMode(true); setSelected(null); };
+  const closeNewRequest = (created) => {
+    setNewReqMode(false);
+    if (created) { setSelected(created); refresh(); }
+  };
 
   const openAladheed  = (job = null) => { setAladheedJob(job); setAladheedMode(true); };
   const closeAladheed = ()           => { setAladheedJob(null); setAladheedMode(false); };
@@ -124,10 +139,13 @@ export default function TariqView({ user, onLogout }) {
   const handleFilter = (f) => {
     setFilter(f);
     setSelected(null);
+    setNewReqMode(false);
   };
 
   // Topbar title based on current view
-  const topbarTitle = selected
+  const topbarTitle = newReqMode
+    ? '➕ New Request / طلب جديد'
+    : selected
     ? `Herfy ${selected.branchNumber} · ${selected.id}`
     : filter === 'all'        ? '🏠 Dashboard / الرئيسية'
     : filter === 'updates'    ? '🔔 Updates / التحديثات'
@@ -143,9 +161,10 @@ export default function TariqView({ user, onLogout }) {
       <TariqSidebar
         user={user}
         onLogout={onLogout}
-        activeFilter={selected ? '' : filter}
+        activeFilter={newReqMode ? 'new' : selected ? '' : filter}
         onFilter={handleFilter}
         onAladheed={() => openAladheed(null)}
+        onNewRequest={openNewRequest}
         unreadCount={unreadCount}
       />
 
@@ -154,9 +173,9 @@ export default function TariqView({ user, onLogout }) {
 
         {/* Mobile header (hidden on desktop via CSS) */}
         <header className="header header-tariq tariq-mobile-header">
-          {selected ? (
+          {(selected || newReqMode) ? (
             <>
-              <button className="back-btn" onClick={() => { setSelected(null); refresh(); }} style={{ color: '#1E293B' }}>
+              <button className="back-btn" onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }} style={{ color: '#1E293B' }}>
                 ← All Requests
               </button>
               <div className="header-right">
@@ -176,8 +195,10 @@ export default function TariqView({ user, onLogout }) {
                 </div>
               </div>
               <div className="header-right">
-                <button className="btn-outline" onClick={() => openAladheed(null)} style={{ fontSize: 13, fontWeight: 700 }}>
-                  🦅 Aladheed
+                <button
+                  onClick={openNewRequest}
+                  style={{ fontSize: 13, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}>
+                  ➕ طلب جديد
                 </button>
                 <button className="btn-logout" onClick={onLogout}>Logout</button>
               </div>
@@ -188,9 +209,9 @@ export default function TariqView({ user, onLogout }) {
         {/* Desktop topbar (hidden on mobile via CSS) */}
         <header className="tariq-topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {selected && (
+            {(selected || newReqMode) && (
               <button
-                onClick={() => { setSelected(null); refresh(); }}
+                onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
                          fontWeight: 700, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 5,
                          padding: '6px 10px', borderRadius: 7, marginRight: 4 }}>
@@ -203,6 +224,13 @@ export default function TariqView({ user, onLogout }) {
             <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
               {user.nameAr} · {user.name}
             </span>
+            {!newReqMode && !selected && (
+              <button
+                onClick={openNewRequest}
+                style={{ fontSize: 12, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 7, padding: '5px 12px', cursor: 'pointer' }}>
+                ➕ طلب جديد
+              </button>
+            )}
             <button
               className="btn-outline btn-sm"
               onClick={() => openAladheed(null)}
@@ -215,7 +243,9 @@ export default function TariqView({ user, onLogout }) {
 
         {/* Page content */}
         <div className="page">
-          {selected ? (
+          {newReqMode ? (
+            <TariqNewRequestForm onClose={closeNewRequest} />
+          ) : selected ? (
             <TariqDetail
               req={selected}
               onClose={() => { setSelected(null); refresh(); }}
@@ -231,6 +261,135 @@ export default function TariqView({ user, onLogout }) {
             />
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── New Request Form ───────────────────────────── */
+function TariqNewRequestForm({ onClose }) {
+  const [branch, setBranch]   = useState('');
+  const [desc, setDesc]       = useState('');
+  const [location, setLoc]    = useState('');
+  const [photos, setPhotos]   = useState([]);
+  const [status, setStatus]   = useState('received');
+  const [assignedTo, setAssign] = useState('');
+  const [submitting, setSub]  = useState(false);
+  const [error, setError]     = useState('');
+  const fileRef               = useRef();
+
+  const handlePhotos = async (e) => {
+    const files = Array.from(e.target.files);
+    const compressed = await Promise.all(files.map(compressImage));
+    setPhotos(prev => [...prev, ...compressed]);
+    e.target.value = '';
+  };
+
+  const removePhoto = (i) => setPhotos(prev => prev.filter((_, idx) => idx !== i));
+
+  const handleSubmit = async () => {
+    if (!branch.trim()) { setError('رقم الفرع مطلوب / Branch number is required'); return; }
+    if (!desc.trim())   { setError('وصف المشكلة مطلوب / Problem description is required'); return; }
+    setSub(true);
+    const created = await createRequest({
+      branchNumber:       branch.trim(),
+      problemDescription: desc.trim(),
+      locationLink:       location.trim(),
+      problemPhotos:      photos,
+      status,
+      assignedTo:         assignedTo || null,
+      createdBy:          'tariq',
+    });
+    setSub(false);
+    if (!created) { setError('فشل الحفظ / Save failed'); return; }
+    onClose(created);
+  };
+
+  return (
+    <div style={{ maxWidth: 640, margin: '0 auto' }}>
+      <div className="card">
+        <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 18, color: 'var(--gray-800)' }}>
+          ➕ طلب صيانة جديد / New Maintenance Request
+        </div>
+
+        <div className="form-group">
+          <label className="label">رقم هرفي / Branch Number *</label>
+          <select className="select" value={branch} onChange={e => setBranch(e.target.value)}>
+            <option value="">— اختر الفرع / Select Branch —</option>
+            {BRANCHES.map(b => (
+              <option key={b.num} value={b.num}>
+                {b.num} — {b.area}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="label">وصف المشكلة / Problem Description *</label>
+          <textarea className="textarea" rows={4} placeholder="اكتب وصف المشكلة..." value={desc} onChange={e => setDesc(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label className="label">رابط الموقع / Location Link</label>
+          <input className="input" type="url" placeholder="https://maps.google.com/..." value={location} onChange={e => setLoc(e.target.value)} />
+        </div>
+
+        <div className="form-group">
+          <label className="label">الحالة / Status</label>
+          <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
+            <option value="received">Request Received / تم استلام الطلب</option>
+            <option value="scheduled">Scheduled / مجدول</option>
+            <option value="in_progress">In Progress / قيد التنفيذ</option>
+          </select>
+        </div>
+
+        <div className="form-group">
+          <label className="label">إسناد إلى / Assign To</label>
+          <select className="select" value={assignedTo} onChange={e => setAssign(e.target.value)}>
+            <option value="">— غير مسند / Unassigned —</option>
+            <option value="majed">Workshop Team / فريق الورشة</option>
+          </select>
+        </div>
+
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">صور المشكلة / Problem Photos</label>
+          <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotos} />
+          {photos.length > 0 && (
+            <div className="photo-grid" style={{ marginBottom: 10 }}>
+              {photos.map((src, i) => (
+                <div key={i} className="photo-thumb" style={{ position: 'relative' }}>
+                  <img src={src} alt="" />
+                  <button className="photo-remove" onClick={() => removePhoto(i)}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 16px', border: '1.5px dashed #CBD5E1', borderRadius: 10, background: '#F8FAFC', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#64748B', width: '100%', justifyContent: 'center' }}>
+            📷 إضافة صور / Add Photos
+          </button>
+        </div>
+
+        {error && (
+          <div style={{ marginTop: 12, padding: '10px 14px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 8, color: '#DC2626', fontSize: 13 }}>
+            {error}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+        <button
+          className="btn btn-primary-tariq"
+          style={{ flex: 1 }}
+          onClick={handleSubmit}
+          disabled={submitting}>
+          {submitting ? '⏳ جاري الحفظ...' : '💾 حفظ الطلب / Save Request'}
+        </button>
+        <button className="btn btn-outline" onClick={() => onClose(null)} style={{ flex: 0 }}>
+          إلغاء
+        </button>
       </div>
     </div>
   );
@@ -715,8 +874,11 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [status, setStatus]           = useState(req.status);
   const [assignedTo, setAssignedTo]   = useState(req.assignedTo || '');
   const [finalSummary, setSummary]    = useState(req.finalSummary || '');
-  const [editingPhotos, setEditingPhotos] = useState(null); // null | 'problem' | 'progress' | 'completion'
-  const [savingPhotos, setSavingPhotos]   = useState(false);
+  const [editingPhotos, setEditingPhotos]   = useState(null); // null | 'problem' | 'progress' | 'completion'
+  const [savingPhotos, setSavingPhotos]     = useState(false);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const photoInputRef = useRef();
+  const uploadTypeRef = useRef(null);
   const [showWorkDone, setShowWork]   = useState(req.showWorkDoneToEssa || false);
   const [showCompletion, setShowComp] = useState(req.showCompletionPhotosToEssa || false);
   const [saving, setSaving]           = useState(false);
@@ -791,9 +953,30 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
     setSavingPhotos(false);
   };
 
+  const triggerUpload = (type) => {
+    uploadTypeRef.current = type;
+    photoInputRef.current?.click();
+  };
+
+  const handlePhotoUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length || !uploadTypeRef.current) return;
+    setUploadingPhotos(true);
+    const fieldMap = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
+    const srcMap   = { problem: fresh.problemPhotos, progress: fresh.progressPhotos, completion: fresh.completionPhotos };
+    const type     = uploadTypeRef.current;
+    const compressed = await Promise.all(files.map(compressImage));
+    const next = [...(srcMap[type] || []), ...compressed];
+    const updated = await updateRequest(fresh.id, { [fieldMap[type]]: next });
+    if (updated) setFresh(updated);
+    setUploadingPhotos(false);
+    e.target.value = '';
+  };
+
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
+      <input ref={photoInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotoUpload} />
 
       <div className="detail-grid">
 
@@ -854,29 +1037,36 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
               <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
             </div>
 
-            {fresh.problemPhotos?.length > 0 && (
-              <>
-                <div className="section-title" style={{ justifyContent: 'space-between' }}>
-                  <span>Problem Photos / صور المشكلة</span>
+            <div className="section-title" style={{ justifyContent: 'space-between' }}>
+              <span>Problem Photos / صور المشكلة</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => triggerUpload('problem')} disabled={uploadingPhotos}
+                  style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                  {uploadingPhotos && uploadTypeRef.current === 'problem' ? '⏳' : '📷 إضافة'}
+                </button>
+                {fresh.problemPhotos?.length > 0 && (
                   <button onClick={() => setEditingPhotos(editingPhotos === 'problem' ? null : 'problem')}
                     style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'problem' ? '#166534' : '#F1F5F9', color: editingPhotos === 'problem' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
                     {editingPhotos === 'problem' ? '✓ Done' : '✏️ Edit'}
                   </button>
-                </div>
-                <div className="photo-grid">
-                  {fresh.problemPhotos.map((src, i) => (
-                    <div key={i} className="photo-thumb"
-                      style={{ cursor: editingPhotos === 'problem' ? 'default' : 'pointer' }}
-                      onClick={() => editingPhotos !== 'problem' && setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                      <img src={src} alt="" />
-                      {editingPhotos === 'problem' && (
-                        <button className="photo-remove" disabled={savingPhotos}
-                          onClick={e => { e.stopPropagation(); deletePhoto('problem', i); }}>✕</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </>
+                )}
+              </div>
+            </div>
+            {savingPhotos && editingPhotos === 'problem' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
+            {fresh.problemPhotos?.length > 0 && (
+              <div className="photo-grid">
+                {fresh.problemPhotos.map((src, i) => (
+                  <div key={i} className="photo-thumb"
+                    style={{ cursor: editingPhotos === 'problem' ? 'default' : 'pointer' }}
+                    onClick={() => editingPhotos !== 'problem' && setLightbox({ photos: fresh.problemPhotos, index: i })}>
+                    <img src={src} alt="" />
+                    {editingPhotos === 'problem' && (
+                      <button className="photo-remove" disabled={savingPhotos}
+                        onClick={e => { e.stopPropagation(); deletePhoto('problem', i); }}>✕</button>
+                    )}
+                  </div>
+                ))}
+              </div>
             )}
           </div>
 
@@ -898,29 +1088,36 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                 </>
               )}
 
-              {fresh.progressPhotos?.length > 0 && (
-                <>
-                  <div className="section-title" style={{ justifyContent: 'space-between' }}>
-                    <span>Progress Photos / صور التقدم</span>
+              <div className="section-title" style={{ justifyContent: 'space-between' }}>
+                <span>Progress Photos / صور التقدم</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => triggerUpload('progress')} disabled={uploadingPhotos}
+                    style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                    {uploadingPhotos && uploadTypeRef.current === 'progress' ? '⏳' : '📷 إضافة'}
+                  </button>
+                  {fresh.progressPhotos?.length > 0 && (
                     <button onClick={() => setEditingPhotos(editingPhotos === 'progress' ? null : 'progress')}
                       style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'progress' ? '#166534' : '#F1F5F9', color: editingPhotos === 'progress' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
                       {editingPhotos === 'progress' ? '✓ Done' : '✏️ Edit'}
                     </button>
-                  </div>
-                  <div className="photo-grid">
-                    {fresh.progressPhotos.map((src, i) => (
-                      <div key={i} className="photo-thumb"
-                        style={{ cursor: editingPhotos === 'progress' ? 'default' : 'pointer' }}
-                        onClick={() => editingPhotos !== 'progress' && setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                        <img src={src} alt="" />
-                        {editingPhotos === 'progress' && (
-                          <button className="photo-remove" disabled={savingPhotos}
-                            onClick={e => { e.stopPropagation(); deletePhoto('progress', i); }}>✕</button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </>
+                  )}
+                </div>
+              </div>
+              {savingPhotos && editingPhotos === 'progress' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
+              {fresh.progressPhotos?.length > 0 && (
+                <div className="photo-grid">
+                  {fresh.progressPhotos.map((src, i) => (
+                    <div key={i} className="photo-thumb"
+                      style={{ cursor: editingPhotos === 'progress' ? 'default' : 'pointer' }}
+                      onClick={() => editingPhotos !== 'progress' && setLightbox({ photos: fresh.progressPhotos, index: i })}>
+                      <img src={src} alt="" />
+                      {editingPhotos === 'progress' && (
+                        <button className="photo-remove" disabled={savingPhotos}
+                          onClick={e => { e.stopPropagation(); deletePhoto('progress', i); }}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
 
               {fresh.workDone && (
@@ -930,30 +1127,36 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                 </>
               )}
 
-              {fresh.completionPhotos?.length > 0 && (
-                <>
-                  <div className="section-title" style={{ justifyContent: 'space-between' }}>
-                    <span>Completion Photos / صور الإنجاز</span>
+              <div className="section-title" style={{ justifyContent: 'space-between' }}>
+                <span>Completion Photos / صور الإنجاز</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => triggerUpload('completion')} disabled={uploadingPhotos}
+                    style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                    {uploadingPhotos && uploadTypeRef.current === 'completion' ? '⏳' : '📷 إضافة'}
+                  </button>
+                  {fresh.completionPhotos?.length > 0 && (
                     <button onClick={() => setEditingPhotos(editingPhotos === 'completion' ? null : 'completion')}
                       style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'completion' ? '#166534' : '#F1F5F9', color: editingPhotos === 'completion' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
                       {editingPhotos === 'completion' ? '✓ Done' : '✏️ Edit'}
                     </button>
-                  </div>
-                  {savingPhotos && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
-                  <div className="photo-grid">
-                    {fresh.completionPhotos.map((src, i) => (
-                      <div key={i} className="photo-thumb"
-                        style={{ cursor: editingPhotos === 'completion' ? 'default' : 'pointer' }}
-                        onClick={() => editingPhotos !== 'completion' && setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                        <img src={src} alt="" />
-                        {editingPhotos === 'completion' && (
-                          <button className="photo-remove" disabled={savingPhotos}
-                            onClick={e => { e.stopPropagation(); deletePhoto('completion', i); }}>✕</button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </>
+                  )}
+                </div>
+              </div>
+              {savingPhotos && editingPhotos === 'completion' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
+              {fresh.completionPhotos?.length > 0 && (
+                <div className="photo-grid">
+                  {fresh.completionPhotos.map((src, i) => (
+                    <div key={i} className="photo-thumb"
+                      style={{ cursor: editingPhotos === 'completion' ? 'default' : 'pointer' }}
+                      onClick={() => editingPhotos !== 'completion' && setLightbox({ photos: fresh.completionPhotos, index: i })}>
+                      <img src={src} alt="" />
+                      {editingPhotos === 'completion' && (
+                        <button className="photo-remove" disabled={savingPhotos}
+                          onClick={e => { e.stopPropagation(); deletePhoto('completion', i); }}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
           )}
