@@ -190,43 +190,47 @@ function TariqDashboard({ onSelect, tick }) {
               <div className="empty-icon">📭</div>
               <div className="empty-title">No requests here</div>
             </div>
-          ) : filtered.map(req => {
-            const s = STATUS[req.status];
-            return (
-              <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
-                <div className="card-header">
-                  <div>
-                    <div className="card-id">{req.id}</div>
-                    <div className="card-branch">Herfy {req.branchNumber}</div>
-                    {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
+          ) : (
+            <div className="req-grid">
+              {filtered.map(req => {
+                const s = STATUS[req.status];
+                return (
+                  <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
+                    <div className="card-header">
+                      <div>
+                        <div className="card-id">{req.id}</div>
+                        <div className="card-branch">Herfy {req.branchNumber}</div>
+                        {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        <span className="badge" style={{ color: s.color, background: s.bg }}>
+                          <span className="badge-dot" />{s.en}
+                        </span>
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                          color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
+                          background: req.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
+                          border: '1px solid ' + (req.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
+                          padding: '2px 8px', borderRadius: 20,
+                        }}>
+                          {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : 'No invoice'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="card-desc">{req.problemDescription}</div>
+                    <div className="card-footer">
+                      <span className="card-date">{formatDate(req.createdAt)}</span>
+                      {req.assignedTo
+                        ? <span className="assigned-tag">👷 Assigned to Workshop</span>
+                        : req.status !== 'completed'
+                          ? <span className="unassigned-tag">○ Unassigned</span>
+                          : null}
+                    </div>
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                    <span className="badge" style={{ color: s.color, background: s.bg }}>
-                      <span className="badge-dot" />{s.en}
-                    </span>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
-                      color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
-                      background: req.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
-                      border: '1px solid ' + (req.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
-                      padding: '2px 8px', borderRadius: 20,
-                    }}>
-                      {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : 'No invoice'}
-                    </span>
-                  </div>
-                </div>
-                <div className="card-desc">{req.problemDescription}</div>
-                <div className="card-footer">
-                  <span className="card-date">{formatDate(req.createdAt)}</span>
-                  {req.assignedTo
-                    ? <span className="assigned-tag">👷 Assigned to Workshop</span>
-                    : req.status !== 'completed'
-                      ? <span className="unassigned-tag">○ Unassigned</span>
-                      : null}
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -386,271 +390,284 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
-      {/* Header card */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="card-id">{fresh.id}</div>
-            <div className="card-branch">Herfy {fresh.branchNumber}</div>
-            <div className="card-date mt4">{formatDate(fresh.createdAt)}</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-            <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
-              <span className="badge-dot" />{STATUS[status].en}
-            </span>
-            <span style={{
-              fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
-              color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
-              background: fresh.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
-              border: '1px solid ' + (fresh.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
-              padding: '3px 10px', borderRadius: 20,
-            }}>
-              {fresh.invoiceAmount != null ? `💰 ${formatSAR(fresh.invoiceAmount)}` : '💰 Invoice: Not added'}
-            </span>
-          </div>
-        </div>
 
-        {getBranchInfo(fresh.branchNumber) && (() => {
-          const info = getBranchInfo(fresh.branchNumber);
-          return (
-            <div className="mt12" style={{ fontSize: 13, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '8px 12px', border: '1px solid #bbf7d0' }}>
-              📍 {info.area} — {info.address}
-            </div>
-          );
-        })()}
-        {fresh.locationLink && (
-          <div className="mt8">
-            <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
-              🗺️ Google Maps / خرائط جوجل
-            </a>
-          </div>
-        )}
+      <div className="detail-grid">
 
-        <div className="section-title">Edit Core Info / تعديل البيانات</div>
-        <div className="form-group">
-          <label className="label">Herfy Number / رقم هرفي</label>
-          <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="label">Location Link / رابط الموقع</label>
-          <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
-        </div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="label">Problem Description / وصف المشكلة</label>
-          <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
-        </div>
+        {/* ══ LEFT: main info + workshop updates ══ */}
+        <div className="detail-col">
 
-        {fresh.problemPhotos?.length > 0 && (
-          <>
-            <div className="section-title">Problem Photos / صور المشكلة</div>
-            <div className="photo-grid">
-              {fresh.problemPhotos.map((src, i) => (
-                <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                  <img src={src} alt="" />
-                </div>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Controls */}
-      <div className="card">
-        <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Controls / التحكم</div>
-        <div className="form-group">
-          <label className="label">Status / الحالة</label>
-          <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
-            <option value="received">Request Received / تم استلام الطلب</option>
-            <option value="scheduled">Scheduled / مجدول</option>
-            <option value="in_progress">In Progress / قيد التنفيذ</option>
-            <option value="completed">Completed / مكتمل</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label className="label">Assign To / إسناد إلى</label>
-          <select className="select" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
-            <option value="">— Not Assigned / غير مسند —</option>
-            <option value="majed">Workshop Team / فريق الورشة</option>
-          </select>
-        </div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="label">💰 Invoice Amount / قيمة الفاتورة <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— Admin only</span></label>
-          <div style={{ display: 'flex', alignItems: 'stretch' }}>
-            <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
-            <input
-              className="input"
-              type="number"
-              step="0.01"
-              min="0"
-              placeholder="0.00"
-              value={invoiceAmount}
-              onChange={e => setInvoiceAmt(e.target.value)}
-              style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Notes */}
-      <div className="card">
-        <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Notes / الملاحظات</div>
-        <div className="form-group">
-          <label className="label">🔒 Internal Notes <span>/ ملاحظات داخلية</span></label>
-          <textarea className="textarea" placeholder="Private notes for yourself..."
-            value={internalNotes} onChange={e => setInternal(e.target.value)} rows={3} />
-        </div>
-        <div className="form-group">
-          <label className="label">👷 Notes to Workshop <span>/ ملاحظات للورشة</span></label>
-          <textarea className="textarea" placeholder="Instructions for the maintenance team..."
-            value={notesToMajed} onChange={e => setToMajed(e.target.value)} rows={3} />
-        </div>
-        <div className="form-group">
-          <label className="label">👤 Notes to Client <span>/ ملاحظات للعميل</span></label>
-          <textarea className="textarea" placeholder="Message visible to the client..."
-            value={notesToEssa} onChange={e => setToEssa(e.target.value)} rows={3} />
-        </div>
-      </div>
-
-      {/* Workshop Updates */}
-      {fresh.majedStarted && (
-        <div className="card">
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Workshop Updates / تحديثات الورشة</div>
-          <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>Not visible to client by default</div>
-
-          {fresh.majedComments?.length > 0 && (
-            <>
-              <div className="section-title">Comments / التعليقات</div>
-              {fresh.majedComments.map((c, i) => (
-                <div key={i} className="comment-item">
-                  <div className="comment-text">👷 {c.text}</div>
-                  <div className="comment-time">{formatDate(c.time)}</div>
-                </div>
-              ))}
-            </>
-          )}
-
-          {fresh.progressPhotos?.length > 0 && (
-            <>
-              <div className="section-title">Progress Photos / صور التقدم</div>
-              <div className="photo-grid">
-                {fresh.progressPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                    <img src={src} alt="" />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-
-          {fresh.workDone && (
-            <>
-              <div className="section-title">Work Done / العمل المنجز</div>
-              <div className="note-box note-box-green">{fresh.workDone}</div>
-            </>
-          )}
-
-          {fresh.completionPhotos?.length > 0 && (
-            <>
-              <div className="section-title">Completion Photos / صور الإنجاز</div>
-              <div className="photo-grid">
-                {fresh.completionPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                    <img src={src} alt="" />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* Visibility toggles */}
-      {(fresh.workDone || fresh.completionPhotos?.length > 0) && (
-        <div className="card">
-          <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Client Visibility / ما يراه العميل</div>
-          <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>Control what the client can see</div>
-          {fresh.workDone && (
-            <div className="toggle-row">
+          {/* Header card */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
-                <div className="toggle-label">Show Work Done to Client</div>
-                <div className="toggle-sub">إظهار العمل المنجز للعميل</div>
+                <div className="card-id">{fresh.id}</div>
+                <div className="card-branch">Herfy {fresh.branchNumber}</div>
+                <div className="card-date mt4">{formatDate(fresh.createdAt)}</div>
               </div>
-              <button className={`toggle ${showWorkDone ? 'on' : ''}`} onClick={() => setShowWork(v => !v)} />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
+                  <span className="badge-dot" />{STATUS[status].en}
+                </span>
+                <span style={{
+                  fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
+                  color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
+                  background: fresh.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
+                  border: '1px solid ' + (fresh.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
+                  padding: '3px 10px', borderRadius: 20,
+                }}>
+                  {fresh.invoiceAmount != null ? `💰 ${formatSAR(fresh.invoiceAmount)}` : '💰 Invoice: Not added'}
+                </span>
+              </div>
             </div>
-          )}
-          {fresh.completionPhotos?.length > 0 && (
-            <div className="toggle-row">
-              <div>
-                <div className="toggle-label">Show Completion Photos to Client</div>
-                <div className="toggle-sub">إظهار صور الإنجاز للعميل</div>
+
+            {getBranchInfo(fresh.branchNumber) && (() => {
+              const info = getBranchInfo(fresh.branchNumber);
+              return (
+                <div className="mt12" style={{ fontSize: 13, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '8px 12px', border: '1px solid #bbf7d0' }}>
+                  📍 {info.area} — {info.address}
+                </div>
+              );
+            })()}
+            {fresh.locationLink && (
+              <div className="mt8">
+                <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
+                  🗺️ Google Maps / خرائط جوجل
+                </a>
               </div>
-              <button className={`toggle ${showCompletion ? 'on' : ''}`} onClick={() => setShowComp(v => !v)} />
+            )}
+
+            <div className="section-title">Edit Core Info / تعديل البيانات</div>
+            <div className="form-group">
+              <label className="label">Herfy Number / رقم هرفي</label>
+              <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="label">Location Link / رابط الموقع</label>
+              <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label">Problem Description / وصف المشكلة</label>
+              <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
+            </div>
+
+            {fresh.problemPhotos?.length > 0 && (
+              <>
+                <div className="section-title">Problem Photos / صور المشكلة</div>
+                <div className="photo-grid">
+                  {fresh.problemPhotos.map((src, i) => (
+                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
+                      <img src={src} alt="" />
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Workshop Updates */}
+          {fresh.majedStarted && (
+            <div className="card">
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Workshop Updates / تحديثات الورشة</div>
+              <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>Not visible to client by default</div>
+
+              {fresh.majedComments?.length > 0 && (
+                <>
+                  <div className="section-title">Comments / التعليقات</div>
+                  {fresh.majedComments.map((c, i) => (
+                    <div key={i} className="comment-item">
+                      <div className="comment-text">👷 {c.text}</div>
+                      <div className="comment-time">{formatDate(c.time)}</div>
+                    </div>
+                  ))}
+                </>
+              )}
+
+              {fresh.progressPhotos?.length > 0 && (
+                <>
+                  <div className="section-title">Progress Photos / صور التقدم</div>
+                  <div className="photo-grid">
+                    {fresh.progressPhotos.map((src, i) => (
+                      <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
+                        <img src={src} alt="" />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {fresh.workDone && (
+                <>
+                  <div className="section-title">Work Done / العمل المنجز</div>
+                  <div className="note-box note-box-green">{fresh.workDone}</div>
+                </>
+              )}
+
+              {fresh.completionPhotos?.length > 0 && (
+                <>
+                  <div className="section-title">Completion Photos / صور الإنجاز</div>
+                  <div className="photo-grid">
+                    {fresh.completionPhotos.map((src, i) => (
+                      <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
+                        <img src={src} alt="" />
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
-      )}
 
-      {/* Final Summary */}
-      <div className="card">
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="label">📋 Final Summary <span>/ الملخص النهائي (visible to client)</span></label>
-          <textarea className="textarea" placeholder="Write a final summary..."
-            value={finalSummary} onChange={e => setSummary(e.target.value)} rows={4} />
+        {/* ══ RIGHT: controls, notes, actions ══ */}
+        <div className="detail-col">
+
+          {/* Controls */}
+          <div className="card">
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Controls / التحكم</div>
+            <div className="form-group">
+              <label className="label">Status / الحالة</label>
+              <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
+                <option value="received">Request Received / تم استلام الطلب</option>
+                <option value="scheduled">Scheduled / مجدول</option>
+                <option value="in_progress">In Progress / قيد التنفيذ</option>
+                <option value="completed">Completed / مكتمل</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="label">Assign To / إسناد إلى</label>
+              <select className="select" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
+                <option value="">— Not Assigned / غير مسند —</option>
+                <option value="majed">Workshop Team / فريق الورشة</option>
+              </select>
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label">💰 Invoice Amount / قيمة الفاتورة <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— Admin only</span></label>
+              <div style={{ display: 'flex', alignItems: 'stretch' }}>
+                <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
+                <input
+                  className="input"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={invoiceAmount}
+                  onChange={e => setInvoiceAmt(e.target.value)}
+                  style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="card">
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Notes / الملاحظات</div>
+            <div className="form-group">
+              <label className="label">🔒 Internal Notes <span>/ ملاحظات داخلية</span></label>
+              <textarea className="textarea" placeholder="Private notes for yourself..."
+                value={internalNotes} onChange={e => setInternal(e.target.value)} rows={3} />
+            </div>
+            <div className="form-group">
+              <label className="label">👷 Notes to Workshop <span>/ ملاحظات للورشة</span></label>
+              <textarea className="textarea" placeholder="Instructions for the maintenance team..."
+                value={notesToMajed} onChange={e => setToMajed(e.target.value)} rows={3} />
+            </div>
+            <div className="form-group">
+              <label className="label">👤 Notes to Client <span>/ ملاحظات للعميل</span></label>
+              <textarea className="textarea" placeholder="Message visible to the client..."
+                value={notesToEssa} onChange={e => setToEssa(e.target.value)} rows={3} />
+            </div>
+          </div>
+
+          {/* Visibility toggles */}
+          {(fresh.workDone || fresh.completionPhotos?.length > 0) && (
+            <div className="card">
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Client Visibility / ما يراه العميل</div>
+              <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>Control what the client can see</div>
+              {fresh.workDone && (
+                <div className="toggle-row">
+                  <div>
+                    <div className="toggle-label">Show Work Done to Client</div>
+                    <div className="toggle-sub">إظهار العمل المنجز للعميل</div>
+                  </div>
+                  <button className={`toggle ${showWorkDone ? 'on' : ''}`} onClick={() => setShowWork(v => !v)} />
+                </div>
+              )}
+              {fresh.completionPhotos?.length > 0 && (
+                <div className="toggle-row">
+                  <div>
+                    <div className="toggle-label">Show Completion Photos to Client</div>
+                    <div className="toggle-sub">إظهار صور الإنجاز للعميل</div>
+                  </div>
+                  <button className={`toggle ${showCompletion ? 'on' : ''}`} onClick={() => setShowComp(v => !v)} />
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Final Summary */}
+          <div className="card">
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label">📋 Final Summary <span>/ الملخص النهائي (visible to client)</span></label>
+              <textarea className="textarea" placeholder="Write a final summary..."
+                value={finalSummary} onChange={e => setSummary(e.target.value)} rows={4} />
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="card">
+            <button
+              className="btn mb8"
+              style={{ background: '#1e293b', color: '#fff', border: 'none' }}
+              onClick={async () => {
+                setExporting(true);
+                await generateServiceReport(fresh);
+                setExporting(false);
+              }}
+              disabled={exporting}>
+              {exporting ? '⏳ Generating PDF...' : '📄 Export Report PDF / تصدير تقرير PDF'}
+            </button>
+            <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
+              {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
+            </button>
+            {status !== 'completed'
+              ? <button className="btn btn-primary-green mb8" onClick={markComplete} disabled={completing}>
+                  {completing ? '...' : '✅ Mark as Completed / إغلاق الطلب كمنجز'}
+                </button>
+              : <div style={{ textAlign: 'center', padding: '12px', color: '#16A34A', fontWeight: 700, fontSize: 15 }}>
+                  ✅ This request is completed / تم إغلاق هذا الطلب
+                </div>
+            }
+
+            {fresh.status === 'completed' && onOpenAladheed && (
+              <button className="btn mb8"
+                style={{ background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 700, fontSize: 14 }}
+                onClick={() => onOpenAladheed(fresh)}>
+                🦅 Open Aladheed | العضيد — Prepare Documents
+              </button>
+            )}
+
+            {!confirmDel
+              ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
+                  onClick={() => setConfirmDel(true)}>
+                  🗑️ Delete Request / حذف الطلب
+                </button>
+              : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
+                    Are you sure? / هل أنت متأكد؟
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
+                      {saving ? '...' : 'Yes, Delete / نعم احذف'}
+                    </button>
+                    <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
+                      Cancel / إلغاء
+                    </button>
+                  </div>
+                </div>
+            }
+          </div>
+
         </div>
-      </div>
-
-      {/* Action buttons */}
-      <div className="card">
-        <button
-          className="btn mb8"
-          style={{ background: '#1e293b', color: '#fff', border: 'none' }}
-          onClick={async () => {
-            setExporting(true);
-            await generateServiceReport(fresh);
-            setExporting(false);
-          }}
-          disabled={exporting}>
-          {exporting ? '⏳ Generating PDF...' : '📄 Export Report PDF / تصدير تقرير PDF'}
-        </button>
-        <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
-          {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
-        </button>
-        {status !== 'completed'
-          ? <button className="btn btn-primary-green mb8" onClick={markComplete} disabled={completing}>
-              {completing ? '...' : '✅ Mark as Completed / إغلاق الطلب كمنجز'}
-            </button>
-          : <div style={{ textAlign: 'center', padding: '12px', color: '#16A34A', fontWeight: 700, fontSize: 15 }}>
-              ✅ This request is completed / تم إغلاق هذا الطلب
-            </div>
-        }
-
-        {fresh.status === 'completed' && onOpenAladheed && (
-          <button className="btn mb8"
-            style={{ background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 700, fontSize: 14 }}
-            onClick={() => onOpenAladheed(fresh)}>
-            🦅 Open Aladheed | العضيد — Prepare Documents
-          </button>
-        )}
-
-        {!confirmDel
-          ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
-              onClick={() => setConfirmDel(true)}>
-              🗑️ Delete Request / حذف الطلب
-            </button>
-          : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
-                Are you sure? / هل أنت متأكد؟
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
-                  {saving ? '...' : 'Yes, Delete / نعم احذف'}
-                </button>
-                <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
-                  Cancel / إلغاء
-                </button>
-              </div>
-            </div>
-        }
       </div>
     </div>
   );

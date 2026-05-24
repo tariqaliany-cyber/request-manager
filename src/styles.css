@@ -284,3 +284,62 @@ body {
   .photo-grid { grid-template-columns: repeat(2, 1fr); }
   .card { padding: 14px; }
 }
+
+/* ── Desktop / Laptop Layout (≥ 1024px) ──────────── */
+@media (min-width: 1024px) {
+  /* Wider centered container */
+  .page {
+    max-width: 1200px;
+    padding: 0 40px 80px;
+  }
+
+  /* Header inner content — match container */
+  .header {
+    padding: 14px 40px;
+  }
+
+  /* Bigger stat cards */
+  .stat-card { padding: 16px 20px; }
+  .stat-num  { font-size: 26px; }
+  .stat-lbl  { font-size: 11px; }
+
+  /* More photo columns */
+  .photo-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+
+  /* Filter chips — no scroll needed */
+  .filter-bar { flex-wrap: wrap; overflow: visible; }
+  .chip { padding: 8px 18px; font-size: 13px; }
+
+  /* ── Request card list — 2-column grid ── */
+  .req-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .req-grid > .card { margin-bottom: 0; }
+
+  /* ── Detail view — 2-column layout ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 18px;
+    align-items: start;
+  }
+  .detail-col { display: flex; flex-direction: column; }
+  .detail-col > .card:last-child { margin-bottom: 0; }
+
+  /* Forms inside sidebar should feel less wide */
+  .detail-col .textarea { min-height: 80px; }
+
+  /* Login card — center nicely on large screens */
+  .login-card { max-width: 420px; }
+
+  /* Tabs — don't stretch too wide */
+  .tabs { max-width: 600px; }
+}
+
+@media (min-width: 1280px) {
+  .page { max-width: 1360px; }
+  .photo-grid { grid-template-columns: repeat(6, 1fr); }
+  .detail-grid { grid-template-columns: 1fr 420px; }
+}
