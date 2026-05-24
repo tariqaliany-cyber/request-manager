@@ -1229,7 +1229,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                 <div style={{
                   height: '100%',
                   width: `${progressPercentage}%`,
-                  background: progressPercentage === 100 ? '#16A34A' : 'var(--tariq-color)',
+                  background: progressPercentage >= 95 ? '#15803D' : progressPercentage >= 51 ? '#22C55E' : progressPercentage >= 26 ? '#EAB308' : '#EF4444',
                   borderRadius: 8,
                   transition: 'width .3s ease',
                 }} />
