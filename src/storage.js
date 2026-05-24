@@ -86,7 +86,10 @@ export const getRequests = async () => {
     .from('requests')
     .select('*')
     .order('created_at', { ascending: false });
-  if (error) { console.error('getRequests:', error); return []; }
+  if (error) { console.error('[getRequests] ERROR:', error); return []; }
+  if (data?.length > 0) {
+    console.log('[getRequests] sample row progress_percentage:', data[0].progress_percentage, '| raw keys:', Object.keys(data[0]).filter(k => k.includes('progress')));
+  }
   return data.map(fromDb);
 };
 
@@ -118,9 +121,17 @@ export const createRequest = async (input) => {
 };
 
 export const updateRequest = async (id, updates) => {
+  const dbUpdates = toDb(updates);
+  console.log('[updateRequest] id:', id);
+  console.log('[updateRequest] camelCase updates:', updates);
+  console.log('[updateRequest] snake_case to DB:', dbUpdates);
   const { data, error } = await supabase
-    .from('requests').update(toDb(updates)).eq('id', id).select().single();
-  if (error) { console.error('updateRequest:', error); return null; }
+    .from('requests').update(dbUpdates).eq('id', id).select().single();
+  if (error) {
+    console.error('[updateRequest] SUPABASE ERROR:', JSON.stringify(error));
+    return null;
+  }
+  console.log('[updateRequest] SUCCESS — saved progress_percentage:', data.progress_percentage);
   return fromDb(data);
 };
 
