@@ -46,6 +46,7 @@ const FIELD_MAP = {
   workDone:                     'work_done',
   finalSummary:                 'final_summary',
   invoiceAmount:                'invoice_amount',
+  progressPercentage:           'progress_percentage',
 };
 
 const toDb = (obj) => {
@@ -76,6 +77,7 @@ const fromDb = (row) => ({
   workDone:                     row.work_done           || '',
   finalSummary:                 row.final_summary       || '',
   invoiceAmount:                row.invoice_amount      ?? null,
+  progressPercentage:           row.progress_percentage ?? 0,
 });
 
 // ── CRUD ─────────────────────────────────────────────
