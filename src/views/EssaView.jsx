@@ -288,14 +288,18 @@ function EssaRequestList() {
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     const all = await getRequests();
     setRequests(all.filter(r => r.createdBy === 'essa'));
-    setLoading(false);
+    if (!silent) setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const id = setInterval(() => load(true), 15000);
+    return () => clearInterval(id);
+  }, []);
 
   if (selected) {
     return <EssaRequestDetail req={selected} onBack={() => { setSelected(null); load(); }} />;
@@ -348,10 +352,13 @@ function EssaRequestDetail({ req, onBack }) {
   const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
-    getRequests().then(all => {
+    const fetch = () => getRequests().then(all => {
       const found = all.find(r => r.id === req.id);
       if (found) setFresh(found);
     });
+    fetch();
+    const id = setInterval(fetch, 15000);
+    return () => clearInterval(id);
   }, [req.id]);
 
   const s = STATUS[fresh.status];
