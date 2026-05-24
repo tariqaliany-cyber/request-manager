@@ -15,71 +15,232 @@ function formatSAR(amount) {
   return 'SAR ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+/* ── Sidebar (desktop only via CSS) ────────────── */
+const SIDEBAR_FILTERS = [
+  { key: 'unassigned',  icon: '⚠️', label: 'Unassigned',  labelAr: 'غير مسندة' },
+  { key: 'scheduled',   icon: '📅', label: 'Scheduled',   labelAr: 'مجدولة'    },
+  { key: 'in_progress', icon: '🔧', label: 'In Progress', labelAr: 'قيد التنفيذ'},
+  { key: 'completed',   icon: '✅', label: 'Completed',   labelAr: 'مكتملة'    },
+];
+
+function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, unreadCount }) {
+  return (
+    <aside className="tariq-sidebar">
+      {/* Brand */}
+      <div className="sidebar-brand">
+        <img
+          src="/herfy-logo.png" alt="Herfy"
+          style={{ height: 34, width: 'auto', display: 'block', marginBottom: 12,
+                   filter: 'brightness(0) invert(1)', opacity: 0.85 }}
+        />
+        <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '-.2px' }}>
+          مدير الصيانة
+        </div>
+        <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11, marginTop: 2 }}>
+          لوحة التحكم الإدارية
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="sidebar-nav">
+        <div className="sidebar-section-label">القائمة الرئيسية</div>
+
+        <button
+          className={`sidebar-item ${activeFilter === 'all' ? 'active' : ''}`}
+          onClick={() => onFilter('all')}>
+          <span className="sidebar-item-icon">🏠</span>
+          الرئيسية / Dashboard
+        </button>
+
+        <button
+          className={`sidebar-item ${activeFilter === 'updates' ? 'active' : ''}`}
+          onClick={() => onFilter('updates')}>
+          <span className="sidebar-item-icon">🔔</span>
+          التحديثات / Updates
+          {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
+        </button>
+
+        <div className="sidebar-section-label">الأعطال</div>
+
+        {SIDEBAR_FILTERS.map(f => (
+          <button
+            key={f.key}
+            className={`sidebar-item ${activeFilter === f.key ? 'active' : ''}`}
+            onClick={() => onFilter(f.key)}>
+            <span className="sidebar-item-icon">{f.icon}</span>
+            {f.label}
+            <span style={{ fontSize: 11, color: 'inherit', opacity: .6, marginLeft: 2 }}>
+              / {f.labelAr}
+            </span>
+          </button>
+        ))}
+
+        <div className="sidebar-section-label">أدوات</div>
+
+        <button className="sidebar-item" onClick={onAladheed}>
+          <span className="sidebar-item-icon">🦅</span>
+          العضيد / Aladheed
+        </button>
+      </nav>
+
+      {/* User */}
+      <div className="sidebar-user-section">
+        <div className="sidebar-avatar">{user.name[0]}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {user.name}
+          </div>
+          <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11 }}>المسؤول الإداري</div>
+        </div>
+        <button
+          onClick={onLogout}
+          style={{ background: 'rgba(255,255,255,.08)', border: 'none', color: 'rgba(255,255,255,.5)',
+                   borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
+          خروج
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+/* ── Main Export ────────────────────────────────── */
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected]         = useState(null);
   const [tick, setTick]                 = useState(0);
   const [aladheedMode, setAladheedMode] = useState(false);
   const [aladheedJob, setAladheedJob]   = useState(null);
+  const [filter, setFilter]             = useState('all');
+  const [unreadCount, setUnreadCount]   = useState(0);
   const refresh = () => setTick(n => n + 1);
 
   const openAladheed  = (job = null) => { setAladheedJob(job); setAladheedMode(true); };
   const closeAladheed = ()           => { setAladheedJob(null); setAladheedMode(false); };
 
+  // Aladheed is full-screen — no sidebar
   if (aladheedMode) {
     return <AladheedView job={aladheedJob} onClose={closeAladheed} />;
   }
 
-  if (selected) {
-    return (
-      <div>
-        <header className="header header-tariq">
-          <button className="back-btn" onClick={() => { setSelected(null); refresh(); }} style={{ color: '#1E293B' }}>
-            ← All Requests
-          </button>
-          <div className="header-right">
-            <button className="btn-outline" onClick={() => openAladheed(null)} style={{ marginRight: 8, fontSize: 13, fontWeight: 700 }}>
+  const handleFilter = (f) => {
+    setFilter(f);
+    setSelected(null);
+  };
+
+  // Topbar title based on current view
+  const topbarTitle = selected
+    ? `Herfy ${selected.branchNumber} · ${selected.id}`
+    : filter === 'all'        ? '🏠 Dashboard / الرئيسية'
+    : filter === 'updates'    ? '🔔 Updates / التحديثات'
+    : filter === 'unassigned' ? '⚠️ Unassigned / غير مسندة'
+    : filter === 'scheduled'  ? '📅 Scheduled / مجدولة'
+    : filter === 'in_progress'? '🔧 In Progress / قيد التنفيذ'
+    : filter === 'completed'  ? '✅ Completed / مكتملة'
+    : 'Dashboard';
+
+  return (
+    <div className="tariq-layout">
+      {/* ── Sidebar (desktop only via CSS) ── */}
+      <TariqSidebar
+        user={user}
+        onLogout={onLogout}
+        activeFilter={selected ? '' : filter}
+        onFilter={handleFilter}
+        onAladheed={() => openAladheed(null)}
+        unreadCount={unreadCount}
+      />
+
+      {/* ── Main content area ── */}
+      <div className="tariq-main">
+
+        {/* Mobile header (hidden on desktop via CSS) */}
+        <header className="header header-tariq tariq-mobile-header">
+          {selected ? (
+            <>
+              <button className="back-btn" onClick={() => { setSelected(null); refresh(); }} style={{ color: '#1E293B' }}>
+                ← All Requests
+              </button>
+              <div className="header-right">
+                <button className="btn-outline" onClick={() => openAladheed(null)} style={{ fontSize: 13, fontWeight: 700 }}>
+                  🦅 Aladheed
+                </button>
+                <button className="btn-logout" onClick={onLogout}>Logout</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
+                <div>
+                  <div className="header-title">Admin / لوحة التحكم</div>
+                  <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
+                </div>
+              </div>
+              <div className="header-right">
+                <button className="btn-outline" onClick={() => openAladheed(null)} style={{ fontSize: 13, fontWeight: 700 }}>
+                  🦅 Aladheed
+                </button>
+                <button className="btn-logout" onClick={onLogout}>Logout</button>
+              </div>
+            </>
+          )}
+        </header>
+
+        {/* Desktop topbar (hidden on mobile via CSS) */}
+        <header className="tariq-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {selected && (
+              <button
+                onClick={() => { setSelected(null); refresh(); }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
+                         fontWeight: 700, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 5,
+                         padding: '6px 10px', borderRadius: 7, marginRight: 4 }}>
+                ← Dashboard
+              </button>
+            )}
+            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--gray-800)' }}>{topbarTitle}</div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+              {user.nameAr} · {user.name}
+            </span>
+            <button
+              className="btn-outline btn-sm"
+              onClick={() => openAladheed(null)}
+              style={{ fontSize: 12, fontWeight: 700 }}>
               🦅 Aladheed
             </button>
             <button className="btn-logout" onClick={onLogout}>Logout</button>
           </div>
         </header>
-        <div className="page">
-          <TariqDetail req={selected} onClose={() => { setSelected(null); refresh(); }} onOpenAladheed={openAladheed} />
-        </div>
-      </div>
-    );
-  }
 
-  return (
-    <div>
-      <header className="header header-tariq">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
-          <div>
-            <div className="header-title">Admin / لوحة التحكم</div>
-            <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
-          </div>
+        {/* Page content */}
+        <div className="page">
+          {selected ? (
+            <TariqDetail
+              req={selected}
+              onClose={() => { setSelected(null); refresh(); }}
+              onOpenAladheed={openAladheed}
+            />
+          ) : (
+            <TariqDashboard
+              onSelect={setSelected}
+              tick={tick}
+              filter={filter}
+              onFilter={setFilter}
+              onUnreadCount={setUnreadCount}
+            />
+          )}
         </div>
-        <div className="header-right">
-          <button className="btn-outline" onClick={() => openAladheed(null)} style={{ marginRight: 8, fontSize: 13, fontWeight: 700 }}>
-            🦅 Aladheed
-          </button>
-          <button className="btn-logout" onClick={onLogout}>Logout</button>
-        </div>
-      </header>
-      <div className="page">
-        <TariqDashboard onSelect={setSelected} tick={tick} />
       </div>
     </div>
   );
 }
 
-/* ── Dashboard ──────────────────────────────────────── */
-function TariqDashboard({ onSelect, tick }) {
-  const [all, setAll]           = useState([]);
-  const [notifs, setNotifs]     = useState([]);
-  const [loading, setLoading]   = useState(true);
-  const [filter, setFilter]     = useState('all');
+/* ── Dashboard ──────────────────────────────────── */
+function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
+  const [all, setAll]         = useState([]);
+  const [notifs, setNotifs]   = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -93,9 +254,11 @@ function TariqDashboard({ onSelect, tick }) {
   const lastRead = getLastRead();
   const unreadCount = notifs.filter(n => !lastRead || n.created_at > lastRead).length;
 
+  useEffect(() => { onUnreadCount(unreadCount); }, [unreadCount]);
+
   const openNotifications = () => {
     setLastRead();
-    setFilter('updates');
+    onFilter('updates');
   };
 
   const counts = {
@@ -109,6 +272,7 @@ function TariqDashboard({ onSelect, tick }) {
   const filtered = all.filter(r => {
     if (filter === 'all')        return true;
     if (filter === 'unassigned') return !r.assignedTo && r.status !== 'completed';
+    if (filter === 'updates')    return false;
     return r.status === filter;
   });
 
@@ -120,124 +284,363 @@ function TariqDashboard({ onSelect, tick }) {
     { key: 'completed',   label: 'Completed',   color: '#16A34A' },
   ];
 
-  if (loading) return <div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">Loading...</div></div>;
-
-  // Build a req lookup map for "Open Request" button in notifications
   const reqMap = Object.fromEntries(all.map(r => [r.id, r]));
+
+  // Active (in-progress + unassigned) for the panel
+  const activeReqs = all.filter(r => r.status === 'in_progress' || (!r.assignedTo && r.status !== 'completed')).slice(0, 5);
+  // Recent notifs for panel
+  const recentNotifs = notifs.slice(0, 4);
+
+  if (loading) return (
+    <div className="empty-state">
+      <div className="empty-icon">⏳</div>
+      <div className="empty-title">Loading...</div>
+    </div>
+  );
 
   return (
     <div>
-      <div className="stats-bar mt16">
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: 'var(--tariq-color)' }}>{counts.all}</div>
-          <div className="stat-lbl">Total</div>
+      {/* ═══════════════════════════════════════════
+          MOBILE LAYOUT
+      ═══════════════════════════════════════════ */}
+      <div className="tariq-mobile-only">
+        <div className="stats-bar mt16">
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: 'var(--tariq-color)' }}>{counts.all}</div>
+            <div className="stat-lbl">Total</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: '#EF4444' }}>{counts.unassigned}</div>
+            <div className="stat-lbl">Pending</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: '#563b2c' }}>{counts.in_progress}</div>
+            <div className="stat-lbl">Active</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: '#16A34A' }}>{counts.completed}</div>
+            <div className="stat-lbl">Done</div>
+          </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#EF4444' }}>{counts.unassigned}</div>
-          <div className="stat-lbl">Pending</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#563b2c' }}>{counts.in_progress}</div>
-          <div className="stat-lbl">Active</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-num" style={{ color: '#16A34A' }}>{counts.completed}</div>
-          <div className="stat-lbl">Done</div>
-        </div>
+
+        {/* Notifications button */}
+        <button
+          onClick={filter === 'updates' ? () => onFilter('all') : openNotifications}
+          style={{
+            width: '100%', marginTop: 12,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '10px 16px', borderRadius: 10, border: '1.5px solid',
+            borderColor: filter === 'updates' ? '#7C3AED' : (unreadCount > 0 ? '#7C3AED' : '#e2e8f0'),
+            background: filter === 'updates' ? '#F5F3FF' : (unreadCount > 0 ? '#faf5ff' : '#f8fafc'),
+            cursor: 'pointer', transition: 'all .15s',
+          }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14, color: filter === 'updates' ? '#7C3AED' : '#334155' }}>
+            🔔 Updates / التحديثات
+            {unreadCount > 0 && filter !== 'updates' && (
+              <span style={{ background: '#7C3AED', color: '#fff', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>
+                {unreadCount} new
+              </span>
+            )}
+          </span>
+          <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+            {filter === 'updates' ? '✕ Close' : `${notifs.length} total ›`}
+          </span>
+        </button>
+
+        {filter === 'updates' ? (
+          <NotificationsPanel notifs={notifs} lastRead={lastRead} reqMap={reqMap} onSelect={onSelect} />
+        ) : (
+          <>
+            <div className="filter-bar">
+              {FILTERS.map(f => (
+                <button key={f.key}
+                  className={`chip ${filter === f.key ? 'active' : ''}`}
+                  style={filter === f.key ? { color: f.color, borderColor: f.color, background: f.color + '15' } : {}}
+                  onClick={() => onFilter(f.key)}>
+                  {f.label}{counts[f.key] > 0 && <span style={{ opacity: .7 }}> ({counts[f.key]})</span>}
+                </button>
+              ))}
+            </div>
+            {filtered.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">📭</div>
+                <div className="empty-title">No requests here</div>
+              </div>
+            ) : (
+              <div className="req-grid">
+                {filtered.map(req => {
+                  const s = STATUS[req.status];
+                  return (
+                    <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
+                      <div className="card-header">
+                        <div>
+                          <div className="card-id">{req.id}</div>
+                          <div className="card-branch">Herfy {req.branchNumber}</div>
+                          {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                          <span className="badge" style={{ color: s.color, background: s.bg }}>
+                            <span className="badge-dot" />{s.en}
+                          </span>
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                            color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
+                            background: req.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
+                            border: '1px solid ' + (req.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
+                            padding: '2px 8px', borderRadius: 20,
+                          }}>
+                            {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : 'No invoice'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="card-desc">{req.problemDescription}</div>
+                      <div className="card-footer">
+                        <span className="card-date">{formatDate(req.createdAt)}</span>
+                        {req.assignedTo
+                          ? <span className="assigned-tag">👷 Assigned to Workshop</span>
+                          : req.status !== 'completed'
+                            ? <span className="unassigned-tag">○ Unassigned</span>
+                            : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
-      {/* Notifications button */}
-      <button
-        onClick={filter === 'updates' ? () => setFilter('all') : openNotifications}
-        style={{
-          width: '100%', marginTop: 12,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 16px', borderRadius: 10, border: '1.5px solid',
-          borderColor: filter === 'updates' ? '#7C3AED' : (unreadCount > 0 ? '#7C3AED' : '#e2e8f0'),
-          background: filter === 'updates' ? '#F5F3FF' : (unreadCount > 0 ? '#faf5ff' : '#f8fafc'),
-          cursor: 'pointer', transition: 'all .15s',
-        }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 600, fontSize: 14, color: filter === 'updates' ? '#7C3AED' : '#334155' }}>
-          🔔 Updates / التحديثات
-          {unreadCount > 0 && filter !== 'updates' && (
-            <span style={{ background: '#7C3AED', color: '#fff', borderRadius: 20, padding: '1px 8px', fontSize: 11, fontWeight: 700 }}>
-              {unreadCount} new
-            </span>
-          )}
-        </span>
-        <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-          {filter === 'updates' ? '✕ Close' : `${notifs.length} total ›`}
-        </span>
-      </button>
+      {/* ═══════════════════════════════════════════
+          DESKTOP LAYOUT (hidden on mobile via CSS)
+      ═══════════════════════════════════════════ */}
 
-      {filter === 'updates' ? (
-        <NotificationsPanel notifs={notifs} lastRead={lastRead} reqMap={reqMap} onSelect={onSelect} />
-      ) : (
-        <>
-          <div className="filter-bar">
-            {FILTERS.map(f => (
-              <button key={f.key}
-                className={`chip ${filter === f.key ? 'active' : ''}`}
-                style={filter === f.key ? { color: f.color, borderColor: f.color, background: f.color + '15' } : {}}
-                onClick={() => setFilter(f.key)}>
-                {f.label}{counts[f.key] > 0 && <span style={{ opacity: .7 }}> ({counts[f.key]})</span>}
-              </button>
-            ))}
-          </div>
-
-          {filtered.length === 0 ? (
-            <div className="empty-state">
-              <div className="empty-icon">📭</div>
-              <div className="empty-title">No requests here</div>
+      {/* KPI row */}
+      <div className="tariq-desktop-panel">
+        <div className="dash-kpi-row">
+          {[
+            { num: counts.all,         label: 'Total',       labelAr: 'الإجمالي',     color: 'var(--tariq-color)', border: 'var(--tariq-color)' },
+            { num: counts.unassigned,  label: 'Pending',     labelAr: 'غير مسندة',    color: '#EF4444',            border: '#EF4444' },
+            { num: counts.in_progress, label: 'In Progress', labelAr: 'قيد التنفيذ',  color: '#563b2c',            border: '#563b2c' },
+            { num: counts.scheduled,   label: 'Scheduled',   labelAr: 'مجدولة',       color: '#D97706',            border: '#D97706' },
+            { num: counts.completed,   label: 'Completed',   labelAr: 'مكتملة',       color: '#16A34A',            border: '#16A34A' },
+          ].map(k => (
+            <div key={k.label} className="dash-kpi-card" style={{ borderTopColor: k.border }}>
+              <div className="dash-kpi-num" style={{ color: k.color }}>{k.num}</div>
+              <div className="dash-kpi-label">{k.label}</div>
+              <div style={{ fontSize: 11, color: 'rgba(0,0,0,.3)', marginTop: 2 }}>{k.labelAr}</div>
             </div>
-          ) : (
-            <div className="req-grid">
-              {filtered.map(req => {
+          ))}
+        </div>
+
+        {/* Two panels: active requests + recent notifications */}
+        {filter !== 'updates' && (
+          <div className="dash-panels">
+            {/* Active requests panel */}
+            <div className="dash-panel">
+              <div className="dash-panel-title">
+                <span>🔧 Active Requests / الأعطال النشطة</span>
+                <span style={{ fontSize: 11, color: 'var(--gray-400)', fontWeight: 400 }}>
+                  {activeReqs.length} showing
+                </span>
+              </div>
+              {activeReqs.length === 0 ? (
+                <div style={{ fontSize: 13, color: 'var(--gray-400)', padding: '20px 0', textAlign: 'center' }}>
+                  No active requests 🎉
+                </div>
+              ) : activeReqs.map(req => {
                 const s = STATUS[req.status];
+                const info = getBranchInfo(req.branchNumber);
                 return (
-                  <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
-                    <div className="card-header">
-                      <div>
-                        <div className="card-id">{req.id}</div>
-                        <div className="card-branch">Herfy {req.branchNumber}</div>
-                        {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
+                  <div key={req.id}
+                    onClick={() => onSelect(req)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '10px 0', borderBottom: '1px solid var(--gray-100)',
+                      cursor: 'pointer', gap: 12,
+                    }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-800)' }}>
+                        Herfy {req.branchNumber}
+                        {info && <span style={{ fontWeight: 400, color: 'var(--gray-400)' }}> · {info.area}</span>}
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                        <span className="badge" style={{ color: s.color, background: s.bg }}>
-                          <span className="badge-dot" />{s.en}
-                        </span>
-                        <span style={{
-                          fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
-                          color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
-                          background: req.invoiceAmount != null ? '#F0FDF4' : '#F8FAFC',
-                          border: '1px solid ' + (req.invoiceAmount != null ? '#BBF7D0' : '#E2E8F0'),
-                          padding: '2px 8px', borderRadius: 20,
-                        }}>
-                          {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : 'No invoice'}
-                        </span>
+                      <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {(req.problemDescription || '').substring(0, 55)}
                       </div>
                     </div>
-                    <div className="card-desc">{req.problemDescription}</div>
-                    <div className="card-footer">
-                      <span className="card-date">{formatDate(req.createdAt)}</span>
-                      {req.assignedTo
-                        ? <span className="assigned-tag">👷 Assigned to Workshop</span>
-                        : req.status !== 'completed'
-                          ? <span className="unassigned-tag">○ Unassigned</span>
-                          : null}
-                    </div>
+                    <span className="badge" style={{ color: s.color, background: s.bg, flexShrink: 0, fontSize: 11 }}>
+                      <span className="badge-dot" />{s.en}
+                    </span>
                   </div>
                 );
               })}
             </div>
-          )}
-        </>
-      )}
+
+            {/* Notifications panel */}
+            <div className="dash-panel">
+              <div className="dash-panel-title">
+                <span>
+                  🔔 Workshop Updates / تحديثات الورشة
+                  {unreadCount > 0 && (
+                    <span style={{ marginLeft: 8, background: '#7C3AED', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: 10, fontWeight: 700 }}>
+                      {unreadCount} new
+                    </span>
+                  )}
+                </span>
+                <button
+                  onClick={openNotifications}
+                  style={{ fontSize: 11, color: '#7C3AED', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600, padding: 0, fontFamily: 'inherit' }}>
+                  View all ›
+                </button>
+              </div>
+              {recentNotifs.length === 0 ? (
+                <div style={{ fontSize: 13, color: 'var(--gray-400)', padding: '20px 0', textAlign: 'center' }}>
+                  No updates yet
+                </div>
+              ) : recentNotifs.map((n, i) => {
+                const isUnread = !lastRead || n.created_at > lastRead;
+                const label = ACTION_LABELS_MAP[n.action] || { en: n.action };
+                return (
+                  <div key={n.id || i} style={{
+                    padding: '9px 0', borderBottom: '1px solid var(--gray-100)',
+                    display: 'flex', gap: 10, alignItems: 'flex-start',
+                  }}>
+                    {isUnread && (
+                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#7C3AED', flexShrink: 0, marginTop: 4 }} />
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
+                        {n.req_id} · Herfy {n.branch_number}
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--gray-600)', marginTop: 1 }}>{label.en}</div>
+                      {n.detail && (
+                        <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2, fontStyle: 'italic' }}>
+                          "{n.detail.substring(0, 60)}"
+                        </div>
+                      )}
+                    </div>
+                    <span style={{ fontSize: 10, color: 'var(--gray-400)', whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {formatDate(n.created_at).split(',')[0]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Notifications full view (when filter=updates on desktop) */}
+        {filter === 'updates' && (
+          <div className="dash-panel" style={{ marginBottom: 20 }}>
+            <div className="dash-panel-title">
+              🔔 All Workshop Updates / جميع التحديثات
+            </div>
+            <NotificationsPanel notifs={notifs} lastRead={lastRead} reqMap={reqMap} onSelect={onSelect} />
+          </div>
+        )}
+
+        {/* Filter chips */}
+        {filter !== 'updates' && (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gray-800)' }}>
+              {filter === 'all' ? `All Requests — ${counts.all}` : `${FILTERS.find(f => f.key === filter)?.label} — ${filtered.length}`}
+            </div>
+            <div className="filter-bar" style={{ marginBottom: 0 }}>
+              {FILTERS.map(f => (
+                <button key={f.key}
+                  className={`chip ${filter === f.key ? 'active' : ''}`}
+                  style={filter === f.key ? { color: f.color, borderColor: f.color, background: f.color + '15' } : {}}
+                  onClick={() => onFilter(f.key)}>
+                  {f.label}{counts[f.key] > 0 && <span style={{ opacity: .7 }}> ({counts[f.key]})</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Request table */}
+        {filter !== 'updates' && (
+          <div className="req-table-wrap">
+            {filtered.length === 0 ? (
+              <div className="empty-state" style={{ padding: '48px 20px' }}>
+                <div className="empty-icon">📭</div>
+                <div className="empty-title">No requests here</div>
+              </div>
+            ) : (
+              <table className="req-table">
+                <thead>
+                  <tr>
+                    <th>Request #</th>
+                    <th>Branch</th>
+                    <th>Location</th>
+                    <th>Problem</th>
+                    <th>Status</th>
+                    <th>Invoice</th>
+                    <th>Assigned</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map(req => {
+                    const s    = STATUS[req.status];
+                    const info = getBranchInfo(req.branchNumber);
+                    return (
+                      <tr key={req.id} onClick={() => onSelect(req)}>
+                        <td>
+                          <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--gray-400)', letterSpacing: .5 }}>{req.id}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontWeight: 700 }}>Herfy {req.branchNumber}</div>
+                        </td>
+                        <td>
+                          <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
+                            📍 {info ? info.area : '—'}
+                          </div>
+                        </td>
+                        <td style={{ maxWidth: 220 }}>
+                          <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--gray-600)' }}>
+                            {req.problemDescription || '—'}
+                          </div>
+                        </td>
+                        <td>
+                          <span className="badge" style={{ color: s.color, background: s.bg, fontSize: 11 }}>
+                            <span className="badge-dot" />{s.en}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{
+                            fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                            color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
+                          }}>
+                            {req.invoiceAmount != null ? formatSAR(req.invoiceAmount) : '—'}
+                          </span>
+                        </td>
+                        <td>
+                          {req.assignedTo
+                            ? <span className="assigned-tag" style={{ fontSize: 11 }}>👷 Workshop</span>
+                            : req.status !== 'completed'
+                              ? <span className="unassigned-tag" style={{ fontSize: 11 }}>○ Unassigned</span>
+                              : <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>—</span>}
+                        </td>
+                        <td>
+                          <div style={{ fontSize: 11, color: 'var(--gray-400)', whiteSpace: 'nowrap' }}>
+                            {formatDate(req.createdAt)}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-/* ── Notifications Panel ────────────────────────────── */
+/* ── Notifications Panel ──────────────────────────── */
 function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
   if (notifs.length === 0) return (
     <div className="empty-state" style={{ marginTop: 20 }}>
@@ -306,7 +709,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
   );
 }
 
-/* ── Request Detail ─────────────────────────────────── */
+/* ── Request Detail ───────────────────────────────── */
 function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
@@ -320,7 +723,6 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [saving, setSaving]           = useState(false);
   const [saved, setSaved]             = useState(false);
   const [completing, setCompleting]   = useState(false);
-  // edit core fields
   const [branch, setBranch]           = useState(req.branchNumber);
   const [location, setLocation]       = useState(req.locationLink || '');
   const [desc, setDesc]               = useState(req.problemDescription || '');
