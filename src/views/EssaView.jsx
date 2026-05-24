@@ -239,6 +239,47 @@ function EssaNewRequest({ onSubmit }) {
   );
 }
 
+/* ── Progress Bar ───────────────────────────────────── */
+function ProgressBar({ value, large }) {
+  const pct   = Math.min(100, Math.max(0, Number(value) || 0));
+  const color = pct === 100 ? '#16A34A' : pct >= 50 ? '#D97706' : '#3B82F6';
+  const trackH = large ? 14 : 8;
+  return (
+    <div style={{ marginBottom: large ? 0 : 10, marginTop: large ? 0 : 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+        <span style={{ fontSize: large ? 13 : 11, fontWeight: 700, color: '#475569' }}>
+          {large ? 'نسبة الإنجاز / Completion' : 'Progress'}
+        </span>
+        <span style={{
+          fontSize: large ? 14 : 11, fontWeight: 800, color,
+          background: color + '18', borderRadius: 20,
+          padding: large ? '2px 10px' : '1px 7px',
+        }}>
+          {pct}%
+        </span>
+      </div>
+      <div style={{ background: '#E2E8F0', borderRadius: 99, height: trackH, overflow: 'hidden' }}>
+        <div style={{
+          height: '100%',
+          width: `${pct}%`,
+          background: pct === 100
+            ? 'linear-gradient(90deg,#16A34A,#22C55E)'
+            : pct >= 50
+            ? 'linear-gradient(90deg,#D97706,#FBBF24)'
+            : 'linear-gradient(90deg,#3B82F6,#60A5FA)',
+          borderRadius: 99,
+          transition: 'width .4s ease',
+        }} />
+      </div>
+      {large && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94A3B8', marginTop: 4 }}>
+          <span>0%</span><span>50%</span><span>100%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Request List ───────────────────────────────────── */
 function EssaRequestList() {
   const [requests, setRequests] = useState([]);
@@ -287,6 +328,7 @@ function EssaRequestList() {
               </span>
             </div>
             <div className="card-desc">{req.problemDescription}</div>
+            <ProgressBar value={req.progressPercentage ?? 0} />
             <div className="card-footer">
               <span className="card-date">{formatDate(req.createdAt)}</span>
               <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap for details ›</span>
@@ -334,6 +376,9 @@ function EssaRequestDetail({ req, onBack }) {
         <div style={{ fontSize: 24, fontWeight: 900 }}>{s.ar}</div>
         <div style={{ fontSize: 14, marginTop: 4, opacity: .8 }}>{s.en}</div>
       </div>
+
+      <div className="section-title">Progress / التقدم</div>
+      <ProgressBar value={fresh.progressPercentage ?? 0} large />
 
       {getBranchInfo(fresh.branchNumber) && (() => {
         const info = getBranchInfo(fresh.branchNumber);

@@ -890,7 +890,8 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
   const [lightbox, setLightbox]       = useState(null);
-  const [invoiceAmount, setInvoiceAmt] = useState(req.invoiceAmount ?? '');
+  const [invoiceAmount, setInvoiceAmt]       = useState(req.invoiceAmount ?? '');
+  const [progressPercentage, setProgress]    = useState(req.progressPercentage ?? 0);
 
   useEffect(() => {
     getRequests().then(all => {
@@ -903,6 +904,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
         setShowWork(found.showWorkDoneToEssa || false);
         setShowComp(found.showCompletionPhotosToEssa || false);
         setInvoiceAmt(found.invoiceAmount ?? '');
+        setProgress(found.progressPercentage ?? 0);
       }
     });
   }, [req.id]);
@@ -919,6 +921,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
       invoiceAmount:              invoiceAmount !== '' ? parseFloat(invoiceAmount) : null,
+      progressPercentage:         Math.min(100, Math.max(0, Number(progressPercentage) || 0)),
     });
     setSaving(false);
     setSaved(true);
@@ -1184,7 +1187,7 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                 <option value="majed">Workshop Team / فريق الورشة</option>
               </select>
             </div>
-            <div className="form-group" style={{ marginBottom: 0 }}>
+            <div className="form-group">
               <label className="label">💰 Invoice Amount / قيمة الفاتورة <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— Admin only</span></label>
               <div style={{ display: 'flex', alignItems: 'stretch' }}>
                 <span style={{ padding: '0 12px', fontSize: 13, fontWeight: 700, color: '#64748B', background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRight: 'none', borderRadius: '10px 0 0 10px', display: 'flex', alignItems: 'center' }}>SAR</span>
@@ -1198,6 +1201,41 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                   onChange={e => setInvoiceAmt(e.target.value)}
                   style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
                 />
+              </div>
+            </div>
+
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="label">📊 Progress / نسبة التقدم <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— visible to client</span></label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="5"
+                  placeholder="0"
+                  value={progressPercentage}
+                  onChange={e => {
+                    const v = Math.min(100, Math.max(0, Number(e.target.value) || 0));
+                    setProgress(v);
+                  }}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--tariq-color)', minWidth: 40 }}>
+                  {progressPercentage}%
+                </span>
+              </div>
+              <div style={{ marginTop: 8, background: '#F1F5F9', borderRadius: 8, height: 10, overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: `${progressPercentage}%`,
+                  background: progressPercentage === 100 ? '#16A34A' : 'var(--tariq-color)',
+                  borderRadius: 8,
+                  transition: 'width .3s ease',
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94A3B8', marginTop: 3 }}>
+                <span>0%</span><span>50%</span><span>100%</span>
               </div>
             </div>
           </div>
