@@ -242,7 +242,7 @@ function EssaNewRequest({ onSubmit }) {
 /* ── Progress Bar ───────────────────────────────────── */
 function ProgressBar({ value, large }) {
   const pct   = Math.min(100, Math.max(0, Number(value) || 0));
-  const color = pct === 100 ? '#16A34A' : pct >= 50 ? '#D97706' : '#3B82F6';
+  const color = pct >= 95 ? '#15803D' : pct >= 51 ? '#22C55E' : pct >= 26 ? '#EAB308' : '#EF4444';
   const trackH = large ? 14 : 8;
   return (
     <div style={{ marginBottom: large ? 0 : 10, marginTop: large ? 0 : 6 }}>
@@ -262,11 +262,13 @@ function ProgressBar({ value, large }) {
         <div style={{
           height: '100%',
           width: `${pct}%`,
-          background: pct === 100
-            ? 'linear-gradient(90deg,#16A34A,#22C55E)'
-            : pct >= 50
-            ? 'linear-gradient(90deg,#D97706,#FBBF24)'
-            : 'linear-gradient(90deg,#3B82F6,#60A5FA)',
+          background: pct >= 95
+            ? 'linear-gradient(90deg,#15803D,#16A34A)'
+            : pct >= 51
+            ? 'linear-gradient(90deg,#16A34A,#4ADE80)'
+            : pct >= 26
+            ? 'linear-gradient(90deg,#CA8A04,#EAB308)'
+            : 'linear-gradient(90deg,#DC2626,#EF4444)',
           borderRadius: 99,
           transition: 'width .4s ease',
         }} />
