@@ -714,10 +714,9 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
   const [assignedTo, setAssignedTo]   = useState(req.assignedTo || '');
-  const [internalNotes, setInternal]  = useState(req.internalNotes || '');
-  const [notesToMajed, setToMajed]    = useState(req.notesToMajed || '');
-  const [notesToEssa, setToEssa]      = useState(req.notesToEssa || '');
   const [finalSummary, setSummary]    = useState(req.finalSummary || '');
+  const [editingPhotos, setEditingPhotos] = useState(null); // null | 'problem' | 'progress' | 'completion'
+  const [savingPhotos, setSavingPhotos]   = useState(false);
   const [showWorkDone, setShowWork]   = useState(req.showWorkDoneToEssa || false);
   const [showCompletion, setShowComp] = useState(req.showCompletionPhotosToEssa || false);
   const [saving, setSaving]           = useState(false);
@@ -738,9 +737,6 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
         setFresh(found);
         setStatus(found.status);
         setAssignedTo(found.assignedTo || '');
-        setInternal(found.internalNotes || '');
-        setToMajed(found.notesToMajed || '');
-        setToEssa(found.notesToEssa || '');
         setSummary(found.finalSummary || '');
         setShowWork(found.showWorkDoneToEssa || false);
         setShowComp(found.showCompletionPhotosToEssa || false);
@@ -757,9 +753,6 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
       locationLink:               location.trim(),
       problemDescription:         desc.trim(),
       assignedTo:                 assignedTo || null,
-      internalNotes,
-      notesToMajed,
-      notesToEssa,
       finalSummary,
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
@@ -781,12 +774,21 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
     await updateRequest(fresh.id, {
       status: 'completed',
       finalSummary,
-      notesToEssa,
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
     });
     setStatus('completed');
     setCompleting(false);
+  };
+
+  const deletePhoto = async (type, idx) => {
+    setSavingPhotos(true);
+    const fieldMap = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
+    const srcMap   = { problem: fresh.problemPhotos, progress: fresh.progressPhotos, completion: fresh.completionPhotos };
+    const next     = (srcMap[type] || []).filter((_, i) => i !== idx);
+    const updated  = await updateRequest(fresh.id, { [fieldMap[type]]: next });
+    if (updated) setFresh(updated);
+    setSavingPhotos(false);
   };
 
   return (
@@ -854,11 +856,23 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
 
             {fresh.problemPhotos?.length > 0 && (
               <>
-                <div className="section-title">Problem Photos / صور المشكلة</div>
+                <div className="section-title" style={{ justifyContent: 'space-between' }}>
+                  <span>Problem Photos / صور المشكلة</span>
+                  <button onClick={() => setEditingPhotos(editingPhotos === 'problem' ? null : 'problem')}
+                    style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'problem' ? '#166534' : '#F1F5F9', color: editingPhotos === 'problem' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                    {editingPhotos === 'problem' ? '✓ Done' : '✏️ Edit'}
+                  </button>
+                </div>
                 <div className="photo-grid">
                   {fresh.problemPhotos.map((src, i) => (
-                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
+                    <div key={i} className="photo-thumb"
+                      style={{ cursor: editingPhotos === 'problem' ? 'default' : 'pointer' }}
+                      onClick={() => editingPhotos !== 'problem' && setLightbox({ photos: fresh.problemPhotos, index: i })}>
                       <img src={src} alt="" />
+                      {editingPhotos === 'problem' && (
+                        <button className="photo-remove" disabled={savingPhotos}
+                          onClick={e => { e.stopPropagation(); deletePhoto('problem', i); }}>✕</button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -886,11 +900,23 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
 
               {fresh.progressPhotos?.length > 0 && (
                 <>
-                  <div className="section-title">Progress Photos / صور التقدم</div>
+                  <div className="section-title" style={{ justifyContent: 'space-between' }}>
+                    <span>Progress Photos / صور التقدم</span>
+                    <button onClick={() => setEditingPhotos(editingPhotos === 'progress' ? null : 'progress')}
+                      style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'progress' ? '#166534' : '#F1F5F9', color: editingPhotos === 'progress' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                      {editingPhotos === 'progress' ? '✓ Done' : '✏️ Edit'}
+                    </button>
+                  </div>
                   <div className="photo-grid">
                     {fresh.progressPhotos.map((src, i) => (
-                      <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
+                      <div key={i} className="photo-thumb"
+                        style={{ cursor: editingPhotos === 'progress' ? 'default' : 'pointer' }}
+                        onClick={() => editingPhotos !== 'progress' && setLightbox({ photos: fresh.progressPhotos, index: i })}>
                         <img src={src} alt="" />
+                        {editingPhotos === 'progress' && (
+                          <button className="photo-remove" disabled={savingPhotos}
+                            onClick={e => { e.stopPropagation(); deletePhoto('progress', i); }}>✕</button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -906,11 +932,24 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
 
               {fresh.completionPhotos?.length > 0 && (
                 <>
-                  <div className="section-title">Completion Photos / صور الإنجاز</div>
+                  <div className="section-title" style={{ justifyContent: 'space-between' }}>
+                    <span>Completion Photos / صور الإنجاز</span>
+                    <button onClick={() => setEditingPhotos(editingPhotos === 'completion' ? null : 'completion')}
+                      style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'completion' ? '#166534' : '#F1F5F9', color: editingPhotos === 'completion' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
+                      {editingPhotos === 'completion' ? '✓ Done' : '✏️ Edit'}
+                    </button>
+                  </div>
+                  {savingPhotos && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
                   <div className="photo-grid">
                     {fresh.completionPhotos.map((src, i) => (
-                      <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
+                      <div key={i} className="photo-thumb"
+                        style={{ cursor: editingPhotos === 'completion' ? 'default' : 'pointer' }}
+                        onClick={() => editingPhotos !== 'completion' && setLightbox({ photos: fresh.completionPhotos, index: i })}>
                         <img src={src} alt="" />
+                        {editingPhotos === 'completion' && (
+                          <button className="photo-remove" disabled={savingPhotos}
+                            onClick={e => { e.stopPropagation(); deletePhoto('completion', i); }}>✕</button>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -957,26 +996,6 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                   style={{ borderRadius: '0 10px 10px 0', borderLeft: 'none', flex: 1 }}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Notes */}
-          <div className="card">
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Notes / الملاحظات</div>
-            <div className="form-group">
-              <label className="label">🔒 Internal Notes <span>/ ملاحظات داخلية</span></label>
-              <textarea className="textarea" placeholder="Private notes for yourself..."
-                value={internalNotes} onChange={e => setInternal(e.target.value)} rows={3} />
-            </div>
-            <div className="form-group">
-              <label className="label">👷 Notes to Workshop <span>/ ملاحظات للورشة</span></label>
-              <textarea className="textarea" placeholder="Instructions for the maintenance team..."
-                value={notesToMajed} onChange={e => setToMajed(e.target.value)} rows={3} />
-            </div>
-            <div className="form-group">
-              <label className="label">👤 Notes to Client <span>/ ملاحظات للعميل</span></label>
-              <textarea className="textarea" placeholder="Message visible to the client..."
-                value={notesToEssa} onChange={e => setToEssa(e.target.value)} rows={3} />
             </div>
           </div>
 
