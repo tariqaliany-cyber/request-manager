@@ -108,6 +108,7 @@ export const createRequest = async (input) => {
     work_done:                  '',
     final_summary:              '',
     invoice_amount:             null,
+    progress_percentage:        0,
     ...toDb(input),
   };
   const { data, error } = await supabase
