@@ -70,7 +70,6 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const [status, setStatus]           = useState(existing?.status || 'draft');
   const [wrpNumber, setWrp]           = useState(existing?.wrpNumber || req.id);
   const [completionDate, setComp]     = useState(existing?.completionDate || '');
-  const [clientName, setClientName]   = useState(existing?.clientName || 'Herfy');
   const [items, setItems]             = useState(
     existing?.items?.length ? existing.items.map(it => ({ ...it, key: newKey() })) : [emptyRow()]
   );
@@ -101,7 +100,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     status,
     branchNumber, branchName, branchLocation,
     requestDate, completionDate,
-    clientName, wrpNumber,
+    wrpNumber,
     items: items.filter(r => r.itemNo).map(({ key, ...rest }) => rest),
     generalRemarks,
   });
@@ -145,7 +144,6 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     requestNumber: req.id,
     wrpNumber, branchNumber, branchName, branchLocation, cityRegion,
     requestDate, completionDate,
-    clientName,
     items: items.filter(r => r.itemNo),
     generalRemarks,
   });
@@ -187,16 +185,12 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
 
         <div className="section-title">Editable Details / بيانات قابلة للتعديل</div>
         <div className="form-group">
-          <label className="label">Herfy Request Number / WRP Number</label>
+          <label className="label">Ticket Number <span>/ رقم التذكرة</span></label>
           <input className="input" value={wrpNumber} onChange={e => setWrp(e.target.value)} />
         </div>
-        <div className="form-group">
+        <div className="form-group" style={{ marginBottom: 0 }}>
           <label className="label">Completion Date <span>/ تاريخ الإنجاز</span></label>
           <input className="input" type="date" value={completionDate} onChange={e => setComp(e.target.value)} />
-        </div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="label">Client Name <span>/ اسم العميل</span></label>
-          <input className="input" value={clientName} onChange={e => setClientName(e.target.value)} />
         </div>
       </div>
 

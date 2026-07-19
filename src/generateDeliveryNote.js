@@ -44,14 +44,13 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
 <head>
 <meta charset="UTF-8" />
 <title>Delivery-Note_${esc(note.number)}_${esc(note.branchNumber)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Same font stack as the app's global styles.css — no separate web font,
+     so Arabic and English match the rest of the interface exactly. */
   body {
-    font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 11.5px;
     color: #111;
     background: #fff;
@@ -59,7 +58,7 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
     print-color-adjust: exact;
   }
 
-  .ar { font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif; direction: rtl; unicode-bidi: embed; display: inline; }
+  .ar { direction: rtl; unicode-bidi: embed; display: inline; }
   .ar-block { direction: rtl; text-align: right; }
 
   @page { size: A4 portrait; margin: 14mm 14mm 16mm; }
@@ -162,12 +161,11 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
   <div class="dn-info-grid">
     ${infoCell('Delivery Note No.', 'رقم الإشعار', esc(note.number))}
     ${infoCell('Request Number', 'رقم الطلب', esc(note.requestNumber))}
-    ${infoCell('Herfy / WRP Request No.', 'رقم طلب هرفي', esc(note.wrpNumber))}
+    ${infoCell('Ticket Number', 'رقم التذكرة', esc(note.wrpNumber))}
     ${infoCell('Branch Number', 'رقم الفرع', 'Herfy ' + esc(note.branchNumber))}
     ${infoCell('Branch Name', 'اسم الفرع', esc(note.branchName))}
     ${infoCell('City / Region', 'المدينة / المنطقة', esc(note.cityRegion))}
     ${infoCell('Branch Location', 'موقع الفرع', esc(note.branchLocation))}
-    ${infoCell('Client Name', 'اسم العميل', esc(note.clientName))}
     ${infoCell('Request Date', 'تاريخ الطلب', esc(note.requestDate))}
     ${infoCell('Completion Date', 'تاريخ الإنجاز', esc(note.completionDate))}
   </div>

@@ -45,7 +45,6 @@ create table if not exists delivery_notes (
   branch_location text default '',
   request_date text default '',
   completion_date text default '',
-  client_name text default 'Herfy',
   wrp_number text default '',
   items jsonb default '[]',
   general_remarks text default ''
@@ -56,8 +55,8 @@ alter table delivery_notes enable row level security;
 create policy "Allow all" on delivery_notes for all using (true) with check (true);
 
 -- If you already ran an earlier version of this migration (with
--- contact_person/po_number/wo_number/signature columns), drop the
--- now-unused columns instead of re-running the create table above:
+-- contact_person/po_number/wo_number/signature/client_name columns), drop
+-- the now-unused columns instead of re-running the create table above:
 -- alter table delivery_notes
 --   drop column if exists contact_person,
 --   drop column if exists po_number,
@@ -69,4 +68,5 @@ create policy "Allow all" on delivery_notes for all using (true) with check (tru
 --   drop column if exists received_by_position,
 --   drop column if exists received_by_date,
 --   drop column if exists branch_manager_name,
---   drop column if exists branch_manager_date;
+--   drop column if exists branch_manager_date,
+--   drop column if exists client_name;

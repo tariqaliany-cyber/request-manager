@@ -165,7 +165,6 @@ const DN_FIELD_MAP = {
   branchLocation:       'branch_location',
   requestDate:          'request_date',
   completionDate:       'completion_date',
-  clientName:           'client_name',
   wrpNumber:            'wrp_number',
   generalRemarks:       'general_remarks',
 };
@@ -189,7 +188,6 @@ const dnFromDb = (row) => ({
   branchLocation:       row.branch_location || '',
   requestDate:          row.request_date    || '',
   completionDate:       row.completion_date || '',
-  clientName:           row.client_name     || '',
   wrpNumber:            row.wrp_number      || '',
   items:                row.items           || [],
   generalRemarks:       row.general_remarks || '',
