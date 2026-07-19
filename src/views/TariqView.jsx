@@ -1,13 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import AladheedView from './AladheedView';
-import { getRequests, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage } from '../storage';
+import { getRequests, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
 import { generateServiceReport } from '../generateReport';
-import { BRANCHES } from '../branchData';
+import { getBranchInfo } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
-
-function getBranchInfo(num) {
-  return BRANCHES.find(b => b.num === String(num)) || null;
-}
+import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -265,6 +262,7 @@ export default function TariqView({ user, onLogout }) {
           ) : selected ? (
             <TariqDetail
               req={selected}
+              user={user}
               onClose={() => { setSelected(null); refresh(); }}
               onOpenAladheed={openAladheed}
             />
@@ -891,7 +889,8 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
 }
 
 /* ── Request Detail ───────────────────────────────── */
-function TariqDetail({ req, onClose, onOpenAladheed }) {
+function TariqDetail({ req, user, onClose, onOpenAladheed }) {
+  const [dnOpen, setDnOpen]           = useState(null); // null | 'new' | delivery note object
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
   const [assignedTo, setAssignedTo]   = useState(req.assignedTo || '');
@@ -1009,6 +1008,10 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
     setUploadingPhotos(false);
     e.target.value = '';
   };
+
+  if (dnOpen) {
+    return <DeliveryNoteForm req={fresh} user={user} note={dnOpen} onBack={() => setDnOpen(null)} />;
+  }
 
   return (
     <div>
@@ -1308,6 +1311,11 @@ function TariqDetail({ req, onClose, onOpenAladheed }) {
                 value={finalSummary} onChange={e => setSummary(e.target.value)} rows={4} />
             </div>
           </div>
+
+          {/* Delivery Note — Tariq only */}
+          {canManageDeliveryNotes(user) && (
+            <DeliveryNoteCard req={fresh} user={user} onOpen={setDnOpen} />
+          )}
 
           {/* Action buttons */}
           <div className="card">

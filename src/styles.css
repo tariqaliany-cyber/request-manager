@@ -285,6 +285,85 @@ body {
   .card { padding: 14px; }
 }
 
+/* ── RTL text block (Arabic paragraphs in mixed-dir UI) ───────── */
+.ar-rtl { direction: rtl; text-align: right; unicode-bidi: embed; }
+
+/* ── Delivery Note: saved-notes list ──────────────────────────── */
+.dn-list-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border: 1.5px solid var(--gray-200); border-radius: 10px;
+  margin-bottom: 8px; cursor: pointer; transition: border-color .15s, background .15s;
+}
+.dn-list-item:hover { border-color: var(--tariq-color); background: var(--gray-50); }
+
+/* ── Delivery Note: locked request-info grid ──────────────────── */
+.dn-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+  border: 1.5px solid var(--gray-200); border-radius: 10px; overflow: hidden;
+  margin: 4px 0 18px;
+}
+.dn-info-cell { padding: 8px 12px; border-bottom: 1px solid var(--gray-100); border-right: 1px solid var(--gray-100); background: var(--gray-50); }
+.dn-info-cell:nth-child(even) { border-right: none; }
+
+/* ── Delivery Note: items table ───────────────────────────────── */
+.dn-table-wrap { overflow-x: auto; }
+table.dn-items-table { width: 100%; min-width: 780px; border-collapse: collapse; }
+table.dn-items-table th {
+  text-align: left; font-size: 11px; font-weight: 800; color: var(--gray-400);
+  text-transform: uppercase; letter-spacing: .4px; padding: 6px 8px; border-bottom: 2px solid var(--gray-200);
+}
+table.dn-items-table td { padding: 6px 8px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
+table.dn-items-table .dn-col-no { width: 34px; color: var(--gray-400); font-size: 12px; }
+table.dn-items-table .dn-col-picker { width: 220px; position: relative; }
+table.dn-items-table .dn-col-desc { max-width: 260px; font-size: 12px; color: var(--gray-600); }
+table.dn-items-table .dn-col-unit { width: 50px; font-size: 12px; }
+table.dn-items-table .dn-col-qty { width: 80px; }
+table.dn-items-table .dn-col-qty input { padding: 8px; }
+table.dn-items-table .dn-col-remarks { width: 160px; }
+table.dn-items-table .dn-col-remarks input { padding: 8px; }
+table.dn-items-table .dn-col-actions { width: 64px; white-space: nowrap; }
+
+.dn-icon-btn {
+  width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid var(--gray-200);
+  background: #fff; cursor: pointer; font-size: 13px; color: var(--gray-600);
+  display: inline-flex; align-items: center; justify-content: center; margin-right: 4px;
+}
+.dn-icon-btn:hover { border-color: var(--tariq-color); color: var(--tariq-color); }
+.dn-icon-btn-danger:hover { border-color: #EF4444; color: #EF4444; }
+
+/* ── Delivery Note: BOQ item searchable dropdown ──────────────── */
+.dn-picker { position: relative; }
+.dn-picker-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
+  max-height: 320px; overflow-y: auto;
+  background: #fff; border: 1.5px solid var(--gray-200); border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.dn-picker-group {
+  position: sticky; top: 0; background: var(--gray-100); color: var(--gray-600);
+  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
+  padding: 6px 10px;
+}
+.dn-picker-item { padding: 8px 10px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
+.dn-picker-item:hover { background: var(--gray-50); }
+.dn-picker-item-no { font-weight: 700; color: var(--tariq-color); flex-shrink: 0; min-width: 26px; }
+.dn-picker-item-desc { flex: 1; color: var(--gray-800); }
+.dn-picker-item-unit { color: var(--gray-400); font-size: 11px; flex-shrink: 0; }
+.dn-picker-empty { padding: 12px; font-size: 13px; color: var(--gray-400); text-align: center; }
+
+/* ── Delivery Note: Herfy receipt/signature/stamp box ─────────── */
+.dn-stamp-heading { text-align: center; margin-top: 18px; margin-bottom: 8px; font-weight: 800; font-size: 14px; color: var(--gray-800); }
+.dn-stamp-heading > div { line-height: 1.5; }
+.dn-stamp-box {
+  border: 2px solid var(--gray-800); border-radius: 8px;
+  height: 160px; background: var(--gray-50);
+}
+
+@media (max-width: 600px) {
+  .dn-info-grid { grid-template-columns: 1fr; }
+  .dn-info-cell:nth-child(even) { border-right: 1px solid var(--gray-100); }
+}
+
 /* ── Desktop / Laptop Layout (≥ 1024px) ──────────── */
 @media (min-width: 1024px) {
   /* Wider centered container */
