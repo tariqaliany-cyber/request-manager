@@ -19,6 +19,19 @@ export const STATUS = {
   completed:   { en: 'Completed',        ar: 'مكتمل',           color: '#16A34A', bg: '#F0FDF4' },
 };
 
+// ── Delivery Notes (Tariq-only feature) ───────────────
+// canManageDeliveryNotes is the single source of truth for who can see/use
+// this feature. EssaView and MajedView never import anything delivery-note
+// related, so it has zero footprint outside Tariq's dashboard.
+export const canManageDeliveryNotes = (user) => user?.role === 'tariq';
+
+export const DELIVERY_NOTE_STATUS = {
+  draft:               { en: 'Draft',               ar: 'مسودة',            color: '#64748B', bg: '#F1F5F9' },
+  ready_for_signature: { en: 'Ready for Signature',  ar: 'جاهز للتوقيع',     color: '#D97706', bg: '#FFFBEB' },
+  signed:              { en: 'Signed',               ar: 'موقّع',            color: '#16A34A', bg: '#F0FDF4' },
+  cancelled:           { en: 'Cancelled',            ar: 'ملغى',             color: '#EF4444', bg: '#FEF2F2' },
+};
+
 export const authenticate = (username, password) => {
   const u = USERS[username.toLowerCase()];
   if (u && u.password === password) return { username: username.toLowerCase(), ...u };
@@ -121,6 +134,111 @@ export const updateRequest = async (id, updates) => {
 export const deleteRequest = async (id) => {
   const { error } = await supabase.from('requests').delete().eq('id', id);
   if (error) { console.error('deleteRequest:', error); return false; }
+  return true;
+};
+
+// ── Delivery Notes CRUD ────────────────────────────────
+const DN_FIELD_MAP = {
+  requestId:            'request_id',
+  createdAt:            'created_at',
+  updatedAt:            'updated_at',
+  createdBy:            'created_by',
+  branchNumber:         'branch_number',
+  branchName:           'branch_name',
+  branchLocation:       'branch_location',
+  requestDate:          'request_date',
+  completionDate:       'completion_date',
+  clientName:           'client_name',
+  wrpNumber:            'wrp_number',
+  generalRemarks:       'general_remarks',
+};
+
+const dnToDb = (obj) => {
+  const out = {};
+  for (const [k, v] of Object.entries(obj)) out[DN_FIELD_MAP[k] || k] = v;
+  return out;
+};
+
+const dnFromDb = (row) => ({
+  id:                   row.id,
+  number:               row.number,
+  requestId:            row.request_id,
+  status:               row.status,
+  createdBy:            row.created_by,
+  createdAt:            row.created_at,
+  updatedAt:            row.updated_at,
+  branchNumber:         row.branch_number   || '',
+  branchName:           row.branch_name     || '',
+  branchLocation:       row.branch_location || '',
+  requestDate:          row.request_date    || '',
+  completionDate:       row.completion_date || '',
+  clientName:           row.client_name     || '',
+  wrpNumber:            row.wrp_number      || '',
+  items:                row.items           || [],
+  generalRemarks:       row.general_remarks || '',
+});
+
+export const getDeliveryNotesByRequest = async (requestId) => {
+  const { data, error } = await supabase
+    .from('delivery_notes')
+    .select('*')
+    .eq('request_id', requestId)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('getDeliveryNotesByRequest:', error); return []; }
+  return data.map(dnFromDb);
+};
+
+// Generates the next sequential DN-<year>-#### number by looking at the
+// highest existing number for the current year.
+export const generateDeliveryNoteNumber = async () => {
+  const year = new Date().getFullYear();
+  const prefix = `DN-${year}-`;
+  const { data, error } = await supabase
+    .from('delivery_notes')
+    .select('number')
+    .like('number', `${prefix}%`)
+    .order('number', { ascending: false })
+    .limit(1);
+  if (error) console.error('generateDeliveryNoteNumber:', error);
+  const last = data?.[0]?.number;
+  const lastSeq = last ? parseInt(last.slice(prefix.length), 10) || 0 : 0;
+  return `${prefix}${String(lastSeq + 1).padStart(4, '0')}`;
+};
+
+// Retries a few times on a unique-constraint violation (duplicate number)
+// to stay safe under near-simultaneous creates without needing a DB sequence.
+export const createDeliveryNote = async (input) => {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const number = input.number || await generateDeliveryNoteNumber();
+    const note = {
+      id:               'DN-' + Date.now(),
+      status:           'draft',
+      items:            [],
+      general_remarks:  '',
+      ...dnToDb(input),
+      number,
+    };
+    const { data, error } = await supabase.from('delivery_notes').insert(note).select().single();
+    if (!error) return dnFromDb(data);
+    if (error.code !== '23505') { console.error('createDeliveryNote:', error); return null; }
+    // duplicate number — regenerate and retry
+  }
+  console.error('createDeliveryNote: exhausted retries generating a unique number');
+  return null;
+};
+
+export const updateDeliveryNote = async (id, updates) => {
+  const { data, error } = await supabase
+    .from('delivery_notes')
+    .update({ ...dnToDb(updates), updated_at: new Date().toISOString() })
+    .eq('id', id).select().single();
+  if (error) { console.error('updateDeliveryNote:', error); return null; }
+  return dnFromDb(data);
+};
+
+export const deleteDeliveryNote = async (id) => {
+  const { error } = await supabase.from('delivery_notes').delete().eq('id', id);
+  if (error) { console.error('deleteDeliveryNote:', error); return false; }
   return true;
 };
 

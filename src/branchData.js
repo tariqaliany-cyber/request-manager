@@ -3088,3 +3088,7 @@ export const BRANCHES = [
     "mapsUrl": "https://goo.gl/maps/EES71iqJ5Dao8qyKA"
   }
 ];
+
+export function getBranchInfo(num) {
+  return BRANCHES.find(b => b.num === String(num)) || null;
+}
