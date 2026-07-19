@@ -60,20 +60,16 @@ export function buildDeliveryNoteHtml(note, { print = true } = {}) {
   .ar { direction: rtl; unicode-bidi: embed; display: inline; }
   .ar-block { direction: rtl; text-align: right; }
 
-  @page { size: A4 portrait; margin: 14mm 14mm 16mm; }
+  @page { size: A4 portrait; margin: 8mm 14mm 16mm; }
 
   .dn-wrap { width: 100%; max-width: 720px; margin: 0 auto; position: relative; }
 
   /* Navy / gold / white palette — specific to this document */
   :root { --navy: #0F172A; --gold: #B8860B; --gold-bg: #FDF8ED; }
 
-  /* Header — logo only, no company-name text */
-  .dn-logo { text-align: center; padding: 6px 0 18px; }
-  .dn-logo img { height: 170px; width: auto; max-width: 100%; object-fit: contain; }
-
   .dn-title-bar {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: var(--navy); color: #fff; padding: 10px 14px; border-radius: 4px 4px 0 0;
+    background: var(--navy); color: #fff; padding: 8px 14px; border-radius: 4px 4px 0 0;
     border-bottom: 3px solid var(--gold);
   }
   .dn-title-ar { font-size: 17px; font-weight: 800; }
@@ -141,8 +137,6 @@ export function buildDeliveryNoteHtml(note, { print = true } = {}) {
 <body>
 <div class="dn-wrap" id="dnWrap">
 
-  <div class="dn-logo"><img src="/altasis-logo.png" onerror="this.style.display='none'" /></div>
-
   <div class="dn-title-bar">
     <div class="dn-title-ar">إشعار استلام</div>
     <div class="dn-title-en">DELIVERY NOTE</div>
@@ -201,7 +195,7 @@ export function buildDeliveryNoteHtml(note, { print = true } = {}) {
   // vs. A4 usable height — and (b) trigger print if requested.
   function injectFooters() {
     var wrap = document.getElementById('dnWrap');
-    var PAGE_MARGIN_MM = 30; // 14mm top + 16mm bottom, matches @page margin
+    var PAGE_MARGIN_MM = 24; // 8mm top + 16mm bottom, matches @page margin
     var PX_PER_MM = 96 / 25.4;
     var pageHeightPx = (297 - PAGE_MARGIN_MM) * PX_PER_MM;
     var totalHeight = wrap.scrollHeight;
