@@ -4,9 +4,6 @@
 // and RTL-rendered correctly by the browser engine and no photo/rate data
 // is ever pulled in — this document contains neither.
 
-const COMPANY_AR = 'مؤسسة التأسيس الاستراتيجي للمقاولات العامة';
-const COMPANY_EN = 'Strategic Origination Contracting Est.';
-
 const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 const STATUS_LABEL = {
@@ -36,22 +33,23 @@ function itemRows(items) {
     </tr>`).join('');
 }
 
-export async function generateDeliveryNotePdf(note, { print = true } = {}) {
+// Builds the self-contained HTML document (used by both the Preview modal's
+// iframe and the Export PDF print window) without touching window.open.
+export function buildDeliveryNoteHtml(note, { print = true } = {}) {
   const st = STATUS_LABEL[note.status] || STATUS_LABEL.draft;
 
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="ar" dir="ltr">
 <head>
 <meta charset="UTF-8" />
 <title>Delivery-Note_${esc(note.number)}_${esc(note.branchNumber)}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;600;700&family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Same font stack as the app's global styles.css — no separate web font,
+     so Arabic and English match the rest of the interface exactly. */
   body {
-    font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
     font-size: 11.5px;
     color: #111;
     background: #fff;
@@ -59,7 +57,7 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
     print-color-adjust: exact;
   }
 
-  .ar { font-family: 'Noto Sans Arabic', 'Cairo', Tahoma, Arial, sans-serif; direction: rtl; unicode-bidi: embed; display: inline; }
+  .ar { direction: rtl; unicode-bidi: embed; display: inline; }
   .ar-block { direction: rtl; text-align: right; }
 
   @page { size: A4 portrait; margin: 14mm 14mm 16mm; }
@@ -69,12 +67,9 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
   /* Navy / gold / white palette — specific to this document */
   :root { --navy: #0F172A; --gold: #B8860B; --gold-bg: #FDF8ED; }
 
-  /* Header */
-  .dn-logo { text-align: center; padding-bottom: 8px; }
-  .dn-logo img { height: 90px; width: auto; object-fit: contain; }
-  .dn-company { text-align: center; padding-bottom: 10px; }
-  .dn-company-ar { font-size: 15px; font-weight: 800; color: var(--navy); }
-  .dn-company-en { font-size: 12px; font-weight: 600; color: #555; margin-top: 2px; }
+  /* Header — logo only, no company-name text */
+  .dn-logo { text-align: center; padding: 6px 0 18px; }
+  .dn-logo img { height: 170px; width: auto; max-width: 100%; object-fit: contain; }
 
   .dn-title-bar {
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -140,7 +135,6 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
   /* Footer / page markers */
   .dn-footer { position: absolute; left: 0; right: 0; text-align: center; }
   .dn-footer-inner { font-size: 8px; color: #999; border-top: 1px solid #eee; padding-top: 4px; }
-  .dn-footer-company { font-weight: 700; color: #777; }
   .dn-footer-page { margin-top: 1px; }
 </style>
 </head>
@@ -148,10 +142,6 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
 <div class="dn-wrap" id="dnWrap">
 
   <div class="dn-logo"><img src="/altasis-logo.png" onerror="this.style.display='none'" /></div>
-  <div class="dn-company">
-    <div class="dn-company-ar">${esc(COMPANY_AR)}</div>
-    <div class="dn-company-en">${esc(COMPANY_EN)}</div>
-  </div>
 
   <div class="dn-title-bar">
     <div class="dn-title-ar">إشعار استلام</div>
@@ -160,14 +150,12 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
   <div class="dn-status">${esc(st.en)} / <span class="ar">${esc(st.ar)}</span></div>
 
   <div class="dn-info-grid">
-    ${infoCell('Delivery Note No.', 'رقم الإشعار', esc(note.number))}
     ${infoCell('Request Number', 'رقم الطلب', esc(note.requestNumber))}
-    ${infoCell('Herfy / WRP Request No.', 'رقم طلب هرفي', esc(note.wrpNumber))}
+    ${infoCell('Ticket Number', 'رقم التذكرة', esc(note.wrpNumber))}
     ${infoCell('Branch Number', 'رقم الفرع', 'Herfy ' + esc(note.branchNumber))}
     ${infoCell('Branch Name', 'اسم الفرع', esc(note.branchName))}
     ${infoCell('City / Region', 'المدينة / المنطقة', esc(note.cityRegion))}
     ${infoCell('Branch Location', 'موقع الفرع', esc(note.branchLocation))}
-    ${infoCell('Client Name', 'اسم العميل', esc(note.clientName))}
     ${infoCell('Request Date', 'تاريخ الطلب', esc(note.requestDate))}
     ${infoCell('Completion Date', 'تاريخ الإنجاز', esc(note.completionDate))}
   </div>
@@ -219,14 +207,16 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
     var totalHeight = wrap.scrollHeight;
     var totalPages = Math.max(1, Math.ceil(totalHeight / pageHeightPx));
 
+    // No company name in the footer — only a page counter, and only when
+    // there's more than one page (nothing to show otherwise).
+    if (totalPages <= 1) return;
     for (var i = 0; i < totalPages; i++) {
       var footer = document.createElement('div');
       footer.className = 'dn-footer';
       footer.style.top = ((i + 1) * pageHeightPx - 34) + 'px';
       footer.innerHTML =
         '<div class="dn-footer-inner">' +
-          '<div class="dn-footer-company">${esc(COMPANY_AR)} · ${esc(COMPANY_EN)}</div>' +
-          (totalPages > 1 ? '<div class="dn-footer-page">Page ' + (i + 1) + ' / ' + totalPages + '</div>' : '') +
+          '<div class="dn-footer-page">Page ' + (i + 1) + ' / ' + totalPages + '</div>' +
         '</div>';
       wrap.appendChild(footer);
     }
@@ -252,6 +242,14 @@ export async function generateDeliveryNotePdf(note, { print = true } = {}) {
 </script>
 </body>
 </html>`;
+}
+
+// Export PDF — opens a print window and triggers window.print() so the user
+// can save it as a PDF (or send it to a physical printer). Requires a real
+// popup-capable browser; Preview does NOT use this path (see
+// buildDeliveryNoteHtml + the in-app iframe modal in DeliveryNoteSection).
+export async function generateDeliveryNotePdf(note, { print = true } = {}) {
+  const html = buildDeliveryNoteHtml(note, { print });
 
   const win = window.open('', '_blank', 'width=820,height=1000,menubar=yes,toolbar=yes');
   if (!win) {

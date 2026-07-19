@@ -364,6 +364,26 @@ table.dn-items-table .dn-col-actions { width: 64px; white-space: nowrap; }
   .dn-info-cell:nth-child(even) { border-right: 1px solid var(--gray-100); }
 }
 
+/* ── Delivery Note: in-app preview modal (iframe, no window.open) ─── */
+.dn-preview-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(15, 23, 42, .6);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.dn-preview-sheet {
+  width: 100%; max-width: 920px; height: 92vh;
+  background: #fff; border-radius: 12px; overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,.35);
+}
+.dn-preview-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px; border-bottom: 1px solid var(--gray-200);
+  font-size: 14px; font-weight: 700; color: var(--gray-800); flex-shrink: 0;
+}
+.dn-preview-iframe { flex: 1; width: 100%; border: none; background: var(--gray-100); }
+
 /* ── Desktop / Laptop Layout (≥ 1024px) ──────────── */
 @media (min-width: 1024px) {
   /* Wider centered container */
