@@ -363,3 +363,281 @@ table.dn-items-table .dn-col-actions { width: 64px; white-space: nowrap; }
   .dn-info-grid { grid-template-columns: 1fr; }
   .dn-info-cell:nth-child(even) { border-right: 1px solid var(--gray-100); }
 }
+
+/* ── Desktop / Laptop Layout (≥ 1024px) ──────────── */
+@media (min-width: 1024px) {
+  /* Wider centered container */
+  .page {
+    max-width: 1200px;
+    padding: 0 40px 80px;
+  }
+
+  /* Header inner content — match container */
+  .header {
+    padding: 14px 40px;
+  }
+
+  /* Bigger stat cards */
+  .stat-card { padding: 16px 20px; }
+  .stat-num  { font-size: 26px; }
+  .stat-lbl  { font-size: 11px; }
+
+  /* More photo columns */
+  .photo-grid { grid-template-columns: repeat(5, 1fr); gap: 10px; }
+
+  /* Filter chips — no scroll needed */
+  .filter-bar { flex-wrap: wrap; overflow: visible; }
+  .chip { padding: 8px 18px; font-size: 13px; }
+
+  /* ── Request card list — 2-column grid ── */
+  .req-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .req-grid > .card { margin-bottom: 0; }
+
+  /* ── Detail view — 2-column layout ── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 18px;
+    align-items: start;
+  }
+  .detail-col { display: flex; flex-direction: column; }
+  .detail-col > .card:last-child { margin-bottom: 0; }
+
+  /* Forms inside sidebar should feel less wide */
+  .detail-col .textarea { min-height: 80px; }
+
+  /* Login card — center nicely on large screens */
+  .login-card { max-width: 420px; }
+
+  /* Tabs — don't stretch too wide */
+  .tabs { max-width: 600px; }
+}
+
+@media (min-width: 1280px) {
+  .page { max-width: 1360px; }
+  .photo-grid { grid-template-columns: repeat(6, 1fr); }
+  .detail-grid { grid-template-columns: 1fr 420px; }
+}
+
+/* ── Tariq OPHUB-style sidebar layout ───────────── */
+
+/* Mobile defaults — sidebar hidden */
+.tariq-sidebar         { display: none; }
+.tariq-topbar          { display: none; }
+.tariq-desktop-panel   { display: none; }
+.tariq-desktop-table   { display: none; }
+.tariq-mobile-only     { display: block; }
+
+@media (min-width: 1024px) {
+  /* Root layout */
+  .tariq-layout {
+    display: flex;
+    min-height: 100dvh;
+    background: var(--gray-100);
+  }
+
+  /* ── Fixed sidebar ── */
+  .tariq-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    flex-shrink: 0;
+    background: #1E293B;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 200;
+    overflow-y: auto;
+  }
+
+  .tariq-main {
+    margin-left: 240px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+    min-width: 0;
+  }
+
+  /* Hide mobile header on desktop */
+  .tariq-mobile-header { display: none !important; }
+
+  /* ── Topbar ── */
+  .tariq-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 58px;
+    background: rgba(245,241,229,.97);
+    border-bottom: 1px solid #e8e2d0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    flex-shrink: 0;
+  }
+
+  /* Override .page inside tariq layout */
+  .tariq-main .page {
+    max-width: none;
+    padding: 24px 32px 60px;
+  }
+
+  /* ── Sidebar internals ── */
+  .sidebar-brand {
+    padding: 22px 18px 18px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+  .sidebar-nav { flex: 1; padding: 8px 0; }
+  .sidebar-section-label {
+    font-size: 9.5px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+    padding: 14px 18px 5px;
+  }
+  .sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    width: 100%;
+    border: none;
+    border-left: 3px solid transparent;
+    background: none;
+    color: rgba(255,255,255,.6);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: left;
+    transition: background .15s, color .15s;
+    font-family: inherit;
+  }
+  .sidebar-item:hover {
+    background: rgba(255,255,255,.06);
+    color: rgba(255,255,255,.9);
+  }
+  .sidebar-item.active {
+    background: rgba(86,59,44,.18);
+    color: #D4A843;
+    border-left-color: #D4A843;
+  }
+  .sidebar-item-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+  .sidebar-badge {
+    margin-left: auto;
+    background: #EF4444;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 10px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .sidebar-user-section {
+    padding: 16px 18px;
+    border-top: 1px solid rgba(255,255,255,.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sidebar-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(212,168,67,.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 800; color: #D4A843; flex-shrink: 0;
+  }
+
+  /* ── KPI cards row ── */
+  .dash-kpi-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .dash-kpi-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 18px 16px 16px;
+    box-shadow: var(--shadow);
+    border-top: 3px solid transparent;
+  }
+  .dash-kpi-num   { font-size: 30px; font-weight: 800; line-height: 1.1; }
+  .dash-kpi-label { font-size: 11px; color: var(--gray-400); margin-top: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+  .dash-kpi-delta { font-size: 11px; margin-top: 3px; font-weight: 600; }
+
+  /* ── Two-panel row ── */
+  .dash-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .dash-panel {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    min-height: 180px;
+  }
+  .dash-panel-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--gray-800);
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gray-100);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* ── Request table ── */
+  .req-table-wrap {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .req-table-hdr {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .req-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .req-table th {
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+    white-space: nowrap;
+  }
+  .req-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--gray-100);
+    vertical-align: middle;
+    color: var(--gray-800);
+  }
+  .req-table tr:last-child td { border-bottom: none; }
+  .req-table tbody tr { cursor: pointer; transition: background .1s; }
+  .req-table tbody tr:hover td { background: var(--gray-50); }
+
+  /* Show desktop-only sections */
+  .tariq-desktop-panel { display: block; }
+  .tariq-desktop-table { display: block; }
+  .tariq-mobile-only   { display: none !important; }
+}

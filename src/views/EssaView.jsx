@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createRequest, getRequests, updateRequest, deleteRequest, compressImage, STATUS, formatDate } from '../storage';
+import { createRequest, getRequests, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 
@@ -239,20 +239,67 @@ function EssaNewRequest({ onSubmit }) {
   );
 }
 
+/* ── Progress Bar ───────────────────────────────────── */
+function ProgressBar({ value, large }) {
+  const pct   = Math.min(100, Math.max(0, Number(value) || 0));
+  const color = pct >= 95 ? '#15803D' : pct >= 51 ? '#22C55E' : pct >= 26 ? '#EAB308' : '#EF4444';
+  const trackH = large ? 14 : 8;
+  return (
+    <div style={{ marginBottom: large ? 0 : 10, marginTop: large ? 0 : 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 5 }}>
+        <span style={{ fontSize: large ? 13 : 11, fontWeight: 700, color: '#475569' }}>
+          {large ? 'نسبة الإنجاز / Completion' : 'Progress'}
+        </span>
+        <span style={{
+          fontSize: large ? 14 : 11, fontWeight: 800, color,
+          background: color + '18', borderRadius: 20,
+          padding: large ? '2px 10px' : '1px 7px',
+        }}>
+          {pct}%
+        </span>
+      </div>
+      <div style={{ background: '#E2E8F0', borderRadius: 99, height: trackH, overflow: 'hidden' }}>
+        <div style={{
+          height: '100%',
+          width: `${pct}%`,
+          background: pct >= 95
+            ? 'linear-gradient(90deg,#15803D,#16A34A)'
+            : pct >= 51
+            ? 'linear-gradient(90deg,#16A34A,#4ADE80)'
+            : pct >= 26
+            ? 'linear-gradient(90deg,#CA8A04,#EAB308)'
+            : 'linear-gradient(90deg,#DC2626,#EF4444)',
+          borderRadius: 99,
+          transition: 'width .4s ease',
+        }} />
+      </div>
+      {large && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94A3B8', marginTop: 4 }}>
+          <span>0%</span><span>50%</span><span>100%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ── Request List ───────────────────────────────────── */
 function EssaRequestList() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (silent = false) => {
+    if (!silent) setLoading(true);
     const all = await getRequests();
     setRequests(all.filter(r => r.createdBy === 'essa'));
-    setLoading(false);
+    if (!silent) setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const id = setInterval(() => load(true), 15000);
+    return () => clearInterval(id);
+  }, []);
 
   if (selected) {
     return <EssaRequestDetail req={selected} onBack={() => { setSelected(null); load(); }} />;
@@ -280,12 +327,14 @@ function EssaRequestList() {
               <div>
                 <div className="card-id">{req.id}</div>
                 <div className="card-branch">Herfy {req.branchNumber}</div>
+                {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
               </div>
               <span className="badge" style={{ color: s.color, background: s.bg }}>
                 <span className="badge-dot" />{s.ar}
               </span>
             </div>
             <div className="card-desc">{req.problemDescription}</div>
+            <ProgressBar value={req.progressPercentage ?? 0} />
             <div className="card-footer">
               <span className="card-date">{formatDate(req.createdAt)}</span>
               <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap for details ›</span>
@@ -297,118 +346,23 @@ function EssaRequestList() {
   );
 }
 
-/* ── Request Detail ─────────────────────────────────── */
+/* ── Request Detail (view-only) ─────────────────────── */
 function EssaRequestDetail({ req, onBack }) {
-  const [fresh, setFresh]       = useState(req);
-  const [editMode, setEditMode] = useState(false);
-  const [confirmDel, setConfirmDel] = useState(false);
-  const [saving, setSaving]     = useState(false);
-  // edit fields
-  const [branch, setBranch]     = useState(req.branchNumber);
-  const [location, setLocation] = useState(req.locationLink);
-  const [desc, setDesc]         = useState(req.problemDescription);
-  const [photos, setPhotos]     = useState(req.problemPhotos || []);
-  const fileRef = useRef();
+  const [fresh, setFresh]   = useState(req);
+  const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
-    getRequests().then(all => {
+    const fetch = () => getRequests().then(all => {
       const found = all.find(r => r.id === req.id);
-      if (found) {
-        setFresh(found);
-        setBranch(found.branchNumber);
-        setLocation(found.locationLink);
-        setDesc(found.problemDescription);
-        setPhotos(found.problemPhotos || []);
-      }
+      if (found) setFresh(found);
     });
+    fetch();
+    const id = setInterval(fetch, 15000);
+    return () => clearInterval(id);
   }, [req.id]);
 
-  const canEdit = fresh.status === 'received';
-
-  const saveEdit = async () => {
-    if (!branch.trim() || !desc.trim()) return;
-    setSaving(true);
-    await updateRequest(fresh.id, {
-      branchNumber: branch.trim(),
-      locationLink: location.trim(),
-      problemDescription: desc.trim(),
-      problemPhotos: photos,
-    });
-    setSaving(false);
-    setEditMode(false);
-    const all = await getRequests();
-    const found = all.find(r => r.id === req.id);
-    if (found) setFresh(found);
-  };
-
-  const handleDelete = async () => {
-    setSaving(true);
-    await deleteRequest(fresh.id);
-    onBack();
-  };
-
-  const addPhotos = async (files) => {
-    const compressed = await Promise.all([...files].map(compressImage));
-    setPhotos(p => [...p, ...compressed]);
-  };
-
-  const [lightbox, setLightbox] = useState(null);
   const s = STATUS[fresh.status];
 
-  /* ── Edit Mode ── */
-  if (editMode) {
-    return (
-      <div className="card">
-        <button className="back-btn mb16" onClick={() => setEditMode(false)} style={{ color: '#64748B' }}>
-          ← Cancel / إلغاء
-        </button>
-        <div style={{ fontSize: 17, fontWeight: 800, marginBottom: 20 }}>
-          Edit Request / تعديل الطلب
-        </div>
-
-        <div className="form-group">
-          <label className="label">Herfy Branch <span>/ فرع هرفي</span> *</label>
-          <BranchDropdown value={branch} onChange={(num) => setBranch(num)} onMapsFill={(url) => setLocation(url)} hasError={false} />
-          {branch && getBranchInfo(branch) && (
-            <div style={{ marginTop: 8, padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#166534' }}>
-              📍 {getBranchInfo(branch).area} — {getBranchInfo(branch).address}
-            </div>
-          )}
-        </div>
-        <div className="form-group">
-          <label className="label">Google Maps Link <span>/ رابط خرائط جوجل</span></label>
-          <input className="input" type="url" placeholder="https://maps.google.com/..." value={location} onChange={e => setLocation(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="label">Problem Description <span>/ وصف المشكلة</span> *</label>
-          <textarea className="textarea" rows={4} value={desc} onChange={e => setDesc(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="label">Photos <span>/ الصور</span></label>
-          <div className="photo-upload-area" onClick={() => fileRef.current.click()}>
-            <div className="photo-upload-icon">📷</div>
-            <div className="photo-upload-text">Tap to add photos</div>
-          </div>
-          <input ref={fileRef} type="file" accept="image/*" multiple hidden onChange={e => addPhotos(e.target.files)} />
-          {photos.length > 0 && (
-            <div className="photo-grid mt8">
-              {photos.map((src, i) => (
-                <div key={i} className="photo-thumb">
-                  <img src={src} alt="" />
-                  <button className="photo-remove" onClick={() => setPhotos(p => p.filter((_, j) => j !== i))}>×</button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        <button className="btn btn-primary-essa" onClick={saveEdit} disabled={saving || !branch.trim() || !desc.trim()}>
-          {saving ? 'Saving...' : '💾 Save Changes / حفظ التعديلات'}
-        </button>
-      </div>
-    );
-  }
-
-  /* ── View Mode ── */
   return (
     <div className="card">
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
@@ -431,6 +385,9 @@ function EssaRequestDetail({ req, onBack }) {
         <div style={{ fontSize: 24, fontWeight: 900 }}>{s.ar}</div>
         <div style={{ fontSize: 14, marginTop: 4, opacity: .8 }}>{s.en}</div>
       </div>
+
+      <div className="section-title">Progress / التقدم</div>
+      <ProgressBar value={fresh.progressPercentage ?? 0} large />
 
       {getBranchInfo(fresh.branchNumber) && (() => {
         const info = getBranchInfo(fresh.branchNumber);
@@ -458,7 +415,7 @@ function EssaRequestDetail({ req, onBack }) {
 
       {fresh.problemPhotos?.length > 0 && (
         <>
-          <div className="section-title">Photos / الصور</div>
+          <div className="section-title">Before Photos / صور ما قبل العمل</div>
           <div className="photo-grid">
             {fresh.problemPhotos.map((src, i) => (
               <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
@@ -483,17 +440,20 @@ function EssaRequestDetail({ req, onBack }) {
         </>
       )}
 
-      {fresh.showCompletionPhotosToEssa && fresh.completionPhotos?.length > 0 && (
-        <>
-          <div className="section-title">Completion Photos / صور الإنجاز</div>
-          <div className="photo-grid">
-            {fresh.completionPhotos.map((src, i) => (
-              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                <img src={src} alt="" />
-              </div>
-            ))}
-          </div>
-        </>
+      <div className="section-title">Completion Photos / صور الإنجاز</div>
+      {fresh.showCompletionPhotosToEssa && fresh.completionPhotos?.length > 0 ? (
+        <div className="photo-grid">
+          {fresh.completionPhotos.map((src, i) => (
+            <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
+              <img src={src} alt="" />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ fontSize: 14, color: 'var(--gray-400)', background: '#f8fafc', borderRadius: 8, padding: '14px 16px', textAlign: 'center', border: '1px dashed #cbd5e1' }}>
+          Completion photos are not available yet.
+          <div style={{ fontSize: 12, marginTop: 4 }}>لم يتم رفع صور الإنجاز بعد</div>
+        </div>
       )}
 
       {fresh.finalSummary && (
@@ -504,33 +464,6 @@ function EssaRequestDetail({ req, onBack }) {
       )}
 
       <div className="card-date" style={{ marginTop: 20 }}>Submitted: {formatDate(fresh.createdAt)}</div>
-
-      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {canEdit && (
-          <button className="btn btn-outline" onClick={() => setEditMode(true)}>
-            ✏️ Edit Request / تعديل الطلب
-          </button>
-        )}
-        {!confirmDel
-          ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
-              onClick={() => setConfirmDel(true)}>
-              🗑️ Delete Request / حذف الطلب
-            </button>
-          : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
-                Are you sure? / هل أنت متأكد؟
-              </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
-                  {saving ? '...' : 'Yes, Delete / نعم احذف'}
-                </button>
-                <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
-                  Cancel / إلغاء
-                </button>
-              </div>
-            </div>
-        }
-      </div>
     </div>
   );
 }
