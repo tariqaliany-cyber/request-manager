@@ -4,12 +4,33 @@ import {
   DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
 import { getBranchInfo } from '../branchData';
-import { generateDeliveryNotePdf } from '../generateDeliveryNote';
+import { generateDeliveryNotePdf, buildDeliveryNoteHtml } from '../generateDeliveryNote';
 import BoqItemPicker from '../components/BoqItemPicker';
 
 const newKey = () => Math.random().toString(36).slice(2);
 const emptyRow = () => ({ key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '' });
 const decimalUnits = new Set(['m', 'm²']);
+
+/* ── In-app preview: renders the PDF HTML in an iframe, no window.open ── */
+function DeliveryNotePreviewModal({ html, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  return (
+    <div className="dn-preview-overlay" onClick={onClose}>
+      <div className="dn-preview-sheet" onClick={e => e.stopPropagation()}>
+        <div className="dn-preview-bar">
+          <span>Preview / معاينة</span>
+          <button type="button" className="dn-icon-btn" onClick={onClose}>✕</button>
+        </div>
+        <iframe title="Delivery Note Preview" srcDoc={html} className="dn-preview-iframe" />
+      </div>
+    </div>
+  );
+}
 
 /* ── Card shown inside the request detail: list + create button ──── */
 export function DeliveryNoteCard({ req, user, onOpen }) {
@@ -79,6 +100,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const [saved, setSaved]       = useState(false);
   const [exporting, setExporting] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(null);
 
   const isSaved = savedId != null;
   const hasItems = items.some(r => r.itemNo);
@@ -148,7 +170,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     generalRemarks,
   });
 
-  const doPreview = () => generateDeliveryNotePdf(noteForPdf(), { print: false });
+  const doPreview = () => setPreviewHtml(buildDeliveryNoteHtml(noteForPdf(), { print: false }));
   const doExport = async () => {
     if (!hasItems) return;
     setExporting(true);
@@ -160,6 +182,8 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
 
   return (
     <div>
+      {previewHtml && <DeliveryNotePreviewModal html={previewHtml} onClose={() => setPreviewHtml(null)} />}
+
       <button className="back-btn mb16" onClick={onBack}>← Back to Request / رجوع</button>
 
       {/* Header info */}
