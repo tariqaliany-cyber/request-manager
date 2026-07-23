@@ -21,12 +21,20 @@ function infoCell(labelEn, labelAr, value) {
     </div>`;
 }
 
+// Custom items keep a short "item name" and a longer "description" as
+// separate fields (see DeliveryNoteSection.jsx) — the PDF's item table only
+// has one description-style column, so combine them for display there.
+function itemDescription(it) {
+  if (it.isCustom) return [it.itemName, it.description].filter(Boolean).join(' — ');
+  return it.description;
+}
+
 function itemRows(items) {
   return items.map((it, i) => `
     <tr>
       <td class="c-no">${i + 1}</td>
       <td class="c-item">${esc(it.itemNo)}</td>
-      <td class="c-desc">${esc(it.description)}</td>
+      <td class="c-desc">${esc(itemDescription(it))}</td>
       <td class="c-unit">${esc(it.unit)}</td>
       <td class="c-qty">${esc(it.qty)}</td>
       <td class="c-remarks">${esc(it.remarks) || ''}</td>

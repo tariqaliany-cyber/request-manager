@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   getDeliveryNotesByRequest, createDeliveryNote, updateDeliveryNote, deleteDeliveryNote,
+  getBoqLibraryItems, createBoqLibraryItem,
   DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
 import { getBranchInfo } from '../branchData';
@@ -8,8 +9,14 @@ import { generateDeliveryNotePdf, buildDeliveryNoteHtml } from '../generateDeliv
 import BoqItemPicker from '../components/BoqItemPicker';
 
 const newKey = () => Math.random().toString(36).slice(2);
-const emptyRow = () => ({ key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '' });
+const emptyRow = () => ({
+  key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '',
+  itemName: '', isCustom: false, savedToLibrary: false,
+});
 const decimalUnits = new Set(['m', 'm²']);
+// A row counts as "filled" once it has either a picked BOQ item number, or —
+// for custom rows, where the item number is optional — a name/description.
+const rowHasContent = (r) => r.isCustom ? !!(r.itemName || r.description) : !!r.itemNo;
 
 /* ── In-app preview: renders the PDF HTML in an iframe, no window.open ── */
 function DeliveryNotePreviewModal({ html, onClose }) {
@@ -95,6 +102,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     existing?.items?.length ? existing.items.map(it => ({ ...it, key: newKey() })) : [emptyRow()]
   );
   const [generalRemarks, setRemarks]  = useState(existing?.generalRemarks || '');
+  const [libraryItems, setLibraryItems] = useState([]);
 
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
@@ -102,8 +110,12 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [previewHtml, setPreviewHtml] = useState(null);
 
+  useEffect(() => {
+    getBoqLibraryItems().then(setLibraryItems);
+  }, []);
+
   const isSaved = savedId != null;
-  const hasItems = items.some(r => r.itemNo);
+  const hasItems = items.some(rowHasContent);
 
   const addItem       = () => setItems(rows => [...rows, emptyRow()]);
   const removeItem     = key => setItems(rows => rows.length > 1 ? rows.filter(r => r.key !== key) : rows);
@@ -113,9 +125,38 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     return [...rows.slice(0, idx + 1), { ...rows[idx], key: newKey() }, ...rows.slice(idx + 1)];
   });
   const selectBoqItem = (key, boqItem) => setItems(rows => rows.map(r => r.key === key
-    ? { ...r, itemNo: boqItem.itemNo, category: boqItem.category, description: boqItem.description, unit: boqItem.unit, qty: 1 }
+    ? { ...r, itemNo: boqItem.itemNo, category: boqItem.category, description: boqItem.description, unit: boqItem.unit, qty: 1, isCustom: false, itemName: '', savedToLibrary: false }
+    : r));
+  const startCustomItem = (key, prefillName) => setItems(rows => rows.map(r => r.key === key
+    ? { ...r, isCustom: true, itemNo: '', category: 'Custom', itemName: prefillName || '', description: '', unit: '', qty: 1, savedToLibrary: false }
+    : r));
+  const useBoqSearch = (key) => setItems(rows => rows.map(r => r.key === key
+    ? { ...r, isCustom: false, itemNo: '', category: '', itemName: '', description: '', unit: '', savedToLibrary: false }
     : r));
   const updateItemField = (key, field, value) => setItems(rows => rows.map(r => r.key === key ? { ...r, [field]: value } : r));
+
+  const [savingLibraryKey, setSavingLibraryKey] = useState(null);
+  const [libraryError, setLibraryError] = useState(false);
+  const saveRowToLibrary = async (key) => {
+    const row = items.find(r => r.key === key);
+    if (!row) return;
+    setSavingLibraryKey(key);
+    setLibraryError(false);
+    const saved = await createBoqLibraryItem({
+      itemNo: row.itemNo,
+      category: 'Custom',
+      description: [row.itemName, row.description].filter(Boolean).join(' — '),
+      unit: row.unit,
+      createdBy: user.username,
+    });
+    setSavingLibraryKey(null);
+    if (saved) {
+      setLibraryItems(prev => [saved, ...prev]);
+      setItems(rows => rows.map(r => r.key === key ? { ...r, savedToLibrary: true } : r));
+    } else {
+      setLibraryError(true);
+    }
+  };
 
   const buildPayload = () => ({
     requestId: req.id,
@@ -123,7 +164,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     branchNumber, branchName, branchLocation,
     requestDate, completionDate,
     wrpNumber,
-    items: items.filter(r => r.itemNo).map(({ key, ...rest }) => rest),
+    items: items.filter(rowHasContent).map(({ key, ...rest }) => rest),
     generalRemarks,
   });
 
@@ -166,7 +207,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     requestNumber: req.id,
     wrpNumber, branchNumber, branchName, branchLocation, cityRegion,
     requestDate, completionDate,
-    items: items.filter(r => r.itemNo),
+    items: items.filter(rowHasContent),
     generalRemarks,
   });
 
@@ -239,15 +280,39 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
             <tbody>
               {items.map((row, i) => (
                 <tr key={row.key}>
-                  <td className="dn-col-no">{row.itemNo || '—'}</td>
-                  <td className="dn-col-picker">
-                    <BoqItemPicker
-                      value={row.itemNo ? `${row.itemNo} – ${row.description}` : ''}
-                      onSelect={item => selectBoqItem(row.key, item)}
-                    />
-                  </td>
-                  <td className="dn-col-desc">{row.description || '—'}</td>
-                  <td className="dn-col-unit">{row.unit || '—'}</td>
+                  {row.isCustom ? (
+                    <>
+                      <td className="dn-col-no">
+                        <input className="input" placeholder="Optional" value={row.itemNo} onChange={e => updateItemField(row.key, 'itemNo', e.target.value)} />
+                      </td>
+                      <td className="dn-col-picker">
+                        <div className="dn-custom-name-row">
+                          <input className="input" placeholder="Item Name / اسم البند" value={row.itemName} onChange={e => updateItemField(row.key, 'itemName', e.target.value)} />
+                          <button type="button" className="dn-icon-btn" title="Search BOQ list instead" onClick={() => useBoqSearch(row.key)}>🔍</button>
+                        </div>
+                      </td>
+                      <td className="dn-col-desc">
+                        <input className="input" placeholder="Description / الوصف" value={row.description} onChange={e => updateItemField(row.key, 'description', e.target.value)} />
+                      </td>
+                      <td className="dn-col-unit">
+                        <input className="input" placeholder="Unit" value={row.unit} onChange={e => updateItemField(row.key, 'unit', e.target.value)} />
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      <td className="dn-col-no">{row.itemNo || '—'}</td>
+                      <td className="dn-col-picker">
+                        <BoqItemPicker
+                          value={row.itemNo ? `${row.itemNo} – ${row.description}` : ''}
+                          onSelect={item => selectBoqItem(row.key, item)}
+                          onCreateCustom={name => startCustomItem(row.key, name)}
+                          libraryItems={libraryItems}
+                        />
+                      </td>
+                      <td className="dn-col-desc">{row.description || '—'}</td>
+                      <td className="dn-col-unit">{row.unit || '—'}</td>
+                    </>
+                  )}
                   <td className="dn-col-qty">
                     <input
                       className="input" type="number"
@@ -261,6 +326,15 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
                     <input className="input" value={row.remarks} onChange={e => updateItemField(row.key, 'remarks', e.target.value)} />
                   </td>
                   <td className="dn-col-actions">
+                    {row.isCustom && (
+                      row.savedToLibrary
+                        ? <span className="dn-icon-btn dn-icon-btn-saved" title="Saved to BOQ Library">✓</span>
+                        : <button type="button" className="dn-icon-btn" title="Save to BOQ Library / حفظ في مكتبة البنود"
+                            disabled={!rowHasContent(row) || savingLibraryKey === row.key}
+                            onClick={() => saveRowToLibrary(row.key)}>
+                            {savingLibraryKey === row.key ? '⏳' : '💾'}
+                          </button>
+                    )}
                     <button type="button" className="dn-icon-btn" title="Duplicate" onClick={() => duplicateItem(row.key)}>⧉</button>
                     <button type="button" className="dn-icon-btn dn-icon-btn-danger" title="Remove" onClick={() => removeItem(row.key)}>✕</button>
                   </td>
@@ -271,6 +345,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
         </div>
 
         <button type="button" className="btn btn-outline mt12" onClick={addItem}>＋ Add Item / إضافة بند</button>
+        {libraryError && <div className="error-msg" style={{ textAlign: 'center', marginTop: 8 }}>Failed to save to BOQ Library — check your connection (or that the boq_library_items table has been created) / فشل الحفظ في المكتبة</div>}
       </div>
 
       {/* Remarks + confirmation */}

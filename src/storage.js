@@ -257,6 +257,37 @@ export const deleteDeliveryNote = async (id) => {
   return true;
 };
 
+// ── BOQ Library ─────────────────────────────────────────
+// Custom items are only added here when the user explicitly clicks
+// "Save to BOQ Library" — never automatically.
+export const getBoqLibraryItems = async () => {
+  const { data, error } = await supabase
+    .from('boq_library_items')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) { console.error('getBoqLibraryItems:', error); return []; }
+  return data.map(row => ({
+    itemNo:      row.item_no || '',
+    category:    row.category || 'Custom',
+    description: row.description,
+    unit:        row.unit || '',
+  }));
+};
+
+export const createBoqLibraryItem = async ({ itemNo, category, description, unit, createdBy }) => {
+  const row = {
+    id:          'BOQL-' + Date.now(),
+    item_no:     itemNo || '',
+    category:    category || 'Custom',
+    description,
+    unit:        unit || '',
+    created_by:  createdBy,
+  };
+  const { data, error } = await supabase.from('boq_library_items').insert(row).select().single();
+  if (error) { console.error('createBoqLibraryItem:', error); return null; }
+  return { itemNo: data.item_no || '', category: data.category || 'Custom', description: data.description, unit: data.unit || '' };
+};
+
 // ── Notifications ─────────────────────────────────────
 const ACTION_LABELS = {
   started:           { en: '🚀 Work started',              ar: 'بدأ العمل'              },
