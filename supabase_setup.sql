@@ -54,6 +54,23 @@ alter table delivery_notes enable row level security;
 
 create policy "Allow all" on delivery_notes for all using (true) with check (true);
 
+-- ── BOQ Library (custom items saved for reuse across delivery notes) ──
+-- Populated only when the user explicitly clicks "Save to BOQ Library"
+-- on a custom item — never written to automatically.
+create table if not exists boq_library_items (
+  id text primary key,
+  item_no text default '',
+  category text default 'Custom',
+  description text not null,
+  unit text default '',
+  created_by text,
+  created_at timestamptz default now()
+);
+
+alter table boq_library_items enable row level security;
+
+create policy "Allow all" on boq_library_items for all using (true) with check (true);
+
 -- If you already ran an earlier version of this migration (with
 -- contact_person/po_number/wo_number/signature/client_name columns), drop
 -- the now-unused columns instead of re-running the create table above:

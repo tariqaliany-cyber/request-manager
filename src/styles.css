@@ -313,23 +313,32 @@ table.dn-items-table th {
   text-transform: uppercase; letter-spacing: .4px; padding: 6px 8px; border-bottom: 2px solid var(--gray-200);
 }
 table.dn-items-table td { padding: 6px 8px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
-table.dn-items-table .dn-col-no { width: 34px; color: var(--gray-400); font-size: 12px; }
+table.dn-items-table .dn-col-no { width: 70px; color: var(--gray-400); font-size: 12px; }
+table.dn-items-table .dn-col-no input { padding: 8px; }
 table.dn-items-table .dn-col-picker { width: 220px; position: relative; }
 table.dn-items-table .dn-col-desc { max-width: 260px; font-size: 12px; color: var(--gray-600); }
-table.dn-items-table .dn-col-unit { width: 50px; font-size: 12px; }
+table.dn-items-table .dn-col-desc input { padding: 8px; }
+table.dn-items-table .dn-col-unit { width: 70px; font-size: 12px; }
+table.dn-items-table .dn-col-unit input { padding: 8px; }
 table.dn-items-table .dn-col-qty { width: 80px; }
 table.dn-items-table .dn-col-qty input { padding: 8px; }
 table.dn-items-table .dn-col-remarks { width: 160px; }
 table.dn-items-table .dn-col-remarks input { padding: 8px; }
-table.dn-items-table .dn-col-actions { width: 64px; white-space: nowrap; }
+table.dn-items-table .dn-col-actions { width: 100px; white-space: nowrap; }
+
+.dn-custom-name-row { display: flex; gap: 4px; align-items: center; }
+.dn-custom-name-row .input { flex: 1; }
 
 .dn-icon-btn {
   width: 26px; height: 26px; border-radius: 6px; border: 1.5px solid var(--gray-200);
   background: #fff; cursor: pointer; font-size: 13px; color: var(--gray-600);
   display: inline-flex; align-items: center; justify-content: center; margin-right: 4px;
+  flex-shrink: 0;
 }
 .dn-icon-btn:hover { border-color: var(--tariq-color); color: var(--tariq-color); }
+.dn-icon-btn:disabled { opacity: .4; cursor: not-allowed; }
 .dn-icon-btn-danger:hover { border-color: #EF4444; color: #EF4444; }
+.dn-icon-btn-saved { border-color: #16A34A; color: #16A34A; cursor: default; }
 
 /* ── Delivery Note: BOQ item searchable dropdown ──────────────── */
 .dn-picker { position: relative; }
@@ -350,6 +359,8 @@ table.dn-items-table .dn-col-actions { width: 64px; white-space: nowrap; }
 .dn-picker-item-desc { flex: 1; color: var(--gray-800); }
 .dn-picker-item-unit { color: var(--gray-400); font-size: 11px; flex-shrink: 0; }
 .dn-picker-empty { padding: 12px; font-size: 13px; color: var(--gray-400); text-align: center; }
+.dn-picker-custom { border-top: 1px solid var(--gray-200); }
+.dn-picker-item-custom { color: var(--tariq-color); font-weight: 700; display: block; }
 
 /* ── Delivery Note: Herfy receipt/signature/stamp box ─────────── */
 .dn-stamp-heading { text-align: center; margin-top: 18px; margin-bottom: 8px; font-weight: 800; font-size: 14px; color: var(--gray-800); }
