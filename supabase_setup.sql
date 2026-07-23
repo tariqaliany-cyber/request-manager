@@ -27,6 +27,15 @@ alter table requests enable row level security;
 
 create policy "Allow all" on requests for all using (true) with check (true);
 
+-- ── Performance indexes ───────────────────────────────────────────
+-- Speeds up the list/filter queries in getRequestListItems (storage.js):
+-- filtering by branch, status, assigned worker, and sorting by date.
+-- id (request number) is the primary key and already indexed.
+create index if not exists requests_branch_number_idx on requests(branch_number);
+create index if not exists requests_status_idx        on requests(status);
+create index if not exists requests_assigned_to_idx   on requests(assigned_to);
+create index if not exists requests_created_at_idx    on requests(created_at desc);
+
 -- ── Delivery Notes (Tariq-only feature) ──────────────────────────
 -- Same "allow all" RLS pattern as `requests` above — this app has no
 -- real per-user Supabase Auth session to key row-level policies off of,

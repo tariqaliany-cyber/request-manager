@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import AladheedView from './AladheedView';
-import { getRequests, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { getBranchInfo } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
@@ -373,7 +373,7 @@ function TariqNewRequestForm({ onClose }) {
             <div className="photo-grid" style={{ marginBottom: 10 }}>
               {photos.map((src, i) => (
                 <div key={i} className="photo-thumb" style={{ position: 'relative' }}>
-                  <img src={src} alt="" />
+                  <img src={src} alt="" decoding="async" />
                   <button className="photo-remove" onClick={() => removePhoto(i)}>✕</button>
                 </div>
               ))}
@@ -418,7 +418,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getRequests(), getNotifications()]).then(([reqs, nfs]) => {
+    Promise.all([getRequestListItems(), getNotifications()]).then(([reqs, nfs]) => {
       setAll(reqs);
       setNotifs(nfs);
       setLoading(false);
@@ -916,8 +916,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
   const [progressPercentage, setProgress]    = useState(req.progressPercentage ?? 0);
 
   useEffect(() => {
-    getRequests().then(all => {
-      const found = all.find(r => r.id === req.id);
+    getRequestById(req.id).then(found => {
       if (found) {
         setFresh(found);
         setStatus(found.status);
@@ -1099,7 +1098,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                   <div key={i} className="photo-thumb"
                     style={{ cursor: editingPhotos === 'problem' ? 'default' : 'pointer' }}
                     onClick={() => editingPhotos !== 'problem' && setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                    <img src={src} alt="" />
+                    <img src={src} alt="" decoding="async" />
                     {editingPhotos === 'problem' && (
                       <button className="photo-remove" disabled={savingPhotos}
                         onClick={e => { e.stopPropagation(); deletePhoto('problem', i); }}>✕</button>
@@ -1150,7 +1149,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                     <div key={i} className="photo-thumb"
                       style={{ cursor: editingPhotos === 'progress' ? 'default' : 'pointer' }}
                       onClick={() => editingPhotos !== 'progress' && setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" decoding="async" />
                       {editingPhotos === 'progress' && (
                         <button className="photo-remove" disabled={savingPhotos}
                           onClick={e => { e.stopPropagation(); deletePhoto('progress', i); }}>✕</button>
@@ -1189,7 +1188,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                     <div key={i} className="photo-thumb"
                       style={{ cursor: editingPhotos === 'completion' ? 'default' : 'pointer' }}
                       onClick={() => editingPhotos !== 'completion' && setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" decoding="async" />
                       {editingPhotos === 'completion' && (
                         <button className="photo-remove" disabled={savingPhotos}
                           onClick={e => { e.stopPropagation(); deletePhoto('completion', i); }}>✕</button>

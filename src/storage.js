@@ -100,10 +100,29 @@ export const getRequests = async () => {
     .select('*')
     .order('created_at', { ascending: false });
   if (error) { console.error('[getRequests] ERROR:', error); return []; }
-  if (data?.length > 0) {
-    console.log('[getRequests] sample row progress_percentage:', data[0].progress_percentage, '| raw keys:', Object.keys(data[0]).filter(k => k.includes('progress')));
-  }
   return data.map(fromDb);
+};
+
+// Columns a list/dashboard view actually renders — deliberately excludes
+// problem_photos/progress_photos/completion_photos (base64 images), which
+// made a plain select('*') over the whole table tens of megabytes and slow
+// to load. Use getRequestById for a single request's full detail.
+const LIST_COLUMNS = 'id,created_at,status,branch_number,assigned_to,invoice_amount,progress_percentage,problem_description,created_by';
+
+export const getRequestListItems = async ({ createdBy, assignedTo, status } = {}) => {
+  let query = supabase.from('requests').select(LIST_COLUMNS).order('created_at', { ascending: false });
+  if (createdBy)  query = query.eq('created_by', createdBy);
+  if (assignedTo) query = query.eq('assigned_to', assignedTo);
+  if (status)     query = query.eq('status', status);
+  const { data, error } = await query;
+  if (error) { console.error('[getRequestListItems] ERROR:', error); return []; }
+  return data.map(fromDb);
+};
+
+export const getRequestById = async (id) => {
+  const { data, error } = await supabase.from('requests').select('*').eq('id', id).single();
+  if (error) { console.error('[getRequestById] ERROR:', error); return null; }
+  return fromDb(data);
 };
 
 export const createRequest = async (input) => {
@@ -135,16 +154,12 @@ export const createRequest = async (input) => {
 
 export const updateRequest = async (id, updates) => {
   const dbUpdates = toDb(updates);
-  console.log('[updateRequest] id:', id);
-  console.log('[updateRequest] camelCase updates:', updates);
-  console.log('[updateRequest] snake_case to DB:', dbUpdates);
   const { data, error } = await supabase
     .from('requests').update(dbUpdates).eq('id', id).select().single();
   if (error) {
-    console.error('[updateRequest] SUPABASE ERROR:', JSON.stringify(error));
+    console.error('[updateRequest] ERROR:', error);
     return null;
   }
-  console.log('[updateRequest] SUCCESS — saved progress_percentage:', data.progress_percentage);
   return fromDb(data);
 };
 
