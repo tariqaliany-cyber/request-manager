@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createRequest, getRequests, compressImage, STATUS, formatDate } from '../storage';
+import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 
@@ -224,7 +224,7 @@ function EssaNewRequest({ onSubmit }) {
           <div className="photo-grid mt8">
             {photos.map((src, i) => (
               <div key={i} className="photo-thumb">
-                <img src={src} alt="" />
+                <img src={src} alt="" decoding="async" />
                 <button className="photo-remove" onClick={() => setPhotos(p => p.filter((_, j) => j !== i))}>×</button>
               </div>
             ))}
@@ -290,8 +290,7 @@ function EssaRequestList() {
 
   const load = async (silent = false) => {
     if (!silent) setLoading(true);
-    const all = await getRequests();
-    setRequests(all.filter(r => r.createdBy === 'essa'));
+    setRequests(await getRequestListItems({ createdBy: 'essa' }));
     if (!silent) setLoading(false);
   };
 
@@ -352,8 +351,7 @@ function EssaRequestDetail({ req, onBack }) {
   const [lightbox, setLightbox] = useState(null);
 
   useEffect(() => {
-    const fetch = () => getRequests().then(all => {
-      const found = all.find(r => r.id === req.id);
+    const fetch = () => getRequestById(req.id).then(found => {
       if (found) setFresh(found);
     });
     fetch();
@@ -419,7 +417,7 @@ function EssaRequestDetail({ req, onBack }) {
           <div className="photo-grid">
             {fresh.problemPhotos.map((src, i) => (
               <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                <img src={src} alt="" />
+                <img src={src} alt="" decoding="async" />
               </div>
             ))}
           </div>
@@ -445,7 +443,7 @@ function EssaRequestDetail({ req, onBack }) {
         <div className="photo-grid">
           {fresh.completionPhotos.map((src, i) => (
             <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-              <img src={src} alt="" />
+              <img src={src} alt="" decoding="async" />
             </div>
           ))}
         </div>

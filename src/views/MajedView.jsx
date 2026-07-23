@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequests, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 
@@ -53,8 +53,8 @@ function MajedList({ onSelect }) {
   const [loading, setLoading]   = useState(true);
 
   useEffect(() => {
-    getRequests().then(all => {
-      setRequests(all.filter(r => r.assignedTo === 'majed'));
+    getRequestListItems({ assignedTo: 'majed' }).then(reqs => {
+      setRequests(reqs);
       setLoading(false);
     });
   }, []);
@@ -129,8 +129,7 @@ function MajedDetail({ req }) {
   const completionRef = useRef();
 
   const reload = async () => {
-    const all = await getRequests();
-    const updated = all.find(r => r.id === req.id);
+    const updated = await getRequestById(req.id);
     if (updated) { setFresh(updated); setWorkDone(updated.workDone || ''); }
   };
 
@@ -238,7 +237,7 @@ function MajedDetail({ req }) {
             <div className="photo-grid">
               {fresh.problemPhotos.map((src, i) => (
                 <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                  <img src={src} alt="" />
+                  <img src={src} alt="" decoding="async" />
                 </div>
               ))}
             </div>
@@ -282,7 +281,7 @@ function MajedDetail({ req }) {
                     <div className="photo-grid">
                       {stagedProgress.map((src, i) => (
                         <div key={i} className="photo-thumb">
-                          <img src={src} alt="" />
+                          <img src={src} alt="" decoding="async" />
                           <button className="photo-remove" onClick={() => setStagedProgress(p => p.filter((_, j) => j !== i))}>×</button>
                         </div>
                       ))}
@@ -310,7 +309,7 @@ function MajedDetail({ req }) {
                 <div className="photo-grid">
                   {fresh.progressPhotos.map((src, i) => (
                     <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" decoding="async" />
                     </div>
                   ))}
                 </div>
@@ -375,7 +374,7 @@ function MajedDetail({ req }) {
                     <div className="photo-grid">
                       {stagedCompletion.map((src, i) => (
                         <div key={i} className="photo-thumb">
-                          <img src={src} alt="" />
+                          <img src={src} alt="" decoding="async" />
                           <button className="photo-remove" onClick={() => setStagedCompletion(p => p.filter((_, j) => j !== i))}>×</button>
                         </div>
                       ))}
@@ -403,7 +402,7 @@ function MajedDetail({ req }) {
                 <div className="photo-grid">
                   {fresh.completionPhotos.map((src, i) => (
                     <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                      <img src={src} alt="" />
+                      <img src={src} alt="" decoding="async" />
                     </div>
                   ))}
                 </div>
