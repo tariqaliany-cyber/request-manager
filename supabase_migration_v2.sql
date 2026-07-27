@@ -38,6 +38,7 @@ create table if not exists activity_log (
 
 alter table activity_log enable row level security;
 
+drop policy if exists "Allow all" on activity_log;
 create policy "Allow all" on activity_log for all using (true) with check (true);
 
 create index if not exists activity_log_request_id_idx on activity_log(request_id);

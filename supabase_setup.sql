@@ -43,6 +43,7 @@ alter table requests add column if not exists progress_percentage integer defaul
 
 alter table requests enable row level security;
 
+drop policy if exists "Allow all" on requests;
 create policy "Allow all" on requests for all using (true) with check (true);
 
 -- ── Performance indexes ───────────────────────────────────────────
@@ -87,6 +88,7 @@ create table if not exists delivery_notes (
 
 alter table delivery_notes enable row level security;
 
+drop policy if exists "Allow all" on delivery_notes;
 create policy "Allow all" on delivery_notes for all using (true) with check (true);
 
 -- ── BOQ Library (custom items saved for reuse across delivery notes) ──
@@ -104,6 +106,7 @@ create table if not exists boq_library_items (
 
 alter table boq_library_items enable row level security;
 
+drop policy if exists "Allow all" on boq_library_items;
 create policy "Allow all" on boq_library_items for all using (true) with check (true);
 
 -- ── Notifications — superseded, do not recreate ──────────────────
