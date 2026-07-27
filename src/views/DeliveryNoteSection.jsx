@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import {
   getDeliveryNotesByRequest, createDeliveryNote, updateDeliveryNote, deleteDeliveryNote,
-  getBoqLibraryItems, createBoqLibraryItem,
+  getBoqLibraryItems, createBoqLibraryItem, logActivity,
   DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
 import { getBranchInfo } from '../branchData';
@@ -156,6 +156,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     setSaving(true);
     setSaveError(false);
     let ok = false;
+    const wasSigned = existing?.status === 'signed';
     if (!isSaved) {
       const created = await createDeliveryNote({ ...buildPayload(), createdBy: user.username });
       if (created) {
@@ -164,10 +165,14 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
         setCreatedAt(created.createdAt);
         setCreatedByVal(created.createdBy);
         ok = true;
+        logActivity({ requestId: req.id, action: 'dn_created', actor: user.name, actorRole: user.role, detail: created.number });
       }
     } else {
       const updated = await updateDeliveryNote(savedId, buildPayload());
       ok = !!updated;
+      if (ok && status === 'signed' && !wasSigned) {
+        logActivity({ requestId: req.id, action: 'dn_signed', actor: user.name, actorRole: user.role, detail: number });
+      }
     }
     setSaving(false);
     if (ok) {

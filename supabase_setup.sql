@@ -1,4 +1,16 @@
 -- Run this in Supabase SQL Editor
+--
+-- Schema history note (added during the redesign audit): this file's
+-- `requests` CREATE TABLE was missing invoice_amount and
+-- progress_percentage, even though both are used throughout the app and
+-- exist on the live table — they were added to production via ad-hoc
+-- ALTERs at some point and never backfilled into this file. The ALTERs
+-- below make this file match production; CREATE TABLE IF NOT EXISTS
+-- alone would NOT have added them to an already-existing table.
+-- See supabase_migration_v2.sql for the redesign's newer additions
+-- (priority, payment_status, payment_date, internal_accounting_note,
+-- due_date, activity_log) — not duplicated here to avoid drift between
+-- the two files.
 
 create table if not exists requests (
   id text primary key,
@@ -20,11 +32,18 @@ create table if not exists requests (
   progress_photos jsonb default '[]',
   completion_photos jsonb default '[]',
   work_done text default '',
-  final_summary text default ''
+  final_summary text default '',
+  invoice_amount numeric,
+  progress_percentage integer default 0
 );
+
+-- Additive — safe to run even if the table already exists without these:
+alter table requests add column if not exists invoice_amount numeric;
+alter table requests add column if not exists progress_percentage integer default 0;
 
 alter table requests enable row level security;
 
+drop policy if exists "Allow all" on requests;
 create policy "Allow all" on requests for all using (true) with check (true);
 
 -- ── Performance indexes ───────────────────────────────────────────
@@ -37,6 +56,14 @@ create index if not exists requests_assigned_to_idx   on requests(assigned_to);
 create index if not exists requests_created_at_idx    on requests(created_at desc);
 
 -- ── Delivery Notes (Tariq-only feature) ──────────────────────────
+-- CONFIRMED MISSING IN PRODUCTION (found during the redesign audit): a
+-- live REST query for this table returns PGRST205 "Could not find the
+-- table 'public.delivery_notes'" — meaning this section of the file was
+-- apparently never run against the production database, even though the
+-- Delivery Note feature has been merged and deployed for a while. The
+-- app degrades gracefully (shows "No delivery notes yet" instead of an
+-- error), so this went unnoticed. Run this file to fix it.
+--
 -- Same "allow all" RLS pattern as `requests` above — this app has no
 -- real per-user Supabase Auth session to key row-level policies off of,
 -- so access control for this feature is enforced in the React app
@@ -61,6 +88,7 @@ create table if not exists delivery_notes (
 
 alter table delivery_notes enable row level security;
 
+drop policy if exists "Allow all" on delivery_notes;
 create policy "Allow all" on delivery_notes for all using (true) with check (true);
 
 -- ── BOQ Library (custom items saved for reuse across delivery notes) ──
@@ -78,7 +106,18 @@ create table if not exists boq_library_items (
 
 alter table boq_library_items enable row level security;
 
+drop policy if exists "Allow all" on boq_library_items;
 create policy "Allow all" on boq_library_items for all using (true) with check (true);
+
+-- ── Notifications — superseded, do not recreate ──────────────────
+-- An earlier `notifications` table (req_id, branch_number,
+-- problem_description, actor, action, detail, created_at) existed in
+-- production but was never added to this file either. It's now replaced
+-- by `activity_log` (see supabase_migration_v2.sql), which supports a
+-- per-request timeline instead of only a global feed and doesn't
+-- denormalize branch_number/problem_description onto every row. Left
+-- alone (not dropped) so no historical data is lost; the app no longer
+-- reads or writes it.
 
 -- If you already ran an earlier version of this migration (with
 -- contact_person/po_number/wo_number/signature/client_name columns), drop

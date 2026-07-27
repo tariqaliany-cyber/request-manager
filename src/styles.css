@@ -75,6 +75,14 @@ body {
 }
 .tab-btn.active { background: #fff; color: var(--gray-800); box-shadow: var(--shadow-sm); }
 
+/* ── Wide tab bar (unified request page — more tabs than fit on mobile) ── */
+.tabs-wide { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabs-wide .tab-btn { flex: 0 0 auto; white-space: nowrap; padding: 10px 14px; }
+@media (min-width: 900px) {
+  .tabs-wide { overflow-x: visible; }
+  .tabs-wide .tab-btn { flex: 1; }
+}
+
 /* ── Cards ───────────────────────────────────────── */
 .card {
   background: #fff; border-radius: var(--radius);
@@ -639,7 +647,7 @@ table.dn-items-table .dn-col-actions { width: 100px; white-space: nowrap; }
   /* ── KPI cards row ── */
   .dash-kpi-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
   }

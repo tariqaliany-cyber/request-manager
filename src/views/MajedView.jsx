@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, getRequestById, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate, photoSrc } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, formatDate, photoSrc } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
@@ -21,7 +21,7 @@ export default function MajedView({ user, onLogout }) {
           </div>
         </header>
         <div className="page">
-          <MajedDetail req={selected} />
+          <MajedDetail req={selected} user={user} />
         </div>
       </div>
     );
@@ -115,7 +115,7 @@ function MajedList({ onSelect }) {
 }
 
 /* ── Job Detail ─────────────────────────────────────── */
-function MajedDetail({ req }) {
+function MajedDetail({ req, user }) {
   const [fresh, setFresh]       = useState(req);
   const [comment, setComment]         = useState('');
   const [workDone, setWorkDone]       = useState(req.workDone || '');
@@ -134,16 +134,17 @@ function MajedDetail({ req }) {
 
   useEffect(() => { reload(); }, [req.id]);
 
-  const notifBase = () => ({
-    reqId: fresh.id,
-    branchNumber: fresh.branchNumber,
-    problemDescription: fresh.problemDescription,
+  const logBase = () => ({
+    requestId: fresh.id,
+    actor:     user.name,
+    actorRole: user.role,
+    notify:    true,
   });
 
   const markStarted = async () => {
     setSaving(true);
     await updateRequest(fresh.id, { majedStarted: true, status: 'in_progress' });
-    await createNotification({ ...notifBase(), action: 'started' });
+    await logActivity({ ...logBase(), action: 'started' });
     await reload();
     setSaving(false);
   };
@@ -152,7 +153,7 @@ function MajedDetail({ req }) {
     if (!comment.trim()) return;
     const text = comment.trim();
     await addMajedComment(fresh.id, text);
-    await createNotification({ ...notifBase(), action: 'comment', detail: text });
+    await logActivity({ ...logBase(), action: 'comment', detail: text });
     setComment('');
     await reload();
   };
@@ -161,7 +162,7 @@ function MajedDetail({ req }) {
     if (!workDone.trim()) return;
     setSaving(true);
     await updateRequest(fresh.id, { workDone: workDone.trim() });
-    await createNotification({ ...notifBase(), action: 'work_done', detail: workDone.trim() });
+    await logActivity({ ...logBase(), action: 'work_done', detail: workDone.trim() });
     await reload();
     setSaving(false);
   };
@@ -180,7 +181,7 @@ function MajedDetail({ req }) {
     setPhotoSaving(type);
     const existing = fresh[key] || [];
     await updateRequest(fresh.id, { [key]: [...existing, ...staged.map(url => ({ url, caption: '' }))] });
-    await createNotification({ ...notifBase(), action, detail: `${staged.length} photo(s)` });
+    await logActivity({ ...logBase(), action, detail: `${staged.length} photo(s)` });
     if (type === 'progress') setStagedProgress([]);
     else setStagedCompletion([]);
     await reload();

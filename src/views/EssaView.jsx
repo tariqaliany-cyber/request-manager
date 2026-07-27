@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate, photoSrc } from '../storage';
+import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate, photoSrc, logActivity } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
@@ -144,13 +144,16 @@ function EssaNewRequest({ onSubmit }) {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
     setSaving(true);
-    await createRequest({
+    const created = await createRequest({
       branchNumber: branch.trim(),
       locationLink: location.trim(),
       problemDescription: desc.trim(),
       problemPhotos: photos,
       createdBy: 'essa',
     });
+    if (created) {
+      logActivity({ requestId: created.id, action: 'request_created', actor: 'Essa', actorRole: 'essa' });
+    }
     setSaving(false);
     setDone(true);
     setTimeout(() => { setDone(false); onSubmit(); }, 1800);
