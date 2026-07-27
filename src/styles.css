@@ -647,7 +647,7 @@ table.dn-items-table .dn-col-actions { width: 100px; white-space: nowrap; }
   /* ── KPI cards row ── */
   .dash-kpi-row {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 12px;
     margin-bottom: 20px;
   }

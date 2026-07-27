@@ -291,12 +291,15 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
     onFilter('updates');
   };
 
+  const today = new Date().toISOString().substring(0, 10);
   const counts = {
     all:         all.length,
     unassigned:  all.filter(r => !r.assignedTo && r.status !== 'completed').length,
     in_progress: all.filter(r => r.status === 'in_progress').length,
     scheduled:   all.filter(r => r.status === 'scheduled').length,
     completed:   all.filter(r => r.status === 'completed').length,
+    overdue:     all.filter(r => r.status !== 'completed' && r.dueDate && r.dueDate.substring(0, 10) < today).length,
+    unpaid:      all.filter(r => r.invoiceAmount != null && (r.paymentStatus || 'unpaid') !== 'paid').length,
   };
 
   const filtered = all.filter(r => {
@@ -362,6 +365,14 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           <div className="stat-card">
             <div className="stat-num" style={{ color: '#16A34A' }}>{counts.completed}</div>
             <div className="stat-lbl">Done</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: '#DC2626' }}>{counts.overdue}</div>
+            <div className="stat-lbl">Overdue</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-num" style={{ color: '#B45309' }}>{counts.unpaid}</div>
+            <div className="stat-lbl">Unpaid</div>
           </div>
         </div>
 
@@ -472,7 +483,10 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           DESKTOP LAYOUT (hidden on mobile via CSS)
       ═══════════════════════════════════════════ */}
 
-      {/* KPI row */}
+      {/* KPI row.
+          Not shown: "Awaiting Delivery Note" / "Awaiting Signature" — the
+          delivery_notes table doesn't exist in production yet (see Phase 8
+          notes), so a widget built on it would silently show 0 and lie. */}
       <div className="tariq-desktop-panel">
         <div className="dash-kpi-row">
           {[
@@ -481,6 +495,8 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
             { num: counts.in_progress, label: 'In Progress', labelAr: 'قيد التنفيذ',  color: '#563b2c',            border: '#563b2c' },
             { num: counts.scheduled,   label: 'Scheduled',   labelAr: 'مجدولة',       color: '#D97706',            border: '#D97706' },
             { num: counts.completed,   label: 'Completed',   labelAr: 'مكتملة',       color: '#16A34A',            border: '#16A34A' },
+            { num: counts.overdue,     label: 'Overdue',     labelAr: 'متأخرة',       color: '#DC2626',            border: '#DC2626' },
+            { num: counts.unpaid,      label: 'Unpaid',      labelAr: 'غير مدفوعة',   color: '#B45309',            border: '#B45309' },
           ].map(k => (
             <div key={k.label} className="dash-kpi-card" style={{ borderTopColor: k.border }}>
               <div className="dash-kpi-num" style={{ color: k.color }}>{k.num}</div>

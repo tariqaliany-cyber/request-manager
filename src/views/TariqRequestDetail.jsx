@@ -54,6 +54,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
   const [paymentStatus, setPaymentStatus] = useState(req.paymentStatus || 'unpaid');
   const [paymentDate, setPaymentDate]     = useState(req.paymentDate || '');
   const [accountingNote, setAccountingNote] = useState(req.internalAccountingNote || '');
+  const [dueDate, setDueDate]             = useState(req.dueDate || '');
 
   useEffect(() => {
     getRequestById(req.id).then(found => {
@@ -70,6 +71,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
         setPaymentStatus(found.paymentStatus || 'unpaid');
         setPaymentDate(found.paymentDate || '');
         setAccountingNote(found.internalAccountingNote || '');
+        setDueDate(found.dueDate || '');
       }
     });
   }, [req.id]);
@@ -95,6 +97,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
       paymentStatus,
       paymentDate:                paymentDate || null,
       internalAccountingNote:     accountingNote,
+      dueDate:                    dueDate || null,
     });
     setSaving(false);
     if (updated) {
@@ -306,6 +309,10 @@ export default function TariqRequestDetail({ req, user, onClose }) {
                   <option value="">— Not Assigned / غير مسند —</option>
                   <option value="majed">Workshop Team / فريق الورشة</option>
                 </select>
+              </div>
+              <div className="form-group">
+                <label className="label">Due Date / تاريخ الاستحقاق</label>
+                <input className="input" type="date" value={dueDate ? dueDate.substring(0, 10) : ''} onChange={e => setDueDate(e.target.value)} />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="label">📊 Progress / نسبة التقدم <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 400 }}>— visible to client</span></label>
