@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
 import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
-import { generateServiceReport } from '../generateReport';
+import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
+import StatusBadge from '../components/StatusBadge';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import PDFPreview from '../components/PDFPreview';
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -394,9 +397,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                          <span className="badge" style={{ color: s.color, background: s.bg }}>
-                            <span className="badge-dot" />{s.en}
-                          </span>
+                          <StatusBadge status={s} />
                           <span style={{
                             fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
                             color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -484,9 +485,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                         {(req.problemDescription || '').substring(0, 55)}
                       </div>
                     </div>
-                    <span className="badge" style={{ color: s.color, background: s.bg, flexShrink: 0, fontSize: 11 }}>
-                      <span className="badge-dot" />{s.en}
-                    </span>
+                    <StatusBadge status={s} style={{ flexShrink: 0, fontSize: 11 }} />
                   </div>
                 );
               })}
@@ -623,9 +622,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           <ProgressBar value={req.progressPercentage ?? 0} />
                         </td>
                         <td>
-                          <span className="badge" style={{ color: s.color, background: s.bg, fontSize: 11 }}>
-                            <span className="badge-dot" />{s.en}
-                          </span>
+                          <StatusBadge status={s} style={{ fontSize: 11 }} />
                         </td>
                         <td>
                           <span style={{
@@ -752,6 +749,7 @@ function TariqDetail({ req, user, onClose }) {
   const [desc, setDesc]               = useState(req.problemDescription || '');
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(null);
   const [lightbox, setLightbox]       = useState(null);
   const [invoiceAmount, setInvoiceAmt]       = useState(req.invoiceAmount ?? '');
   const [progressPercentage, setProgress]    = useState(req.progressPercentage ?? 0);
@@ -856,6 +854,7 @@ function TariqDetail({ req, user, onClose }) {
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
+      <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
       <input ref={photoInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotoUpload} />
 
       <div className="detail-grid">
@@ -872,9 +871,7 @@ function TariqDetail({ req, user, onClose }) {
                 <div className="card-date mt4">{formatDate(fresh.createdAt)}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
-                  <span className="badge-dot" />{STATUS[status].en}
-                </span>
+                <StatusBadge status={STATUS[status]} />
                 <span style={{
                   fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
                   color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -1160,11 +1157,16 @@ function TariqDetail({ req, user, onClose }) {
           {/* Action buttons */}
           <div className="card">
             <button
+              className="btn btn-outline mb8"
+              onClick={() => setPreviewHtml(buildServiceReportHtml(fresh, { print: false }))}>
+              👁 Preview Report / معاينة التقرير
+            </button>
+            <button
               className="btn mb8"
               style={{ background: '#1e293b', color: '#fff', border: 'none' }}
               onClick={async () => {
                 setExporting(true);
-                await generateServiceReport(fresh);
+                await generateServiceReportPdf(fresh);
                 setExporting(false);
               }}
               disabled={exporting}>
@@ -1193,25 +1195,14 @@ function TariqDetail({ req, user, onClose }) {
                 </div>
             }
 
-            {!confirmDel
-              ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
-                  onClick={() => setConfirmDel(true)}>
-                  🗑️ Delete Request / حذف الطلب
-                </button>
-              : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
-                    Are you sure? / هل أنت متأكد؟
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
-                      {saving ? '...' : 'Yes, Delete / نعم احذف'}
-                    </button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
-                      Cancel / إلغاء
-                    </button>
-                  </div>
-                </div>
-            }
+            <ConfirmationDialog
+              pending={confirmDel}
+              onRequestConfirm={() => setConfirmDel(true)}
+              onConfirm={handleDelete}
+              onCancel={() => setConfirmDel(false)}
+              triggerLabel="🗑️ Delete Request / حذف الطلب"
+              busy={saving}
+            />
           </div>
 
         </div>

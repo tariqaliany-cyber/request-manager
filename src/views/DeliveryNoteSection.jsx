@@ -7,6 +7,9 @@ import {
 import { getBranchInfo } from '../branchData';
 import { generateDeliveryNotePdf, buildDeliveryNoteHtml } from '../generateDeliveryNote';
 import BoqItemPicker from '../components/BoqItemPicker';
+import StatusBadge from '../components/StatusBadge';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import PDFPreview from '../components/PDFPreview';
 
 const newKey = () => Math.random().toString(36).slice(2);
 const emptyRow = () => ({
@@ -17,27 +20,6 @@ const decimalUnits = new Set(['m', 'm²']);
 // A row counts as "filled" once it has either a picked BOQ item number, or —
 // for custom rows, where the item number is optional — a name/description.
 const rowHasContent = (r) => r.isCustom ? !!(r.itemName || r.description) : !!r.itemNo;
-
-/* ── In-app preview: renders the PDF HTML in an iframe, no window.open ── */
-function DeliveryNotePreviewModal({ html, onClose }) {
-  useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
-
-  return (
-    <div className="dn-preview-overlay" onClick={onClose}>
-      <div className="dn-preview-sheet" onClick={e => e.stopPropagation()}>
-        <div className="dn-preview-bar">
-          <span>Preview / معاينة</span>
-          <button type="button" className="dn-icon-btn" onClick={onClose}>✕</button>
-        </div>
-        <iframe title="Delivery Note Preview" srcDoc={html} className="dn-preview-iframe" />
-      </div>
-    </div>
-  );
-}
 
 /* ── Card shown inside the request detail: list + create button ──── */
 export function DeliveryNoteCard({ req, user, onOpen }) {
@@ -68,7 +50,7 @@ export function DeliveryNoteCard({ req, user, onOpen }) {
               <div style={{ fontWeight: 700, fontSize: 14 }}>{n.number}</div>
               <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>{formatDate(n.createdAt)} · {n.createdBy || '—'}</div>
             </div>
-            <span className="badge" style={{ color: s.color, background: s.bg }}><span className="badge-dot" />{s.en}</span>
+            <StatusBadge status={s} />
           </div>
         );
       })}
@@ -223,7 +205,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
 
   return (
     <div>
-      {previewHtml && <DeliveryNotePreviewModal html={previewHtml} onClose={() => setPreviewHtml(null)} />}
+      <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
 
       <button className="back-btn mb16" onClick={onBack}>← Back to Request / رجوع</button>
 
@@ -235,7 +217,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
             <div className="card-branch">{number || '(assigned on save)'}</div>
             {isSaved && <div className="card-date mt4">Created {formatDate(createdAt)} by {createdBy}</div>}
           </div>
-          <span className="badge" style={{ color: s.color, background: s.bg }}><span className="badge-dot" />{s.en}</span>
+          <StatusBadge status={s} />
         </div>
 
         <div className="section-title">Request Info (locked) / بيانات الطلب</div>
@@ -397,17 +379,14 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
         {!hasItems && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Add at least one BOQ item before exporting / أضف بندًا واحدًا على الأقل قبل التصدير</div>}
 
         {isSaved && (
-          !confirmDel
-            ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }} onClick={() => setConfirmDel(true)}>
-                🗑️ Delete Delivery Note / حذف الإشعار
-              </button>
-            : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>Are you sure? / هل أنت متأكد؟</div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>{saving ? '...' : 'Yes, Delete / نعم احذف'}</button>
-                  <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>Cancel / إلغاء</button>
-                </div>
-              </div>
+          <ConfirmationDialog
+            pending={confirmDel}
+            onRequestConfirm={() => setConfirmDel(true)}
+            onConfirm={handleDelete}
+            onCancel={() => setConfirmDel(false)}
+            triggerLabel="🗑️ Delete Delivery Note / حذف الإشعار"
+            busy={saving}
+          />
         )}
       </div>
     </div>
