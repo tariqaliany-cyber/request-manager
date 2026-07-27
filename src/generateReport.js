@@ -1,4 +1,4 @@
-import { STATUS, formatDate } from './storage';
+import { STATUS, formatDate, photoSrc, photoCaption } from './storage';
 
 // ── Builds the report HTML (no side effects) ────────────────
 // Used both for the in-app iframe preview (print:false, via PDFPreview)
@@ -35,7 +35,13 @@ export function buildServiceReportHtml(req, { print = true } = {}) {
     for (let i = 0; i < photos.length; i += cols) {
       const chunk = photos.slice(i, i + cols);
       rows += `<div class="photo-row">
-        ${chunk.map(src => `<div class="photo-cell"><img src="${src}" /></div>`).join('')}
+        ${chunk.map(p => {
+          const caption = photoCaption(p);
+          return `<div class="photo-cell-wrap">
+            <div class="photo-cell"><img src="${photoSrc(p)}" /></div>
+            ${caption ? `<div class="photo-caption">${esc(caption)}</div>` : ''}
+          </div>`;
+        }).join('')}
       </div>`;
     }
     return rows;
@@ -211,21 +217,29 @@ export function buildServiceReportHtml(req, { print = true } = {}) {
     page-break-inside: avoid;
   }
   .photo-row:last-child { margin-bottom: 0; }
-  .photo-cell {
+  .photo-cell-wrap {
     flex: 1;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .photo-cell {
     height: 130px;
     overflow: hidden;
     border-radius: 4px;
     border: 1px solid #ddd;
     background: #f5f5f5;
-    break-inside: avoid;
-    page-break-inside: avoid;
   }
   .photo-cell img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
+  }
+  .photo-caption {
+    font-size: 9px;
+    color: #666;
+    margin-top: 3px;
+    text-align: center;
   }
   /* Photo section header + first row must stay together */
   .no-break {
