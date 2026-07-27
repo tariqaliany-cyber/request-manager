@@ -312,36 +312,59 @@ export const createBoqLibraryItem = async ({ itemNo, category, description, unit
   return { itemNo: data.item_no || '', category: data.category || 'Custom', description: data.description, unit: data.unit || '' };
 };
 
-// ── Notifications ─────────────────────────────────────
+// ── Activity log ───────────────────────────────────────
+// Replaces the old `notifications` table: a per-request activity feed
+// (queried by request_id) that also doubles as the global "Updates" bell
+// feed for entries with notify:true. Kept as its own table rather than a
+// jsonb column on requests — same reasoning as majed_comments would run
+// into at scale: a per-request feed needs independent pagination, and a
+// growing jsonb array would get pulled into every getRequestById fetch.
 const ACTION_LABELS = {
   started:           { en: '🚀 Work started',              ar: 'بدأ العمل'              },
   comment:           { en: '💬 Comment added',             ar: 'تعليق جديد'             },
   progress_photos:   { en: '📷 Progress photos uploaded',  ar: 'صور التقدم'             },
   completion_photos: { en: '📷 Completion photos uploaded',ar: 'صور الإنجاز'            },
   work_done:         { en: '✅ Work description updated',   ar: 'وصف العمل المنجز'       },
+  status_changed:    { en: '🔄 Status changed',             ar: 'تغيير الحالة'           },
+  assigned_changed:  { en: '👷 Assignment changed',         ar: 'تغيير الإسناد'          },
+  dn_created:        { en: '📄 Delivery Note created',      ar: 'إنشاء إشعار استلام'     },
+  dn_signed:         { en: '✍️ Delivery Note signed',       ar: 'توقيع إشعار الاستلام'   },
+  request_created:   { en: '🆕 Request created',            ar: 'إنشاء الطلب'            },
 };
 
 export const ACTION_LABELS_MAP = ACTION_LABELS;
 
-export const createNotification = async ({ reqId, branchNumber, problemDescription, action, detail }) => {
-  const { error } = await supabase.from('notifications').insert({
-    req_id:              reqId,
-    branch_number:       branchNumber,
-    problem_description: problemDescription,
-    actor:               'Majed',
+export const logActivity = async ({ requestId, action, actor, actorRole, detail, notify = false }) => {
+  const { error } = await supabase.from('activity_log').insert({
+    id:          'ACT-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    request_id:  requestId,
     action,
-    detail:              detail || null,
+    actor:       actor || '',
+    actor_role:  actorRole || '',
+    detail:      detail || '',
+    notify,
   });
-  if (error) console.error('createNotification:', error);
+  if (error) console.error('logActivity:', error);
 };
 
-export const getNotifications = async () => {
+export const getActivityLog = async (requestId) => {
   const { data, error } = await supabase
-    .from('notifications')
+    .from('activity_log')
     .select('*')
+    .eq('request_id', requestId)
+    .order('created_at', { ascending: false });
+  if (error) { console.error('getActivityLog:', error); return []; }
+  return data;
+};
+
+export const getRecentNotifications = async (limit = 60) => {
+  const { data, error } = await supabase
+    .from('activity_log')
+    .select('*')
+    .eq('notify', true)
     .order('created_at', { ascending: false })
-    .limit(60);
-  if (error) { console.error('getNotifications error:', JSON.stringify(error)); return []; }
+    .limit(limit);
+  if (error) { console.error('getRecentNotifications:', error); return []; }
   return data;
 };
 

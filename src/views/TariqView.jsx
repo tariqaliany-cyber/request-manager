@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
 import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
 import PhotoGallery from '../components/PhotoGallery';
@@ -9,6 +9,7 @@ import AppHeader from '../components/AppHeader';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import PDFPreview from '../components/PDFPreview';
+import ActivityTimeline from '../components/ActivityTimeline';
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -161,6 +162,7 @@ function TariqNewRequestForm({ onClose }) {
     });
     setSub(false);
     if (!created) { setError('فشل الحفظ / Save failed'); return; }
+    logActivity({ requestId: created.id, action: 'request_created', actor: 'Tariq', actorRole: 'tariq' });
     onClose(created);
   };
 
@@ -262,7 +264,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([getRequestListItems(), getNotifications()]).then(([reqs, nfs]) => {
+    Promise.all([getRequestListItems(), getRecentNotifications()]).then(([reqs, nfs]) => {
       setAll(reqs);
       setNotifs(nfs);
       setLoading(false);
@@ -525,7 +527,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
-                        {n.req_id} · Herfy {n.branch_number}
+                        {n.request_id} · Herfy {reqMap[n.request_id]?.branchNumber ?? '—'}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--gray-600)', marginTop: 1 }}>{label.en}</div>
                       {n.detail && (
@@ -672,7 +674,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
       {notifs.map((n, i) => {
         const isUnread = !lastRead || n.created_at > lastRead;
         const label = ACTION_LABELS_MAP[n.action] || { en: n.action, ar: '' };
-        const req = reqMap[n.req_id];
+        const req = reqMap[n.request_id];
         return (
           <div key={n.id || i} style={{
             background: isUnread ? '#faf5ff' : '#fff',
@@ -682,8 +684,9 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C3AED', display: 'inline-block', flexShrink: 0 }} />}
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED' }}>{n.req_id}</span>
-                <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· Herfy {n.branch_number}</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED' }}>{n.request_id}</span>
+                <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· Herfy {req?.branchNumber ?? '—'}</span>
+                {n.actor && <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>· {n.actor}</span>}
                 {req?.invoiceAmount != null && (
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#166534', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: 20 }}>
                     {formatSAR(req.invoiceAmount)}
@@ -704,8 +707,8 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
               </div>
             )}
 
-            {n.problem_description && (
-              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 5 }}>{n.problem_description}</div>
+            {req?.problemDescription && (
+              <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 5 }}>{req.problemDescription}</div>
             )}
 
             {req && (
@@ -768,7 +771,8 @@ function TariqDetail({ req, user, onClose }) {
     setSaving(true);
     setSaveError('');
     const pct = Math.min(100, Math.max(0, Number(progressPercentage) || 0));
-    console.log('[save] Saving request', fresh.id, '— progressPercentage:', pct);
+    const statusChanged   = status !== fresh.status;
+    const assignedChanged = (assignedTo || null) !== (fresh.assignedTo || null);
     const updated = await updateRequest(fresh.id, {
       status,
       branchNumber:               branch.trim(),
@@ -783,14 +787,20 @@ function TariqDetail({ req, user, onClose }) {
     });
     setSaving(false);
     if (updated) {
-      console.log('[save] SUCCESS — progress_percentage in DB response:', updated.progressPercentage);
+      if (statusChanged) {
+        logActivity({ requestId: fresh.id, action: 'status_changed', actor: user.name, actorRole: user.role,
+          detail: `${STATUS[fresh.status]?.en || fresh.status} → ${STATUS[status]?.en || status}` });
+      }
+      if (assignedChanged) {
+        logActivity({ requestId: fresh.id, action: 'assigned_changed', actor: user.name, actorRole: user.role,
+          detail: assignedTo ? `Assigned to ${assignedTo}` : 'Unassigned' });
+      }
       setFresh(updated);
       setProgress(updated.progressPercentage ?? 0);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } else {
-      console.error('[save] FAILED — updateRequest returned null. Check console for Supabase error above.');
-      setSaveError('❌ Save failed. The progress_percentage column may be missing from Supabase. Open browser console (F12) for details.');
+      setSaveError('❌ Save failed. Open browser console (F12) for details.');
     }
   };
 
@@ -808,6 +818,10 @@ function TariqDetail({ req, user, onClose }) {
       showWorkDoneToEssa:         showWorkDone,
       showCompletionPhotosToEssa: showCompletion,
     });
+    if (fresh.status !== 'completed') {
+      logActivity({ requestId: fresh.id, action: 'status_changed', actor: user.name, actorRole: user.role,
+        detail: `${STATUS[fresh.status]?.en || fresh.status} → ${STATUS.completed.en}` });
+    }
     setStatus('completed');
     setCompleting(false);
   };
@@ -1078,6 +1092,12 @@ function TariqDetail({ req, user, onClose }) {
             </div>
           </div>
 
+          {/* Activity */}
+          <div className="card">
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Activity / النشاط</div>
+            <ActivityTimeline requestId={fresh.id} />
+          </div>
+
           {/* Delivery Note — Tariq only */}
           {canManageDeliveryNotes(user) && (
             <DeliveryNoteCard req={fresh} user={user} onOpen={setDnOpen} />
@@ -1107,12 +1127,6 @@ function TariqDetail({ req, user, onClose }) {
             {saveError && (
               <div style={{ marginBottom: 8, padding: '10px 14px', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 10, fontSize: 12, color: '#DC2626', lineHeight: 1.5 }}>
                 {saveError}
-                <div style={{ marginTop: 6, fontWeight: 700 }}>
-                  Run this in Supabase SQL editor:<br />
-                  <code style={{ background: '#fff', padding: '4px 8px', borderRadius: 4, display: 'block', marginTop: 4, wordBreak: 'break-all' }}>
-                    ALTER TABLE requests ADD COLUMN IF NOT EXISTS progress_percentage INTEGER DEFAULT 0;
-                  </code>
-                </div>
               </div>
             )}
             {status !== 'completed'
