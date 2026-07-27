@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage } from '../storage';
+import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
 import { getBranchInfo, BRANCHES } from '../branchData';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
@@ -252,10 +252,17 @@ function TariqNewRequestForm({ onClose }) {
 }
 
 /* ── Dashboard ──────────────────────────────────── */
+const PAGE_SIZE = 20;
+
 function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
   const [all, setAll]         = useState([]);
   const [notifs, setNotifs]   = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch]           = useState('');
+  const [priorityFilter, setPriorityFilter] = useState('');
+  const [paymentFilter, setPaymentFilter]   = useState('');
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     setLoading(true);
@@ -265,6 +272,14 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
       setLoading(false);
     });
   }, [tick]);
+
+  // Debounce search input so filtering a large list doesn't re-run on every keystroke
+  useEffect(() => {
+    const t = setTimeout(() => setSearch(searchInput.trim().toLowerCase()), 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
+
+  useEffect(() => { setPage(1); }, [filter, search, priorityFilter, paymentFilter]);
 
   const lastRead = getLastRead();
   const unreadCount = notifs.filter(n => !lastRead || n.created_at > lastRead).length;
@@ -285,11 +300,23 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
   };
 
   const filtered = all.filter(r => {
-    if (filter === 'all')        return true;
-    if (filter === 'unassigned') return !r.assignedTo && r.status !== 'completed';
-    if (filter === 'updates')    return false;
-    return r.status === filter;
+    if (filter === 'all')        { /* no status restriction */ }
+    else if (filter === 'unassigned') { if (r.assignedTo || r.status === 'completed') return false; }
+    else if (filter === 'updates')    return false;
+    else if (r.status !== filter) return false;
+
+    if (search) {
+      const haystack = `${r.id} ${r.branchNumber} ${r.problemDescription || ''}`.toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    if (priorityFilter && (r.priority || 'normal') !== priorityFilter) return false;
+    if (paymentFilter && (r.paymentStatus || 'unpaid') !== paymentFilter) return false;
+    return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const pageSafe = Math.min(page, totalPages);
+  const paged = filtered.slice((pageSafe - 1) * PAGE_SIZE, pageSafe * PAGE_SIZE);
 
   const FILTERS = [
     { key: 'all',         label: 'All',         color: 'var(--tariq-color)' },
@@ -366,7 +393,21 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           <NotificationsPanel notifs={notifs} lastRead={lastRead} reqMap={reqMap} onSelect={onSelect} />
         ) : (
           <>
-            <div className="filter-bar">
+            <input
+              className="input mt12" type="search" placeholder="🔍 Search request #, branch, description…"
+              value={searchInput} onChange={e => setSearchInput(e.target.value)}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <select className="select" value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+                <option value="">All Priorities</option>
+                {Object.entries(PRIORITY).map(([k, v]) => <option key={k} value={k}>{v.en}</option>)}
+              </select>
+              <select className="select" value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}>
+                <option value="">All Payment</option>
+                {Object.entries(PAYMENT_STATUS).map(([k, v]) => <option key={k} value={k}>{v.en}</option>)}
+              </select>
+            </div>
+            <div className="filter-bar mt12">
               {FILTERS.map(f => (
                 <button key={f.key}
                   className={`chip ${filter === f.key ? 'active' : ''}`}
@@ -383,7 +424,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
               </div>
             ) : (
               <div className="req-grid">
-                {filtered.map(req => {
+                {paged.map(req => {
                   const s = STATUS[req.status];
                   return (
                     <div key={req.id} className="card card-clickable" onClick={() => onSelect(req)}>
@@ -395,6 +436,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                           <StatusBadge status={s} />
+                          {req.priority && req.priority !== 'normal' && <StatusBadge status={PRIORITY[req.priority]} style={{ fontSize: 10 }} />}
                           <span style={{
                             fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
                             color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -421,6 +463,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                 })}
               </div>
             )}
+            {filtered.length > 0 && <Pagination page={pageSafe} totalPages={totalPages} onChange={setPage} />}
           </>
         )}
       </div>
@@ -551,11 +594,30 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           </div>
         )}
 
+        {/* Search + filters */}
+        {filter !== 'updates' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
+            <input
+              className="input" type="search" placeholder="🔍 Search request #, branch, description…"
+              value={searchInput} onChange={e => setSearchInput(e.target.value)}
+              style={{ flex: '1 1 240px', minWidth: 200 }}
+            />
+            <select className="select" style={{ width: 'auto' }} value={priorityFilter} onChange={e => setPriorityFilter(e.target.value)}>
+              <option value="">All Priorities</option>
+              {Object.entries(PRIORITY).map(([k, v]) => <option key={k} value={k}>{v.en}</option>)}
+            </select>
+            <select className="select" style={{ width: 'auto' }} value={paymentFilter} onChange={e => setPaymentFilter(e.target.value)}>
+              <option value="">All Payment Statuses</option>
+              {Object.entries(PAYMENT_STATUS).map(([k, v]) => <option key={k} value={k}>{v.en}</option>)}
+            </select>
+          </div>
+        )}
+
         {/* Filter chips */}
         {filter !== 'updates' && (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
             <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--gray-800)' }}>
-              {filter === 'all' ? `All Requests — ${counts.all}` : `${FILTERS.find(f => f.key === filter)?.label} — ${filtered.length}`}
+              {filter === 'all' ? `All Requests — ${filtered.length}` : `${FILTERS.find(f => f.key === filter)?.label} — ${filtered.length}`}
             </div>
             <div className="filter-bar" style={{ marginBottom: 0 }}>
               {FILTERS.map(f => (
@@ -586,6 +648,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                     <th>Branch</th>
                     <th>Location</th>
                     <th>Problem</th>
+                    <th>Priority</th>
                     <th>Progress</th>
                     <th>Status</th>
                     <th>Invoice</th>
@@ -594,7 +657,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map(req => {
+                  {paged.map(req => {
                     const s    = STATUS[req.status];
                     const info = getBranchInfo(req.branchNumber);
                     return (
@@ -614,6 +677,9 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13, color: 'var(--gray-600)' }}>
                             {req.problemDescription || '—'}
                           </div>
+                        </td>
+                        <td>
+                          <StatusBadge status={PRIORITY[req.priority || 'normal']} style={{ fontSize: 11 }} />
                         </td>
                         <td style={{ minWidth: 110 }}>
                           <ProgressBar value={req.progressPercentage ?? 0} />
@@ -649,7 +715,21 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
             )}
           </div>
         )}
+        {filter !== 'updates' && filtered.length > 0 && (
+          <Pagination page={pageSafe} totalPages={totalPages} onChange={setPage} />
+        )}
       </div>
+    </div>
+  );
+}
+
+function Pagination({ page, totalPages, onChange }) {
+  if (totalPages <= 1) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, margin: '16px 0' }}>
+      <button className="btn-outline btn-sm" disabled={page <= 1} onClick={() => onChange(page - 1)}>‹ Prev</button>
+      <span style={{ fontSize: 13, color: 'var(--gray-600)' }}>Page {page} of {totalPages}</span>
+      <button className="btn-outline btn-sm" disabled={page >= totalPages} onClick={() => onChange(page + 1)}>Next ›</button>
     </div>
   );
 }
