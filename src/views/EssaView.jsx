@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate } from '../storage';
+import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate, photoSrc } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
@@ -412,9 +412,9 @@ function EssaRequestDetail({ req, onBack }) {
         <>
           <div className="section-title">Before Photos / صور ما قبل العمل</div>
           <div className="photo-grid">
-            {fresh.problemPhotos.map((src, i) => (
+            {fresh.problemPhotos.map((p, i) => (
               <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                <img src={src} alt="" decoding="async" />
+                <img src={photoSrc(p)} alt="" decoding="async" />
               </div>
             ))}
           </div>
@@ -438,9 +438,9 @@ function EssaRequestDetail({ req, onBack }) {
       <div className="section-title">Completion Photos / صور الإنجاز</div>
       {fresh.showCompletionPhotosToEssa && fresh.completionPhotos?.length > 0 ? (
         <div className="photo-grid">
-          {fresh.completionPhotos.map((src, i) => (
+          {fresh.completionPhotos.map((p, i) => (
             <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-              <img src={src} alt="" decoding="async" />
+              <img src={photoSrc(p)} alt="" decoding="async" />
             </div>
           ))}
         </div>

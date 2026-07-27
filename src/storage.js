@@ -38,6 +38,15 @@ export const authenticate = (username, password) => {
   return null;
 };
 
+// ── Photos ────────────────────────────────────────────
+// Photo array items used to be plain base64 data-URL strings. New uploads
+// are stored as { url, caption } objects so photos can carry a caption;
+// normalizePhotos reads old plain-string rows the same way so no data
+// migration is needed. photoSrc/photoCaption read either shape safely.
+export const normalizePhotos = (arr) => (arr || []).map(p => typeof p === 'string' ? { url: p, caption: '' } : p);
+export const photoSrc     = (p) => typeof p === 'string' ? p : p.url;
+export const photoCaption = (p) => typeof p === 'string' ? '' : (p.caption || '');
+
 // ── Field mapping (camelCase ↔ snake_case) ───────────
 const FIELD_MAP = {
   createdAt:                    'created_at',
@@ -75,7 +84,7 @@ const fromDb = (row) => ({
   branchNumber:                 row.branch_number,
   locationLink:                 row.location_link       || '',
   problemDescription:           row.problem_description || '',
-  problemPhotos:                row.problem_photos      || [],
+  problemPhotos:                normalizePhotos(row.problem_photos),
   createdBy:                    row.created_by,
   assignedTo:                   row.assigned_to         || null,
   internalNotes:                row.internal_notes      || '',
@@ -85,8 +94,8 @@ const fromDb = (row) => ({
   showCompletionPhotosToEssa:   row.show_completion_photos_to_essa   || false,
   majedStarted:                 row.majed_started       || false,
   majedComments:                row.majed_comments      || [],
-  progressPhotos:               row.progress_photos     || [],
-  completionPhotos:             row.completion_photos   || [],
+  progressPhotos:               normalizePhotos(row.progress_photos),
+  completionPhotos:             normalizePhotos(row.completion_photos),
   workDone:                     row.work_done           || '',
   finalSummary:                 row.final_summary       || '',
   invoiceAmount:                row.invoice_amount      ?? null,

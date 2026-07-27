@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
 import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
-import PhotoLightbox from '../components/PhotoLightbox';
+import PhotoGallery from '../components/PhotoGallery';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
@@ -733,11 +733,7 @@ function TariqDetail({ req, user, onClose }) {
   const [status, setStatus]           = useState(req.status);
   const [assignedTo, setAssignedTo]   = useState(req.assignedTo || '');
   const [finalSummary, setSummary]    = useState(req.finalSummary || '');
-  const [editingPhotos, setEditingPhotos]   = useState(null); // null | 'problem' | 'progress' | 'completion'
-  const [savingPhotos, setSavingPhotos]     = useState(false);
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const photoInputRef = useRef();
-  const uploadTypeRef = useRef(null);
+  const [uploadingType, setUploadingType] = useState(null); // null | 'problem' | 'progress' | 'completion'
   const [showWorkDone, setShowWork]   = useState(req.showWorkDoneToEssa || false);
   const [showCompletion, setShowComp] = useState(req.showCompletionPhotosToEssa || false);
   const [saving, setSaving]           = useState(false);
@@ -750,7 +746,6 @@ function TariqDetail({ req, user, onClose }) {
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
   const [previewHtml, setPreviewHtml] = useState(null);
-  const [lightbox, setLightbox]       = useState(null);
   const [invoiceAmount, setInvoiceAmt]       = useState(req.invoiceAmount ?? '');
   const [progressPercentage, setProgress]    = useState(req.progressPercentage ?? 0);
 
@@ -817,34 +812,35 @@ function TariqDetail({ req, user, onClose }) {
     setCompleting(false);
   };
 
-  const deletePhoto = async (type, idx) => {
-    setSavingPhotos(true);
-    const fieldMap = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
-    const srcMap   = { problem: fresh.problemPhotos, progress: fresh.progressPhotos, completion: fresh.completionPhotos };
-    const next     = (srcMap[type] || []).filter((_, i) => i !== idx);
-    const updated  = await updateRequest(fresh.id, { [fieldMap[type]]: next });
+  const PHOTO_FIELD = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
+
+  const uploadPhotos = async (type, files) => {
+    setUploadingType(type);
+    const compressed = await Promise.all(files.map(async f => ({ url: await compressImage(f), caption: '' })));
+    const next = [...(fresh[PHOTO_FIELD[type]] || []), ...compressed];
+    const updated = await updateRequest(fresh.id, { [PHOTO_FIELD[type]]: next });
     if (updated) setFresh(updated);
-    setSavingPhotos(false);
+    setUploadingType(null);
   };
 
-  const triggerUpload = (type) => {
-    uploadTypeRef.current = type;
-    photoInputRef.current?.click();
+  const deletePhotoAt = async (type, idx) => {
+    const next = (fresh[PHOTO_FIELD[type]] || []).filter((_, i) => i !== idx);
+    const updated = await updateRequest(fresh.id, { [PHOTO_FIELD[type]]: next });
+    if (updated) setFresh(updated);
   };
 
-  const handlePhotoUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length || !uploadTypeRef.current) return;
-    setUploadingPhotos(true);
-    const fieldMap = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
-    const srcMap   = { problem: fresh.problemPhotos, progress: fresh.progressPhotos, completion: fresh.completionPhotos };
-    const type     = uploadTypeRef.current;
-    const compressed = await Promise.all(files.map(compressImage));
-    const next = [...(srcMap[type] || []), ...compressed];
-    const updated = await updateRequest(fresh.id, { [fieldMap[type]]: next });
+  const reorderPhoto = async (type, from, to) => {
+    const arr = [...(fresh[PHOTO_FIELD[type]] || [])];
+    if (to < 0 || to >= arr.length) return;
+    [arr[from], arr[to]] = [arr[to], arr[from]];
+    const updated = await updateRequest(fresh.id, { [PHOTO_FIELD[type]]: arr });
     if (updated) setFresh(updated);
-    setUploadingPhotos(false);
-    e.target.value = '';
+  };
+
+  const updatePhotoCaption = async (type, idx, caption) => {
+    const arr = (fresh[PHOTO_FIELD[type]] || []).map((p, i) => i === idx ? { ...p, caption } : p);
+    const updated = await updateRequest(fresh.id, { [PHOTO_FIELD[type]]: arr });
+    if (updated) setFresh(updated);
   };
 
   if (dnOpen) {
@@ -853,9 +849,7 @@ function TariqDetail({ req, user, onClose }) {
 
   return (
     <div>
-      {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
       <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
-      <input ref={photoInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotoUpload} />
 
       <div className="detail-grid">
 
@@ -914,37 +908,15 @@ function TariqDetail({ req, user, onClose }) {
               <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
             </div>
 
-            <div className="section-title" style={{ justifyContent: 'space-between' }}>
-              <span>Problem Photos / صور المشكلة</span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button onClick={() => triggerUpload('problem')} disabled={uploadingPhotos}
-                  style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                  {uploadingPhotos && uploadTypeRef.current === 'problem' ? '⏳' : '📷 إضافة'}
-                </button>
-                {fresh.problemPhotos?.length > 0 && (
-                  <button onClick={() => setEditingPhotos(editingPhotos === 'problem' ? null : 'problem')}
-                    style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'problem' ? '#166534' : '#F1F5F9', color: editingPhotos === 'problem' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                    {editingPhotos === 'problem' ? '✓ Done' : '✏️ Edit'}
-                  </button>
-                )}
-              </div>
-            </div>
-            {savingPhotos && editingPhotos === 'problem' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
-            {fresh.problemPhotos?.length > 0 && (
-              <div className="photo-grid">
-                {fresh.problemPhotos.map((src, i) => (
-                  <div key={i} className="photo-thumb"
-                    style={{ cursor: editingPhotos === 'problem' ? 'default' : 'pointer' }}
-                    onClick={() => editingPhotos !== 'problem' && setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                    <img src={src} alt="" decoding="async" />
-                    {editingPhotos === 'problem' && (
-                      <button className="photo-remove" disabled={savingPhotos}
-                        onClick={e => { e.stopPropagation(); deletePhoto('problem', i); }}>✕</button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            <PhotoGallery
+              title="Problem Photos" titleAr="صور المشكلة"
+              photos={fresh.problemPhotos} editable
+              uploading={uploadingType === 'problem'}
+              onUpload={files => uploadPhotos('problem', files)}
+              onDelete={i => deletePhotoAt('problem', i)}
+              onReorder={(from, to) => reorderPhoto('problem', from, to)}
+              onCaptionChange={(i, caption) => updatePhotoCaption('problem', i, caption)}
+            />
           </div>
 
           {/* Workshop Updates */}
@@ -965,37 +937,16 @@ function TariqDetail({ req, user, onClose }) {
                 </>
               )}
 
-              <div className="section-title" style={{ justifyContent: 'space-between' }}>
-                <span>Progress Photos / صور التقدم</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => triggerUpload('progress')} disabled={uploadingPhotos}
-                    style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                    {uploadingPhotos && uploadTypeRef.current === 'progress' ? '⏳' : '📷 إضافة'}
-                  </button>
-                  {fresh.progressPhotos?.length > 0 && (
-                    <button onClick={() => setEditingPhotos(editingPhotos === 'progress' ? null : 'progress')}
-                      style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'progress' ? '#166534' : '#F1F5F9', color: editingPhotos === 'progress' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                      {editingPhotos === 'progress' ? '✓ Done' : '✏️ Edit'}
-                    </button>
-                  )}
-                </div>
-              </div>
-              {savingPhotos && editingPhotos === 'progress' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
-              {fresh.progressPhotos?.length > 0 && (
-                <div className="photo-grid">
-                  {fresh.progressPhotos.map((src, i) => (
-                    <div key={i} className="photo-thumb"
-                      style={{ cursor: editingPhotos === 'progress' ? 'default' : 'pointer' }}
-                      onClick={() => editingPhotos !== 'progress' && setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                      <img src={src} alt="" decoding="async" />
-                      {editingPhotos === 'progress' && (
-                        <button className="photo-remove" disabled={savingPhotos}
-                          onClick={e => { e.stopPropagation(); deletePhoto('progress', i); }}>✕</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <PhotoGallery
+                title="Progress Photos" titleAr="صور التقدم"
+                photos={fresh.progressPhotos} editable
+                collapsible defaultCollapsed={!fresh.progressPhotos?.length}
+                uploading={uploadingType === 'progress'}
+                onUpload={files => uploadPhotos('progress', files)}
+                onDelete={i => deletePhotoAt('progress', i)}
+                onReorder={(from, to) => reorderPhoto('progress', from, to)}
+                onCaptionChange={(i, caption) => updatePhotoCaption('progress', i, caption)}
+              />
 
               {fresh.workDone && (
                 <>
@@ -1004,37 +955,15 @@ function TariqDetail({ req, user, onClose }) {
                 </>
               )}
 
-              <div className="section-title" style={{ justifyContent: 'space-between' }}>
-                <span>Completion Photos / صور الإنجاز</span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <button onClick={() => triggerUpload('completion')} disabled={uploadingPhotos}
-                    style={{ fontSize: 11, fontWeight: 700, background: '#EFF6FF', color: '#2563EB', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                    {uploadingPhotos && uploadTypeRef.current === 'completion' ? '⏳' : '📷 إضافة'}
-                  </button>
-                  {fresh.completionPhotos?.length > 0 && (
-                    <button onClick={() => setEditingPhotos(editingPhotos === 'completion' ? null : 'completion')}
-                      style={{ fontSize: 11, fontWeight: 700, background: editingPhotos === 'completion' ? '#166534' : '#F1F5F9', color: editingPhotos === 'completion' ? '#fff' : '#64748B', border: 'none', borderRadius: 6, padding: '3px 10px', cursor: 'pointer' }}>
-                      {editingPhotos === 'completion' ? '✓ Done' : '✏️ Edit'}
-                    </button>
-                  )}
-                </div>
-              </div>
-              {savingPhotos && editingPhotos === 'completion' && <div style={{ fontSize: 11, color: '#D97706', marginBottom: 6 }}>⏳ Saving...</div>}
-              {fresh.completionPhotos?.length > 0 && (
-                <div className="photo-grid">
-                  {fresh.completionPhotos.map((src, i) => (
-                    <div key={i} className="photo-thumb"
-                      style={{ cursor: editingPhotos === 'completion' ? 'default' : 'pointer' }}
-                      onClick={() => editingPhotos !== 'completion' && setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                      <img src={src} alt="" decoding="async" />
-                      {editingPhotos === 'completion' && (
-                        <button className="photo-remove" disabled={savingPhotos}
-                          onClick={e => { e.stopPropagation(); deletePhoto('completion', i); }}>✕</button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <PhotoGallery
+                title="Completion Photos" titleAr="صور الإنجاز"
+                photos={fresh.completionPhotos} editable
+                uploading={uploadingType === 'completion'}
+                onUpload={files => uploadPhotos('completion', files)}
+                onDelete={i => deletePhotoAt('completion', i)}
+                onReorder={(from, to) => reorderPhoto('completion', from, to)}
+                onCaptionChange={(i, caption) => updatePhotoCaption('completion', i, caption)}
+              />
             </div>
           )}
         </div>

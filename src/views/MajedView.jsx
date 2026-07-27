@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, getRequestById, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate, photoSrc } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
@@ -179,7 +179,7 @@ function MajedDetail({ req }) {
     const action = type === 'progress' ? 'progress_photos' : 'completion_photos';
     setPhotoSaving(type);
     const existing = fresh[key] || [];
-    await updateRequest(fresh.id, { [key]: [...existing, ...staged] });
+    await updateRequest(fresh.id, { [key]: [...existing, ...staged.map(url => ({ url, caption: '' }))] });
     await createNotification({ ...notifBase(), action, detail: `${staged.length} photo(s)` });
     if (type === 'progress') setStagedProgress([]);
     else setStagedCompletion([]);
@@ -232,9 +232,9 @@ function MajedDetail({ req }) {
           <>
             <div className="section-title">Problem Photos / صور المشكلة</div>
             <div className="photo-grid">
-              {fresh.problemPhotos.map((src, i) => (
+              {fresh.problemPhotos.map((p, i) => (
                 <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
-                  <img src={src} alt="" decoding="async" />
+                  <img src={photoSrc(p)} alt="" decoding="async" />
                 </div>
               ))}
             </div>
@@ -304,9 +304,9 @@ function MajedDetail({ req }) {
               <>
                 {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
                 <div className="photo-grid">
-                  {fresh.progressPhotos.map((src, i) => (
+                  {fresh.progressPhotos.map((p, i) => (
                     <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                      <img src={src} alt="" decoding="async" />
+                      <img src={photoSrc(p)} alt="" decoding="async" />
                     </div>
                   ))}
                 </div>
@@ -397,9 +397,9 @@ function MajedDetail({ req }) {
               <>
                 {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
                 <div className="photo-grid">
-                  {fresh.completionPhotos.map((src, i) => (
+                  {fresh.completionPhotos.map((p, i) => (
                     <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                      <img src={src} alt="" decoding="async" />
+                      <img src={photoSrc(p)} alt="" decoding="async" />
                     </div>
                   ))}
                 </div>
