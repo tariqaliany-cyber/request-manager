@@ -4,6 +4,8 @@ import { generateServiceReport } from '../generateReport';
 import { getBranchInfo } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
+import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
+import AppHeader from '../components/AppHeader';
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -28,97 +30,6 @@ function formatSAR(amount) {
   return 'SAR ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/* ── Sidebar (desktop only via CSS) ────────────── */
-const SIDEBAR_FILTERS = [
-  { key: 'unassigned',  icon: '⚠️', label: 'Unassigned',  labelAr: 'غير مسندة' },
-  { key: 'scheduled',   icon: '📅', label: 'Scheduled',   labelAr: 'مجدولة'    },
-  { key: 'in_progress', icon: '🔧', label: 'In Progress', labelAr: 'قيد التنفيذ'},
-  { key: 'completed',   icon: '✅', label: 'Completed',   labelAr: 'مكتملة'    },
-];
-
-function TariqSidebar({ user, onLogout, activeFilter, onFilter, onNewRequest, unreadCount }) {
-  return (
-    <aside className="tariq-sidebar">
-      {/* Brand */}
-      <div className="sidebar-brand">
-        <img
-          src="/herfy-logo.png" alt="Herfy"
-          style={{ height: 34, width: 'auto', display: 'block', marginBottom: 12,
-                   filter: 'brightness(0) invert(1)', opacity: 0.85 }}
-        />
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '-.2px' }}>
-          مدير الصيانة
-        </div>
-        <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11, marginTop: 2 }}>
-          لوحة التحكم الإدارية
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="sidebar-nav">
-        <div className="sidebar-section-label">القائمة الرئيسية</div>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => onFilter('all')}>
-          <span className="sidebar-item-icon">🏠</span>
-          الرئيسية / Dashboard
-        </button>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'updates' ? 'active' : ''}`}
-          onClick={() => onFilter('updates')}>
-          <span className="sidebar-item-icon">🔔</span>
-          التحديثات / Updates
-          {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
-        </button>
-
-        <div className="sidebar-section-label">الأعطال</div>
-
-        {SIDEBAR_FILTERS.map(f => (
-          <button
-            key={f.key}
-            className={`sidebar-item ${activeFilter === f.key ? 'active' : ''}`}
-            onClick={() => onFilter(f.key)}>
-            <span className="sidebar-item-icon">{f.icon}</span>
-            {f.label}
-            <span style={{ fontSize: 11, color: 'inherit', opacity: .6, marginLeft: 2 }}>
-              / {f.labelAr}
-            </span>
-          </button>
-        ))}
-
-        <div className="sidebar-section-label">أدوات</div>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'new' ? 'active' : ''}`}
-          onClick={onNewRequest}
-          style={{ background: 'rgba(212,168,67,.15)', marginBottom: 4 }}>
-          <span className="sidebar-item-icon">➕</span>
-          طلب جديد / New Request
-        </button>
-      </nav>
-
-      {/* User */}
-      <div className="sidebar-user-section">
-        <div className="sidebar-avatar">{user.name[0]}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user.name}
-          </div>
-          <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11 }}>المسؤول الإداري</div>
-        </div>
-        <button
-          onClick={onLogout}
-          style={{ background: 'rgba(255,255,255,.08)', border: 'none', color: 'rgba(255,255,255,.5)',
-                   borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
-          خروج
-        </button>
-      </div>
-    </aside>
-  );
-}
-
 /* ── Main Export ────────────────────────────────── */
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected]         = useState(null);
@@ -126,9 +37,11 @@ export default function TariqView({ user, onLogout }) {
   const [filter, setFilter]             = useState('all');
   const [unreadCount, setUnreadCount]   = useState(0);
   const [newReqMode, setNewReqMode]     = useState(false);
+  const [collapsed, toggleCollapsed]    = useSidebarCollapse();
+  const [drawerOpen, setDrawerOpen]     = useState(false);
   const refresh = () => setTick(n => n + 1);
 
-  const openNewRequest = () => { setNewReqMode(true); setSelected(null); };
+  const openNewRequest = () => { setNewReqMode(true); setSelected(null); setDrawerOpen(false); };
   const closeNewRequest = (created) => {
     setNewReqMode(false);
     if (created) { setSelected(created); refresh(); }
@@ -138,6 +51,7 @@ export default function TariqView({ user, onLogout }) {
     setFilter(f);
     setSelected(null);
     setNewReqMode(false);
+    setDrawerOpen(false);
   };
 
   // Topbar title based on current view
@@ -153,81 +67,35 @@ export default function TariqView({ user, onLogout }) {
     : filter === 'completed'  ? '✅ Completed / مكتملة'
     : 'Dashboard';
 
+  const showBack = !!(selected || newReqMode);
+
   return (
     <div className="tariq-layout">
-      {/* ── Sidebar (desktop only via CSS) ── */}
-      <TariqSidebar
+      <AppSidebar
         user={user}
         onLogout={onLogout}
         activeFilter={newReqMode ? 'new' : selected ? '' : filter}
         onFilter={handleFilter}
         onNewRequest={openNewRequest}
         unreadCount={unreadCount}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapsed}
+        drawerOpen={drawerOpen}
+        onCloseDrawer={() => setDrawerOpen(false)}
       />
 
       {/* ── Main content area ── */}
-      <div className="tariq-main">
+      <div className={`tariq-main ${collapsed ? 'sidebar-collapsed' : ''}`}>
 
-        {/* Mobile header (hidden on desktop via CSS) */}
-        <header className="header header-tariq tariq-mobile-header">
-          {(selected || newReqMode) ? (
-            <>
-              <button className="back-btn" onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }} style={{ color: '#1E293B' }}>
-                ← All Requests
-              </button>
-              <div className="header-right">
-                <button className="btn-logout" onClick={onLogout}>Logout</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
-                <div>
-                  <div className="header-title">Admin / لوحة التحكم</div>
-                  <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
-                </div>
-              </div>
-              <div className="header-right">
-                <button
-                  onClick={openNewRequest}
-                  style={{ fontSize: 13, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}>
-                  ➕ طلب جديد
-                </button>
-                <button className="btn-logout" onClick={onLogout}>Logout</button>
-              </div>
-            </>
-          )}
-        </header>
-
-        {/* Desktop topbar (hidden on mobile via CSS) */}
-        <header className="tariq-topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {(selected || newReqMode) && (
-              <button
-                onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
-                         fontWeight: 700, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 5,
-                         padding: '6px 10px', borderRadius: 7, marginRight: 4 }}>
-                ← Dashboard
-              </button>
-            )}
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--gray-800)' }}>{topbarTitle}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-              {user.nameAr} · {user.name}
-            </span>
-            {!newReqMode && !selected && (
-              <button
-                onClick={openNewRequest}
-                style={{ fontSize: 12, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 7, padding: '5px 12px', cursor: 'pointer' }}>
-                ➕ طلب جديد
-              </button>
-            )}
-            <button className="btn-logout" onClick={onLogout}>Logout</button>
-          </div>
-        </header>
+        <AppHeader
+          title={topbarTitle}
+          user={user}
+          onLogout={onLogout}
+          onNewRequest={openNewRequest}
+          showBack={showBack}
+          onBack={() => { setSelected(null); setNewReqMode(false); refresh(); }}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
 
         {/* Page content */}
         <div className="page">
