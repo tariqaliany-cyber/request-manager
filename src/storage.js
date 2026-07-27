@@ -19,6 +19,19 @@ export const STATUS = {
   completed:   { en: 'Completed',        ar: 'مكتمل',           color: '#16A34A', bg: '#F0FDF4' },
 };
 
+export const PRIORITY = {
+  low:    { en: 'Low',    ar: 'منخفضة', color: '#64748B', bg: '#F1F5F9' },
+  normal: { en: 'Normal', ar: 'عادية',   color: '#3B82F6', bg: '#EFF6FF' },
+  high:   { en: 'High',   ar: 'عالية',   color: '#D97706', bg: '#FFFBEB' },
+  urgent: { en: 'Urgent', ar: 'عاجلة',   color: '#EF4444', bg: '#FEF2F2' },
+};
+
+export const PAYMENT_STATUS = {
+  unpaid:  { en: 'Unpaid',  ar: 'غير مدفوعة', color: '#EF4444', bg: '#FEF2F2' },
+  partial: { en: 'Partial', ar: 'جزئية',      color: '#D97706', bg: '#FFFBEB' },
+  paid:    { en: 'Paid',    ar: 'مدفوعة',      color: '#16A34A', bg: '#F0FDF4' },
+};
+
 // ── Delivery Notes (Tariq-only feature) ───────────────
 // canManageDeliveryNotes is the single source of truth for who can see/use
 // this feature. EssaView and MajedView never import anything delivery-note
@@ -69,6 +82,10 @@ const FIELD_MAP = {
   finalSummary:                 'final_summary',
   invoiceAmount:                'invoice_amount',
   progressPercentage:           'progress_percentage',
+  paymentStatus:                'payment_status',
+  paymentDate:                  'payment_date',
+  internalAccountingNote:       'internal_accounting_note',
+  dueDate:                      'due_date',
 };
 
 const toDb = (obj) => {
@@ -100,6 +117,11 @@ const fromDb = (row) => ({
   finalSummary:                 row.final_summary       || '',
   invoiceAmount:                row.invoice_amount      ?? null,
   progressPercentage:           row.progress_percentage ?? 0,
+  priority:                     row.priority             || 'normal',
+  paymentStatus:                row.payment_status       || 'unpaid',
+  paymentDate:                  row.payment_date         || null,
+  internalAccountingNote:       row.internal_accounting_note || '',
+  dueDate:                      row.due_date             || null,
 });
 
 // ── CRUD ─────────────────────────────────────────────
@@ -116,7 +138,7 @@ export const getRequests = async () => {
 // problem_photos/progress_photos/completion_photos (base64 images), which
 // made a plain select('*') over the whole table tens of megabytes and slow
 // to load. Use getRequestById for a single request's full detail.
-const LIST_COLUMNS = 'id,created_at,status,branch_number,assigned_to,invoice_amount,progress_percentage,problem_description,created_by';
+const LIST_COLUMNS = 'id,created_at,status,branch_number,assigned_to,invoice_amount,progress_percentage,problem_description,created_by,priority,payment_status,due_date';
 
 export const getRequestListItems = async ({ createdBy, assignedTo, status } = {}) => {
   let query = supabase.from('requests').select(LIST_COLUMNS).order('created_at', { ascending: false });
@@ -153,6 +175,11 @@ export const createRequest = async (input) => {
     final_summary:              '',
     invoice_amount:             null,
     progress_percentage:        0,
+    priority:                   'normal',
+    payment_status:             'unpaid',
+    payment_date:               null,
+    internal_accounting_note:   '',
+    due_date:                   null,
     ...toDb(input),
   };
   const { data, error } = await supabase
