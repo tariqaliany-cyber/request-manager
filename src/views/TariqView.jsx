@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import AladheedView from './AladheedView';
 import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
 import { generateServiceReport } from '../generateReport';
 import { getBranchInfo } from '../branchData';
@@ -37,7 +36,7 @@ const SIDEBAR_FILTERS = [
   { key: 'completed',   icon: '✅', label: 'Completed',   labelAr: 'مكتملة'    },
 ];
 
-function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, onNewRequest, unreadCount }) {
+function TariqSidebar({ user, onLogout, activeFilter, onFilter, onNewRequest, unreadCount }) {
   return (
     <aside className="tariq-sidebar">
       {/* Brand */}
@@ -98,11 +97,6 @@ function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, onNe
           <span className="sidebar-item-icon">➕</span>
           طلب جديد / New Request
         </button>
-
-        <button className="sidebar-item" onClick={onAladheed}>
-          <span className="sidebar-item-icon">🦅</span>
-          العضيد / Aladheed
-        </button>
       </nav>
 
       {/* User */}
@@ -129,8 +123,6 @@ function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, onNe
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected]         = useState(null);
   const [tick, setTick]                 = useState(0);
-  const [aladheedMode, setAladheedMode] = useState(false);
-  const [aladheedJob, setAladheedJob]   = useState(null);
   const [filter, setFilter]             = useState('all');
   const [unreadCount, setUnreadCount]   = useState(0);
   const [newReqMode, setNewReqMode]     = useState(false);
@@ -141,14 +133,6 @@ export default function TariqView({ user, onLogout }) {
     setNewReqMode(false);
     if (created) { setSelected(created); refresh(); }
   };
-
-  const openAladheed  = (job = null) => { setAladheedJob(job); setAladheedMode(true); };
-  const closeAladheed = ()           => { setAladheedJob(null); setAladheedMode(false); };
-
-  // Aladheed is full-screen — no sidebar
-  if (aladheedMode) {
-    return <AladheedView job={aladheedJob} onClose={closeAladheed} />;
-  }
 
   const handleFilter = (f) => {
     setFilter(f);
@@ -177,7 +161,6 @@ export default function TariqView({ user, onLogout }) {
         onLogout={onLogout}
         activeFilter={newReqMode ? 'new' : selected ? '' : filter}
         onFilter={handleFilter}
-        onAladheed={() => openAladheed(null)}
         onNewRequest={openNewRequest}
         unreadCount={unreadCount}
       />
@@ -193,9 +176,6 @@ export default function TariqView({ user, onLogout }) {
                 ← All Requests
               </button>
               <div className="header-right">
-                <button className="btn-outline" onClick={() => openAladheed(null)} style={{ fontSize: 13, fontWeight: 700 }}>
-                  🦅 Aladheed
-                </button>
                 <button className="btn-logout" onClick={onLogout}>Logout</button>
               </div>
             </>
@@ -245,12 +225,6 @@ export default function TariqView({ user, onLogout }) {
                 ➕ طلب جديد
               </button>
             )}
-            <button
-              className="btn-outline btn-sm"
-              onClick={() => openAladheed(null)}
-              style={{ fontSize: 12, fontWeight: 700 }}>
-              🦅 Aladheed
-            </button>
             <button className="btn-logout" onClick={onLogout}>Logout</button>
           </div>
         </header>
@@ -264,7 +238,6 @@ export default function TariqView({ user, onLogout }) {
               req={selected}
               user={user}
               onClose={() => { setSelected(null); refresh(); }}
-              onOpenAladheed={openAladheed}
             />
           ) : (
             <TariqDashboard
@@ -889,7 +862,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
 }
 
 /* ── Request Detail ───────────────────────────────── */
-function TariqDetail({ req, user, onClose, onOpenAladheed }) {
+function TariqDetail({ req, user, onClose }) {
   const [dnOpen, setDnOpen]           = useState(null); // null | 'new' | delivery note object
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
@@ -1351,14 +1324,6 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                   ✅ This request is completed / تم إغلاق هذا الطلب
                 </div>
             }
-
-            {fresh.status === 'completed' && onOpenAladheed && (
-              <button className="btn mb8"
-                style={{ background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 700, fontSize: 14 }}
-                onClick={() => onOpenAladheed(fresh)}>
-                🦅 Open Aladheed | العضيد — Prepare Documents
-              </button>
-            )}
 
             {!confirmDel
               ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
