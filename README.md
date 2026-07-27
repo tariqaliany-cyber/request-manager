@@ -31,7 +31,7 @@ A bilingual (Arabic/English) maintenance request management system built for Her
 
 - **React 18** + **Vite**
 - **Supabase** — database and storage
-- **jsPDF** + **html2canvas** — PDF report generation
+- Native browser print (`window.print()` on hand-built HTML) — PDF report generation, no client-side PDF library
 
 ---
 
@@ -57,7 +57,7 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 npm run build   # output in /dist
 ```
 
-Configured for **Netlify** — push to `main` and it auto-deploys.
+Configured for **Vercel** — push to `main` and it auto-deploys.
 
 | Setting | Value |
 |---------|-------|
