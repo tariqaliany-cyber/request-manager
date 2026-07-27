@@ -213,7 +213,7 @@ function MajedDetail({ req }) {
           return (
             <>
               <div className="section-title">Branch Location / موقع الفرع</div>
-              <div style={{ fontSize: 14, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0' }}>
+              <div className="note-box note-box-green">
                 📍 {info.area} — {info.address}
               </div>
             </>
