@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
+import StatusBadge from '../components/StatusBadge';
 
 export default function EssaView({ user, onLogout }) {
   const [tab, setTab] = useState('new');
@@ -182,7 +183,7 @@ function EssaNewRequest({ onSubmit }) {
         />
         {errors.branch && <div className="error-msg">{errors.branch}</div>}
         {branch && getBranchInfo(branch) && (
-          <div style={{ marginTop: 8, padding: '10px 14px', background: '#f0fdf4', borderRadius: 8, border: '1px solid #bbf7d0', fontSize: 13, color: '#166534' }}>
+          <div className="note-box note-box-green mt8" style={{ fontSize: 13 }}>
             📍 {getBranchInfo(branch).area} — {getBranchInfo(branch).address}
           </div>
         )}
@@ -328,9 +329,7 @@ function EssaRequestList() {
                 <div className="card-branch">Herfy {req.branchNumber}</div>
                 {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
               </div>
-              <span className="badge" style={{ color: s.color, background: s.bg }}>
-                <span className="badge-dot" />{s.ar}
-              </span>
+              <StatusBadge status={s} lang="ar" />
             </div>
             <div className="card-desc">{req.problemDescription}</div>
             <ProgressBar value={req.progressPercentage ?? 0} />
@@ -373,9 +372,7 @@ function EssaRequestDetail({ req, onBack }) {
           <div className="card-id">{fresh.id}</div>
           <div className="card-branch">Herfy {fresh.branchNumber}</div>
         </div>
-        <span className="badge" style={{ color: s.color, background: s.bg }}>
-          <span className="badge-dot" />{s.ar}
-        </span>
+        <StatusBadge status={s} lang="ar" />
       </div>
 
       <div className="section-title">Status / الحالة</div>
@@ -392,7 +389,7 @@ function EssaRequestDetail({ req, onBack }) {
         return (
           <>
             <div className="section-title">Branch Location / موقع الفرع</div>
-            <div style={{ fontSize: 14, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0' }}>
+            <div className="note-box note-box-green">
               📍 {info.area} — {info.address}
             </div>
           </>

@@ -1,10 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import AladheedView from './AladheedView';
 import { getRequestListItems, getRequestById, updateRequest, deleteRequest, createRequest, getNotifications, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, formatDate, compressImage, canManageDeliveryNotes } from '../storage';
-import { generateServiceReport } from '../generateReport';
+import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
+import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
+import AppHeader from '../components/AppHeader';
+import StatusBadge from '../components/StatusBadge';
+import ConfirmationDialog from '../components/ConfirmationDialog';
+import PDFPreview from '../components/PDFPreview';
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -29,131 +33,28 @@ function formatSAR(amount) {
   return 'SAR ' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-/* ── Sidebar (desktop only via CSS) ────────────── */
-const SIDEBAR_FILTERS = [
-  { key: 'unassigned',  icon: '⚠️', label: 'Unassigned',  labelAr: 'غير مسندة' },
-  { key: 'scheduled',   icon: '📅', label: 'Scheduled',   labelAr: 'مجدولة'    },
-  { key: 'in_progress', icon: '🔧', label: 'In Progress', labelAr: 'قيد التنفيذ'},
-  { key: 'completed',   icon: '✅', label: 'Completed',   labelAr: 'مكتملة'    },
-];
-
-function TariqSidebar({ user, onLogout, activeFilter, onFilter, onAladheed, onNewRequest, unreadCount }) {
-  return (
-    <aside className="tariq-sidebar">
-      {/* Brand */}
-      <div className="sidebar-brand">
-        <img
-          src="/herfy-logo.png" alt="Herfy"
-          style={{ height: 34, width: 'auto', display: 'block', marginBottom: 12,
-                   filter: 'brightness(0) invert(1)', opacity: 0.85 }}
-        />
-        <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '-.2px' }}>
-          مدير الصيانة
-        </div>
-        <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11, marginTop: 2 }}>
-          لوحة التحكم الإدارية
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="sidebar-nav">
-        <div className="sidebar-section-label">القائمة الرئيسية</div>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'all' ? 'active' : ''}`}
-          onClick={() => onFilter('all')}>
-          <span className="sidebar-item-icon">🏠</span>
-          الرئيسية / Dashboard
-        </button>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'updates' ? 'active' : ''}`}
-          onClick={() => onFilter('updates')}>
-          <span className="sidebar-item-icon">🔔</span>
-          التحديثات / Updates
-          {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
-        </button>
-
-        <div className="sidebar-section-label">الأعطال</div>
-
-        {SIDEBAR_FILTERS.map(f => (
-          <button
-            key={f.key}
-            className={`sidebar-item ${activeFilter === f.key ? 'active' : ''}`}
-            onClick={() => onFilter(f.key)}>
-            <span className="sidebar-item-icon">{f.icon}</span>
-            {f.label}
-            <span style={{ fontSize: 11, color: 'inherit', opacity: .6, marginLeft: 2 }}>
-              / {f.labelAr}
-            </span>
-          </button>
-        ))}
-
-        <div className="sidebar-section-label">أدوات</div>
-
-        <button
-          className={`sidebar-item ${activeFilter === 'new' ? 'active' : ''}`}
-          onClick={onNewRequest}
-          style={{ background: 'rgba(212,168,67,.15)', marginBottom: 4 }}>
-          <span className="sidebar-item-icon">➕</span>
-          طلب جديد / New Request
-        </button>
-
-        <button className="sidebar-item" onClick={onAladheed}>
-          <span className="sidebar-item-icon">🦅</span>
-          العضيد / Aladheed
-        </button>
-      </nav>
-
-      {/* User */}
-      <div className="sidebar-user-section">
-        <div className="sidebar-avatar">{user.name[0]}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ color: '#fff', fontSize: 13, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {user.name}
-          </div>
-          <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11 }}>المسؤول الإداري</div>
-        </div>
-        <button
-          onClick={onLogout}
-          style={{ background: 'rgba(255,255,255,.08)', border: 'none', color: 'rgba(255,255,255,.5)',
-                   borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
-          خروج
-        </button>
-      </div>
-    </aside>
-  );
-}
-
 /* ── Main Export ────────────────────────────────── */
 export default function TariqView({ user, onLogout }) {
   const [selected, setSelected]         = useState(null);
   const [tick, setTick]                 = useState(0);
-  const [aladheedMode, setAladheedMode] = useState(false);
-  const [aladheedJob, setAladheedJob]   = useState(null);
   const [filter, setFilter]             = useState('all');
   const [unreadCount, setUnreadCount]   = useState(0);
   const [newReqMode, setNewReqMode]     = useState(false);
+  const [collapsed, toggleCollapsed]    = useSidebarCollapse();
+  const [drawerOpen, setDrawerOpen]     = useState(false);
   const refresh = () => setTick(n => n + 1);
 
-  const openNewRequest = () => { setNewReqMode(true); setSelected(null); };
+  const openNewRequest = () => { setNewReqMode(true); setSelected(null); setDrawerOpen(false); };
   const closeNewRequest = (created) => {
     setNewReqMode(false);
     if (created) { setSelected(created); refresh(); }
   };
 
-  const openAladheed  = (job = null) => { setAladheedJob(job); setAladheedMode(true); };
-  const closeAladheed = ()           => { setAladheedJob(null); setAladheedMode(false); };
-
-  // Aladheed is full-screen — no sidebar
-  if (aladheedMode) {
-    return <AladheedView job={aladheedJob} onClose={closeAladheed} />;
-  }
-
   const handleFilter = (f) => {
     setFilter(f);
     setSelected(null);
     setNewReqMode(false);
+    setDrawerOpen(false);
   };
 
   // Topbar title based on current view
@@ -169,91 +70,35 @@ export default function TariqView({ user, onLogout }) {
     : filter === 'completed'  ? '✅ Completed / مكتملة'
     : 'Dashboard';
 
+  const showBack = !!(selected || newReqMode);
+
   return (
     <div className="tariq-layout">
-      {/* ── Sidebar (desktop only via CSS) ── */}
-      <TariqSidebar
+      <AppSidebar
         user={user}
         onLogout={onLogout}
         activeFilter={newReqMode ? 'new' : selected ? '' : filter}
         onFilter={handleFilter}
-        onAladheed={() => openAladheed(null)}
         onNewRequest={openNewRequest}
         unreadCount={unreadCount}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapsed}
+        drawerOpen={drawerOpen}
+        onCloseDrawer={() => setDrawerOpen(false)}
       />
 
       {/* ── Main content area ── */}
-      <div className="tariq-main">
+      <div className={`tariq-main ${collapsed ? 'sidebar-collapsed' : ''}`}>
 
-        {/* Mobile header (hidden on desktop via CSS) */}
-        <header className="header header-tariq tariq-mobile-header">
-          {(selected || newReqMode) ? (
-            <>
-              <button className="back-btn" onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }} style={{ color: '#1E293B' }}>
-                ← All Requests
-              </button>
-              <div className="header-right">
-                <button className="btn-outline" onClick={() => openAladheed(null)} style={{ fontSize: 13, fontWeight: 700 }}>
-                  🦅 Aladheed
-                </button>
-                <button className="btn-logout" onClick={onLogout}>Logout</button>
-              </div>
-            </>
-          ) : (
-            <>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
-                <div>
-                  <div className="header-title">Admin / لوحة التحكم</div>
-                  <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
-                </div>
-              </div>
-              <div className="header-right">
-                <button
-                  onClick={openNewRequest}
-                  style={{ fontSize: 13, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 12px', cursor: 'pointer' }}>
-                  ➕ طلب جديد
-                </button>
-                <button className="btn-logout" onClick={onLogout}>Logout</button>
-              </div>
-            </>
-          )}
-        </header>
-
-        {/* Desktop topbar (hidden on mobile via CSS) */}
-        <header className="tariq-topbar">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {(selected || newReqMode) && (
-              <button
-                onClick={() => { setSelected(null); setNewReqMode(false); refresh(); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 13,
-                         fontWeight: 700, color: 'var(--gray-600)', display: 'flex', alignItems: 'center', gap: 5,
-                         padding: '6px 10px', borderRadius: 7, marginRight: 4 }}>
-                ← Dashboard
-              </button>
-            )}
-            <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--gray-800)' }}>{topbarTitle}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>
-              {user.nameAr} · {user.name}
-            </span>
-            {!newReqMode && !selected && (
-              <button
-                onClick={openNewRequest}
-                style={{ fontSize: 12, fontWeight: 700, background: 'var(--tariq-color)', color: '#fff', border: 'none', borderRadius: 7, padding: '5px 12px', cursor: 'pointer' }}>
-                ➕ طلب جديد
-              </button>
-            )}
-            <button
-              className="btn-outline btn-sm"
-              onClick={() => openAladheed(null)}
-              style={{ fontSize: 12, fontWeight: 700 }}>
-              🦅 Aladheed
-            </button>
-            <button className="btn-logout" onClick={onLogout}>Logout</button>
-          </div>
-        </header>
+        <AppHeader
+          title={topbarTitle}
+          user={user}
+          onLogout={onLogout}
+          onNewRequest={openNewRequest}
+          showBack={showBack}
+          onBack={() => { setSelected(null); setNewReqMode(false); refresh(); }}
+          onOpenDrawer={() => setDrawerOpen(true)}
+        />
 
         {/* Page content */}
         <div className="page">
@@ -264,7 +109,6 @@ export default function TariqView({ user, onLogout }) {
               req={selected}
               user={user}
               onClose={() => { setSelected(null); refresh(); }}
-              onOpenAladheed={openAladheed}
             />
           ) : (
             <TariqDashboard
@@ -553,9 +397,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                          <span className="badge" style={{ color: s.color, background: s.bg }}>
-                            <span className="badge-dot" />{s.en}
-                          </span>
+                          <StatusBadge status={s} />
                           <span style={{
                             fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
                             color: req.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -643,9 +485,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                         {(req.problemDescription || '').substring(0, 55)}
                       </div>
                     </div>
-                    <span className="badge" style={{ color: s.color, background: s.bg, flexShrink: 0, fontSize: 11 }}>
-                      <span className="badge-dot" />{s.en}
-                    </span>
+                    <StatusBadge status={s} style={{ flexShrink: 0, fontSize: 11 }} />
                   </div>
                 );
               })}
@@ -782,9 +622,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           <ProgressBar value={req.progressPercentage ?? 0} />
                         </td>
                         <td>
-                          <span className="badge" style={{ color: s.color, background: s.bg, fontSize: 11 }}>
-                            <span className="badge-dot" />{s.en}
-                          </span>
+                          <StatusBadge status={s} style={{ fontSize: 11 }} />
                         </td>
                         <td>
                           <span style={{
@@ -889,7 +727,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
 }
 
 /* ── Request Detail ───────────────────────────────── */
-function TariqDetail({ req, user, onClose, onOpenAladheed }) {
+function TariqDetail({ req, user, onClose }) {
   const [dnOpen, setDnOpen]           = useState(null); // null | 'new' | delivery note object
   const [fresh, setFresh]             = useState(req);
   const [status, setStatus]           = useState(req.status);
@@ -911,6 +749,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
   const [desc, setDesc]               = useState(req.problemDescription || '');
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
+  const [previewHtml, setPreviewHtml] = useState(null);
   const [lightbox, setLightbox]       = useState(null);
   const [invoiceAmount, setInvoiceAmt]       = useState(req.invoiceAmount ?? '');
   const [progressPercentage, setProgress]    = useState(req.progressPercentage ?? 0);
@@ -1015,6 +854,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
+      <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
       <input ref={photoInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={handlePhotoUpload} />
 
       <div className="detail-grid">
@@ -1031,9 +871,7 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                 <div className="card-date mt4">{formatDate(fresh.createdAt)}</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                <span className="badge" style={{ color: STATUS[status].color, background: STATUS[status].bg }}>
-                  <span className="badge-dot" />{STATUS[status].en}
-                </span>
+                <StatusBadge status={STATUS[status]} />
                 <span style={{
                   fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
                   color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -1319,11 +1157,16 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
           {/* Action buttons */}
           <div className="card">
             <button
+              className="btn btn-outline mb8"
+              onClick={() => setPreviewHtml(buildServiceReportHtml(fresh, { print: false }))}>
+              👁 Preview Report / معاينة التقرير
+            </button>
+            <button
               className="btn mb8"
               style={{ background: '#1e293b', color: '#fff', border: 'none' }}
               onClick={async () => {
                 setExporting(true);
-                await generateServiceReport(fresh);
+                await generateServiceReportPdf(fresh);
                 setExporting(false);
               }}
               disabled={exporting}>
@@ -1352,33 +1195,14 @@ function TariqDetail({ req, user, onClose, onOpenAladheed }) {
                 </div>
             }
 
-            {fresh.status === 'completed' && onOpenAladheed && (
-              <button className="btn mb8"
-                style={{ background: '#0F172A', color: '#D4A843', border: 'none', fontWeight: 700, fontSize: 14 }}
-                onClick={() => onOpenAladheed(fresh)}>
-                🦅 Open Aladheed | العضيد — Prepare Documents
-              </button>
-            )}
-
-            {!confirmDel
-              ? <button className="btn btn-outline" style={{ color: '#EF4444', borderColor: '#EF4444' }}
-                  onClick={() => setConfirmDel(true)}>
-                  🗑️ Delete Request / حذف الطلب
-                </button>
-              : <div style={{ background: '#FEF2F2', borderRadius: 10, padding: 14 }}>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: '#EF4444', marginBottom: 10 }}>
-                    Are you sure? / هل أنت متأكد؟
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    <button className="btn btn-primary-red btn-sm" onClick={handleDelete} disabled={saving}>
-                      {saving ? '...' : 'Yes, Delete / نعم احذف'}
-                    </button>
-                    <button className="btn btn-outline btn-sm" onClick={() => setConfirmDel(false)}>
-                      Cancel / إلغاء
-                    </button>
-                  </div>
-                </div>
-            }
+            <ConfirmationDialog
+              pending={confirmDel}
+              onRequestConfirm={() => setConfirmDel(true)}
+              onConfirm={handleDelete}
+              onCancel={() => setConfirmDel(false)}
+              triggerLabel="🗑️ Delete Request / حذف الطلب"
+              busy={saving}
+            />
           </div>
 
         </div>

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { getRequestListItems, getRequestById, updateRequest, addMajedComment, createNotification, compressImage, STATUS, formatDate } from '../storage';
 import { BRANCHES } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
+import StatusBadge from '../components/StatusBadge';
 
 function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
@@ -74,9 +75,7 @@ function MajedList({ onSelect }) {
             <div className="card-branch">Herfy {req.branchNumber}</div>
             {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
           </div>
-          <span className="badge" style={{ color: s.color, background: s.bg }}>
-            <span className="badge-dot" />{s.en}
-          </span>
+          <StatusBadge status={s} />
         </div>
         <div className="card-desc">{req.problemDescription}</div>
         <div className="card-footer">
@@ -203,9 +202,7 @@ function MajedDetail({ req }) {
             <div className="card-id">{fresh.id}</div>
             <div className="card-branch">Herfy {fresh.branchNumber}</div>
           </div>
-          <span className="badge" style={{ color: s.color, background: s.bg }}>
-            <span className="badge-dot" />{s.en}
-          </span>
+          <StatusBadge status={s} />
         </div>
 
         {getBranchInfo(fresh.branchNumber) && (() => {
@@ -213,7 +210,7 @@ function MajedDetail({ req }) {
           return (
             <>
               <div className="section-title">Branch Location / موقع الفرع</div>
-              <div style={{ fontSize: 14, color: '#166534', background: '#f0fdf4', borderRadius: 8, padding: '10px 14px', border: '1px solid #bbf7d0' }}>
+              <div className="note-box note-box-green">
                 📍 {info.area} — {info.address}
               </div>
             </>

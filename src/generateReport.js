@@ -1,12 +1,13 @@
 import { STATUS, formatDate } from './storage';
 
-// ── The only function that generates the exported PDF ──────
-// Called from TariqView.jsx when the "Export Report PDF" button is clicked.
+// ── Builds the report HTML (no side effects) ────────────────
+// Used both for the in-app iframe preview (print:false, via PDFPreview)
+// and as the source for the real print window (print:true).
 // Uses native browser print (window.print) instead of html2canvas/jsPDF so:
 //   • Arabic text is shaped and rendered correctly by the browser engine
 //   • CSS break-inside:avoid guarantees no photo row or section is ever split
 //   • Real base64 photos from Supabase render as-is (no re-encoding needed)
-export async function generateServiceReport(req) {
+export function buildServiceReportHtml(req, { print = true } = {}) {
   const s   = STATUS[req.status];
   const now = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -385,13 +386,21 @@ export async function generateServiceReport(req) {
     })
   ]).then(() => {
     // Small extra delay for Arabic shaping to settle
-    setTimeout(() => { window.print(); }, 600);
+    if (${print}) setTimeout(() => { window.print(); }, 600);
   });
 </script>
 </body>
 </html>`;
 
-  // Open in a new window and let the browser print natively
+  return html;
+}
+
+// Export PDF — opens a print window and triggers window.print() so the user
+// can save it as a PDF (or send it to a physical printer). Preview does NOT
+// use this path (see buildServiceReportHtml + PDFPreview's iframe modal).
+export async function generateServiceReportPdf(req, { print = true } = {}) {
+  const html = buildServiceReportHtml(req, { print });
+
   const win = window.open('', '_blank', 'width=820,height=1000,menubar=yes,toolbar=yes');
   if (!win) {
     alert('Pop-up blocked — please allow pop-ups for this site and try again.');
