@@ -14,6 +14,20 @@
   --radius:   12px;
   --shadow:   0 1px 3px rgba(0,0,0,.08), 0 4px 12px rgba(0,0,0,.06);
   --shadow-sm:0 1px 2px rgba(0,0,0,.06);
+
+  /* ── Shared theme tokens (professional enterprise palette) ──────
+     Semantic aliases for the redesign — introduced here with zero
+     visual change; components adopt them phase by phase. */
+  --navy:        #0F172A;  /* deep navy — primary admin brand, matches the Delivery Note PDF header */
+  --navy-light:  #1E293B;  /* current sidebar background */
+  --bg:          var(--gray-100);
+  --text:        var(--gray-800);
+  --text-muted:  var(--gray-600);
+  --gold:        #D4A843;  /* limited-use brand accent, already used for active sidebar items */
+  --status-green: #16A34A;
+  --status-blue:  #3B82F6;
+  --status-amber: #D97706;
+  --status-red:   #EF4444;
 }
 
 body {
