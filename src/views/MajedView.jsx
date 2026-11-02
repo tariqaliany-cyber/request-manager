@@ -1,48 +1,97 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, formatDate, photoSrc } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, photoSrc } from '../storage';
 import { BRANCHES } from '../branchData';
+import { AREA_AR, ADDRESS_AR } from '../branchDataAr';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
 
+// Majed reads Arabic only — this whole view is Arabic and right-to-left.
+
 function getBranchInfo(num) {
-  return BRANCHES.find(b => b.num === String(num)) || null;
+  const b = BRANCHES.find(b => b.num === String(num));
+  if (!b) return null;
+  return { ...b, areaAr: AREA_AR[b.area] || b.area, addressAr: ADDRESS_AR[b.address] || b.address };
 }
+
+// Request's own link first, then the branch's saved pin, then a Maps search.
+function mapsLinkFor(req, info) {
+  if (req.locationLink) return req.locationLink;
+  if (info?.mapsUrl) return info.mapsUrl;
+  if (!info) return null;
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Herfy ${info.address} ${info.area}`)}`;
+}
+
+const formatDateAr = (iso) => {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('ar', {
+    day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+    calendar: 'gregory', numberingSystem: 'latn',
+  });
+};
+
+const backBtnStyle = {
+  background: '#563b2c', color: '#fff', border: 'none', borderRadius: 10,
+  padding: '10px 18px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
+};
 
 export default function MajedView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
 
+  // Opening a job pushes a history entry so the phone's own back button
+  // returns to the list instead of leaving the app.
+  useEffect(() => {
+    const onPop = () => setSelected(null);
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const openJob = (req) => {
+    window.history.pushState({ majedJob: req.id }, '');
+    setSelected(req);
+    window.scrollTo(0, 0);
+  };
+
+  const goBack = () => {
+    if (window.history.state?.majedJob) window.history.back();
+    else setSelected(null);
+  };
+
   if (selected) {
     return (
-      <div>
+      <div dir="rtl" lang="ar">
         <header className="header header-majed">
-          <button className="back-btn" onClick={() => setSelected(null)} style={{ color: '#fff' }}>← Back</button>
+          <button onClick={goBack} style={backBtnStyle}>→ رجوع</button>
           <div className="header-right">
-            <button className="btn-logout" onClick={onLogout}>Logout</button>
+            <button className="btn-logout" onClick={onLogout}>تسجيل الخروج</button>
           </div>
         </header>
         <div className="page">
           <MajedDetail req={selected} user={user} />
+          <button onClick={goBack} style={{ ...backBtnStyle, width: '100%', marginTop: 8, padding: 14 }}>
+            → رجوع إلى أعمالي
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div dir="rtl" lang="ar">
       <header className="header header-majed">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <img src="/herfy-logo.png" alt="Herfy" style={{ height: 36, width: 'auto', display: 'block' }} />
+          <img src="/herfy-logo.png" alt="هرفي" style={{ height: 36, width: 'auto', display: 'block' }} />
           <div>
-            <div className="header-title">My Jobs / أعمالي</div>
-            <div className="header-sub">Welcome, {user.nameAr} · {user.name}</div>
+            <div className="header-title">أعمالي</div>
+            <div className="header-sub">أهلاً {user.nameAr}</div>
           </div>
         </div>
         <div className="header-right">
-          <button className="btn-logout" onClick={onLogout}>Logout</button>
+          <button className="btn-logout" onClick={onLogout}>تسجيل الخروج</button>
         </div>
       </header>
       <div className="page">
-        <MajedList onSelect={setSelected} />
+        <MajedList onSelect={openJob} />
       </div>
     </div>
   );
@@ -52,6 +101,7 @@ export default function MajedView({ user, onLogout }) {
 function MajedList({ onSelect }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
+  const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
     getRequestListItems({ assignedTo: 'majed' }).then(reqs => {
@@ -60,54 +110,60 @@ function MajedList({ onSelect }) {
     });
   }, []);
 
-  if (loading) return <div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">Loading...</div></div>;
+  if (loading) return <div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">جاري التحميل...</div></div>;
 
   const active = requests.filter(r => r.status !== 'completed');
   const done   = requests.filter(r => r.status === 'completed');
 
   const JobCard = ({ req }) => {
-    const s = STATUS[req.status];
+    const info = getBranchInfo(req.branchNumber);
+    const mapsLink = mapsLinkFor(req, info);
     return (
       <div className="card card-clickable" onClick={() => onSelect(req)}>
         <div className="card-header">
           <div>
-            <div className="card-id">{req.id}</div>
-            <div className="card-branch">Herfy {req.branchNumber}</div>
-            {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
+            <div className="card-branch">هرفي {req.branchNumber}</div>
+            <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>📍 {info ? `${info.areaAr} — ${info.addressAr}` : 'الموقع غير محدد'}</div>
+            {mapsLink && (
+              <a href={mapsLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                style={{ display: 'inline-block', marginTop: 6, fontSize: 13, fontWeight: 700, color: '#2563EB' }}>
+                🗺️ الذهاب للموقع
+              </a>
+            )}
           </div>
-          <StatusBadge status={s} />
+          <StatusBadge status={STATUS[req.status]} lang="ar" />
         </div>
         <div className="card-desc">{req.problemDescription}</div>
         <div className="card-footer">
-          <span className="card-date">{formatDate(req.createdAt)}</span>
-          <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>Tap to open ›</span>
+          <span className="card-date">{formatDateAr(req.createdAt)}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#563b2c' }}>افتح ‹</span>
         </div>
       </div>
     );
   };
 
-  if (active.length === 0 && done.length === 0) {
-    return (
-      <div className="empty-state">
-        <div className="empty-icon">📭</div>
-        <div className="empty-title">No jobs assigned yet</div>
-        <div className="empty-sub">لا يوجد أعمال مسندة حتى الآن</div>
-      </div>
-    );
-  }
-
   return (
     <div>
-      {active.length > 0 && (
-        <>
-          <div className="section-title mt16">Active Jobs / الأعمال النشطة</div>
-          {active.map(r => <JobCard key={r.id} req={r} />)}
-        </>
-      )}
+      <div className="section-title mt16">الأعمال المسندة لك ({active.length})</div>
+      {active.length > 0
+        ? active.map(r => <JobCard key={r.id} req={r} />)
+        : (
+          <div className="empty-state" style={{ padding: '30px 20px' }}>
+            <div className="empty-icon">📭</div>
+            <div className="empty-title">لا يوجد أعمال مسندة لك حالياً</div>
+          </div>
+        )}
+
       {done.length > 0 && (
         <>
-          <div className="section-title">Completed / المنجزة</div>
-          {done.map(r => <JobCard key={r.id} req={r} />)}
+          <button className="btn btn-outline" onClick={() => setShowDone(v => !v)} style={{ marginTop: 16 }}>
+            {showDone ? '▲ إخفاء الأعمال المنجزة' : `▼ عرض الأعمال المنجزة (${done.length})`}
+          </button>
+          {showDone && (
+            <div style={{ marginTop: 12 }}>
+              {done.map(r => <JobCard key={r.id} req={r} />)}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -191,47 +247,96 @@ function MajedDetail({ req, user }) {
   };
 
   const [lightbox, setLightbox] = useState(null);
-  const s = STATUS[fresh.status];
   const isCompleted = fresh.status === 'completed';
+  const info = getBranchInfo(fresh.branchNumber);
+  const mapsLink = mapsLinkFor(fresh, info);
+
+  const PhotoSection = ({ title, type, staged, setStaged, inputRef, saved }) => (
+    <div className="card">
+      <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>{title}</div>
+      {!isCompleted && (
+        <>
+          <button className="btn btn-outline mb8" onClick={() => inputRef.current.click()}>
+            📷 إضافة صور
+          </button>
+          <input ref={inputRef} type="file" accept="image/*" multiple hidden
+            onChange={e => stagePhotos(e.target.files, type)} />
+
+          {staged.length > 0 && (
+            <div style={{ marginTop: 8, padding: '12px', background: '#FFFBEB', borderRadius: 10, border: '1px solid #FDE68A' }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>
+                {staged.length} صورة جاهزة — لم يتم الحفظ بعد
+              </div>
+              <div className="photo-grid">
+                {staged.map((src, i) => (
+                  <div key={i} className="photo-thumb">
+                    <img src={src} alt="" decoding="async" />
+                    <button className="photo-remove" onClick={() => setStaged(p => p.filter((_, j) => j !== i))}>×</button>
+                  </div>
+                ))}
+              </div>
+              <button className="btn btn-primary-majed"
+                onClick={() => saveAllPhotos(type)}
+                disabled={photoSaving === type}
+                style={{ width: '100%', marginTop: 10 }}>
+                {photoSaving === type ? '⏳ جاري الحفظ...' : '💾 حفظ الصور'}
+              </button>
+            </div>
+          )}
+
+          {photoSaved === type && staged.length === 0 && (
+            <div style={{ textAlign: 'center', color: '#16A34A', fontWeight: 700, marginTop: 8, fontSize: 14, padding: '8px', background: '#F0FDF4', borderRadius: 8 }}>
+              ✅ تم حفظ الصور بنجاح
+            </div>
+          )}
+        </>
+      )}
+
+      {saved?.length > 0 ? (
+        <>
+          {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>الصور المحفوظة</div>}
+          <div className="photo-grid">
+            {saved.map((p, i) => (
+              <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: saved, index: i })}>
+                <img src={photoSrc(p)} alt="" decoding="async" />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>لا توجد صور</div>}
+    </div>
+  );
 
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="card-id">{fresh.id}</div>
-            <div className="card-branch">Herfy {fresh.branchNumber}</div>
-          </div>
-          <StatusBadge status={s} />
+          <div className="card-branch">هرفي {fresh.branchNumber}</div>
+          <StatusBadge status={STATUS[fresh.status]} lang="ar" />
         </div>
 
-        {getBranchInfo(fresh.branchNumber) && (() => {
-          const info = getBranchInfo(fresh.branchNumber);
-          return (
-            <>
-              <div className="section-title">Branch Location / موقع الفرع</div>
-              <div className="note-box note-box-green">
-                📍 {info.area} — {info.address}
-              </div>
-            </>
-          );
-        })()}
-        {fresh.locationLink && (
+        {info && (
           <>
-            <div className="section-title">Google Maps / خرائط جوجل</div>
-            <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
-              🗺️ Open in Google Maps / فتح في خرائط جوجل
-            </a>
+            <div className="section-title">موقع الفرع</div>
+            <div className="note-box note-box-green">
+              📍 {info.areaAr} — {info.addressAr}
+            </div>
           </>
         )}
+        {mapsLink && (
+          <a href={mapsLink} target="_blank" rel="noopener noreferrer"
+            style={{ display: 'block', marginTop: 10, padding: 14, borderRadius: 10, background: '#2563EB', color: '#fff', textAlign: 'center', fontSize: 16, fontWeight: 700, textDecoration: 'none' }}>
+            🗺️ الذهاب للموقع
+          </a>
+        )}
 
-        <div className="section-title">Problem / المشكلة</div>
+        <div className="section-title">المشكلة</div>
         <div style={{ fontSize: 15, lineHeight: 1.6 }}>{fresh.problemDescription}</div>
 
         {fresh.problemPhotos?.length > 0 && (
           <>
-            <div className="section-title">Problem Photos / صور المشكلة</div>
+            <div className="section-title">صور المشكلة</div>
             <div className="photo-grid">
               {fresh.problemPhotos.map((p, i) => (
                 <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.problemPhotos, index: i })}>
@@ -244,7 +349,7 @@ function MajedDetail({ req, user }) {
 
         {fresh.notesToMajed && (
           <>
-            <div className="section-title">Notes from Coordinator / ملاحظات من المنسق</div>
+            <div className="section-title">ملاحظات من المنسق</div>
             <div className="note-box note-box-amber">{fresh.notesToMajed}</div>
           </>
         )}
@@ -253,166 +358,63 @@ function MajedDetail({ req, user }) {
       {!fresh.majedStarted && !isCompleted && (
         <div className="card">
           <button className="btn btn-primary-green" onClick={markStarted} disabled={saving}>
-            🚀 Start Work / بدء العمل
+            🚀 بدء العمل
           </button>
         </div>
       )}
 
       {fresh.majedStarted && (
         <>
-          <div className="card">
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Progress Photos / صور التقدم</div>
-            {!isCompleted && (
-              <>
-                <button className="btn btn-outline mb8" onClick={() => progressRef.current.click()}>
-                  📷 Add Progress Photos / إضافة صور تقدم
-                </button>
-                <input ref={progressRef} type="file" accept="image/*" multiple hidden
-                  onChange={e => stagePhotos(e.target.files, 'progress')} />
-
-                {stagedProgress.length > 0 && (
-                  <div style={{ marginTop: 8, padding: '12px', background: '#FFFBEB', borderRadius: 10, border: '1px solid #FDE68A' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>
-                      {stagedProgress.length} photo{stagedProgress.length > 1 ? 's' : ''} ready — not saved yet
-                      <span style={{ fontWeight: 400, marginRight: 4 }}> / لم يتم الحفظ بعد</span>
-                    </div>
-                    <div className="photo-grid">
-                      {stagedProgress.map((src, i) => (
-                        <div key={i} className="photo-thumb">
-                          <img src={src} alt="" decoding="async" />
-                          <button className="photo-remove" onClick={() => setStagedProgress(p => p.filter((_, j) => j !== i))}>×</button>
-                        </div>
-                      ))}
-                    </div>
-                    <button className="btn btn-primary-majed"
-                      onClick={() => saveAllPhotos('progress')}
-                      disabled={photoSaving === 'progress'}
-                      style={{ width: '100%', marginTop: 10 }}>
-                      {photoSaving === 'progress' ? '⏳ Saving... / جاري الحفظ...' : '💾 Save All Photos / حفظ جميع الصور'}
-                    </button>
-                  </div>
-                )}
-
-                {photoSaved === 'progress' && stagedProgress.length === 0 && (
-                  <div style={{ textAlign: 'center', color: '#16A34A', fontWeight: 700, marginTop: 8, fontSize: 14, padding: '8px', background: '#F0FDF4', borderRadius: 8 }}>
-                    ✅ Photos saved successfully! / تم حفظ الصور بنجاح!
-                  </div>
-                )}
-              </>
-            )}
-
-            {fresh.progressPhotos?.length > 0 ? (
-              <>
-                {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
-                <div className="photo-grid">
-                  {fresh.progressPhotos.map((p, i) => (
-                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.progressPhotos, index: i })}>
-                      <img src={photoSrc(p)} alt="" decoding="async" />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet / لا توجد صور</div>}
-          </div>
+          <PhotoSection title="صور أثناء العمل" type="progress"
+            staged={stagedProgress} setStaged={setStagedProgress}
+            inputRef={progressRef} saved={fresh.progressPhotos} />
 
           {!isCompleted && (
             <div className="card">
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Add Comment / إضافة تعليق</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>إضافة تعليق</div>
               <textarea className="textarea mb8"
-                placeholder="Write a comment or update... / اكتب تعليقاً أو تحديثاً..."
+                placeholder="اكتب تعليقاً أو تحديثاً..."
                 value={comment} onChange={e => setComment(e.target.value)} rows={3} />
               <button className="btn btn-primary-majed" onClick={submitComment} disabled={!comment.trim()}>
-                💬 Send Comment / إرسال
+                💬 إرسال
               </button>
             </div>
           )}
 
           {fresh.majedComments?.length > 0 && (
             <div className="card">
-              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Comments / التعليقات</div>
+              <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>التعليقات</div>
               {fresh.majedComments.map((c, i) => (
                 <div key={i} className="comment-item">
                   <div className="comment-text">{c.text}</div>
-                  <div className="comment-time">{formatDate(c.time)}</div>
+                  <div className="comment-time">{formatDateAr(c.time)}</div>
                 </div>
               ))}
             </div>
           )}
 
           <div className="card">
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>What Was Done / ما تم تنفيذه</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>ما تم تنفيذه</div>
             <textarea className="textarea mb8"
-              placeholder="Describe everything that was done... / صف كل ما تم تنفيذه..."
+              placeholder="اكتب كل ما تم تنفيذه..."
               value={workDone} onChange={e => setWorkDone(e.target.value)}
               disabled={isCompleted} rows={4} />
             {!isCompleted && (
               <button className="btn btn-outline btn-sm" onClick={saveWorkDone}
                 disabled={saving || !workDone.trim()}>
-                💾 Save / حفظ
+                💾 حفظ
               </button>
             )}
           </div>
 
-          <div className="card">
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Completion Photos / صور الإنجاز</div>
-            {!isCompleted && (
-              <>
-                <button className="btn btn-outline mb8" onClick={() => completionRef.current.click()}>
-                  📷 Add Completion Photos / إضافة صور إنجاز
-                </button>
-                <input ref={completionRef} type="file" accept="image/*" multiple hidden
-                  onChange={e => stagePhotos(e.target.files, 'completion')} />
-
-                {stagedCompletion.length > 0 && (
-                  <div style={{ marginTop: 8, padding: '12px', background: '#FFFBEB', borderRadius: 10, border: '1px solid #FDE68A' }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#92400E', marginBottom: 8 }}>
-                      {stagedCompletion.length} photo{stagedCompletion.length > 1 ? 's' : ''} ready — not saved yet
-                      <span style={{ fontWeight: 400, marginRight: 4 }}> / لم يتم الحفظ بعد</span>
-                    </div>
-                    <div className="photo-grid">
-                      {stagedCompletion.map((src, i) => (
-                        <div key={i} className="photo-thumb">
-                          <img src={src} alt="" decoding="async" />
-                          <button className="photo-remove" onClick={() => setStagedCompletion(p => p.filter((_, j) => j !== i))}>×</button>
-                        </div>
-                      ))}
-                    </div>
-                    <button className="btn btn-primary-majed"
-                      onClick={() => saveAllPhotos('completion')}
-                      disabled={photoSaving === 'completion'}
-                      style={{ width: '100%', marginTop: 10 }}>
-                      {photoSaving === 'completion' ? '⏳ Saving... / جاري الحفظ...' : '💾 Save All Photos / حفظ جميع الصور'}
-                    </button>
-                  </div>
-                )}
-
-                {photoSaved === 'completion' && stagedCompletion.length === 0 && (
-                  <div style={{ textAlign: 'center', color: '#16A34A', fontWeight: 700, marginTop: 8, fontSize: 14, padding: '8px', background: '#F0FDF4', borderRadius: 8 }}>
-                    ✅ Photos saved successfully! / تم حفظ الصور بنجاح!
-                  </div>
-                )}
-              </>
-            )}
-
-            {fresh.completionPhotos?.length > 0 ? (
-              <>
-                {!isCompleted && <div style={{ fontSize: 12, color: 'var(--gray-400)', margin: '10px 0 4px' }}>Saved photos / الصور المحفوظة</div>}
-                <div className="photo-grid">
-                  {fresh.completionPhotos.map((p, i) => (
-                    <div key={i} className="photo-thumb" style={{ cursor: 'pointer' }} onClick={() => setLightbox({ photos: fresh.completionPhotos, index: i })}>
-                      <img src={photoSrc(p)} alt="" decoding="async" />
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : <div style={{ color: 'var(--gray-400)', fontSize: 13 }}>No photos yet / لا توجد صور</div>}
-          </div>
+          <PhotoSection title="صور بعد الإنجاز" type="completion"
+            staged={stagedCompletion} setStaged={setStagedCompletion}
+            inputRef={completionRef} saved={fresh.completionPhotos} />
 
           {isCompleted && (
             <div className="card" style={{ textAlign: 'center', padding: '24px' }}>
               <div style={{ fontSize: 36, marginBottom: 8 }}>✅</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: '#16A34A' }}>Job Completed by Coordinator</div>
-              <div style={{ fontSize: 13, color: 'var(--gray-400)', marginTop: 4 }}>تم إغلاق الطلب من قبل المنسق</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#16A34A' }}>تم إغلاق الطلب من قبل المنسق</div>
             </div>
           )}
         </>
