@@ -11,12 +11,11 @@ import { branchLabel } from './branchData';
 
 export const DELIVERY_TEMPLATE_URL = '/delivery-note/template.html';
 
-// The template's item column has one main line: the item number exactly as
-// in the approved list (src/skuData.js), then its description. Custom items
-// keep a short "item name" and a longer "description" — combine them too.
+// The description column shows the description alone; the item number goes
+// in the BOQ column. Custom items keep a short "item name" and a longer
+// "description" — combine them.
 function itemDescription(it) {
-  const text = it.isCustom ? [it.itemName, it.description].filter(Boolean).join(' — ') : (it.description || '');
-  return [it.itemNo, text].filter(Boolean).join('  ');
+  return it.isCustom ? [it.itemName, it.description].filter(Boolean).join(' — ') : (it.description || '');
 }
 
 const join = (...parts) => parts.filter(Boolean).join('');
@@ -44,7 +43,9 @@ export function buildDeliveryData(note) {
     items: (note.items || []).map(it => ({
       descAr: itemDescription(it),
       descEn: it.remarks || '',
-      serial: it.serial || '',
+      // BOQ number exactly as in the approved list (src/skuData.js); a custom
+      // item without one falls back to its typed serial number.
+      serial: it.itemNo || it.serial || '',
       qty:    qty(it),
     })),
     reportAr: note.generalRemarks || '',

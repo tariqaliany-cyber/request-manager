@@ -115,7 +115,15 @@
   .row .cell { padding-top: 7.43pt; padding-bottom: 8.78pt; }
   .td-ar { font-size: 12.7pt; line-height: 16.51pt; }
   .td-en { font-size: 9pt;    line-height: 11.7pt;  margin-top: -0.92pt; }
-  .c-serial .td-ar, .c-qty .td-ar { direction: ltr; text-align: right; }
+  .c-qty .td-ar { direction: ltr; text-align: right; }
+  /* BOQ column: header and number centred both ways, whatever the row height */
+  .thead .c-serial, .row .c-serial {
+    display: flex; flex-direction: column; justify-content: center;
+    padding-right: 0; text-align: center;
+  }
+  .row .c-serial { padding-top: 8.1pt; padding-bottom: 8.1pt; }
+  .thead .c-serial .ln { margin-top: 0; }
+  .c-serial .td-ar { direction: ltr; text-align: center; }
   /* Item text can be Arabic or English (approved list is English, e.g.
      "6.10  24 Hrs Sign…"): take the direction from the text itself so a
      leading item number stays in place, still right-aligned. */
@@ -208,7 +216,7 @@
 
   <div class="thead" id="thead">
     <div class="c-desc"><span class="ln th-ar">وصف البند</span><span class="ln th-en en">Item description</span></div>
-    <div class="c-serial"><span class="ln th-ar">الرقم التسلسلي</span><span class="ln th-en en">Serial number</span></div>
+    <div class="c-serial"><span class="ln th-ar">الرقم التسلسلي (BOQ)</span><span class="ln th-en en">Serial Number (BOQ)</span></div>
     <div class="c-qty"><span class="ln th-ar">العدد</span><span class="ln th-en en">Qty</span></div>
   </div>
   <div class="flow"></div>
