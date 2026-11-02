@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, photoSrc } from '../storage';
+import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, photoSrc, canSeeRepairCost } from '../storage';
 import { BRANCHES } from '../branchData';
 import { AREA_AR, ADDRESS_AR } from '../branchDataAr';
 import PhotoLightbox from '../components/PhotoLightbox';
@@ -91,20 +91,21 @@ export default function MajedView({ user, onLogout }) {
         </div>
       </header>
       <div className="page">
-        <MajedList user={user} onSelect={openJob} />
+        <MajedList onSelect={openJob} />
       </div>
     </div>
   );
 }
 
 /* ── Job List ───────────────────────────────────────── */
-function MajedList({ user, onSelect }) {
+function MajedList({ onSelect }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
-    getRequestListItems({ assignedTo: user.username }).then(reqs => {
+    // All technicians share the workshop queue.
+    getRequestListItems({ assignedTo: 'majed' }).then(reqs => {
       setRequests(reqs);
       setLoading(false);
     });
@@ -175,6 +176,8 @@ function MajedDetail({ req, user }) {
   const [fresh, setFresh]       = useState(req);
   const [comment, setComment]         = useState('');
   const [workDone, setWorkDone]       = useState(req.workDone || '');
+  const [repairCost, setRepairCost]   = useState('');
+  const [costSaved, setCostSaved]     = useState(false);
   const [saving, setSaving]           = useState(false);
   const [stagedProgress, setStagedProgress]     = useState([]);
   const [stagedCompletion, setStagedCompletion] = useState([]);
@@ -185,7 +188,11 @@ function MajedDetail({ req, user }) {
 
   const reload = async () => {
     const updated = await getRequestById(req.id);
-    if (updated) { setFresh(updated); setWorkDone(updated.workDone || ''); }
+    if (updated) {
+      setFresh(updated);
+      setWorkDone(updated.workDone || '');
+      setRepairCost(updated.repairCost ?? '');
+    }
   };
 
   useEffect(() => { reload(); }, [req.id]);
@@ -221,6 +228,16 @@ function MajedDetail({ req, user }) {
     await logActivity({ ...logBase(), action: 'work_done', detail: workDone.trim() });
     await reload();
     setSaving(false);
+  };
+
+  // Activity log is visible to Essa, so the amount itself is never logged.
+  const saveRepairCost = async () => {
+    setSaving(true);
+    const value = repairCost === '' ? null : Number(repairCost);
+    const ok = await updateRequest(fresh.id, { repairCost: value });
+    await reload();
+    setSaving(false);
+    if (ok) { setCostSaved(true); setTimeout(() => setCostSaved(false), 3000); }
   };
 
   const stagePhotos = async (files, type) => {
@@ -360,6 +377,27 @@ function MajedDetail({ req, user }) {
           <button className="btn btn-primary-green" onClick={markStarted} disabled={saving}>
             🚀 بدء العمل
           </button>
+        </div>
+      )}
+
+      {canSeeRepairCost(user) && (
+        <div className="card">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <label htmlFor="repair-cost" style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}>قيمة الإصلاح</label>
+            <input id="repair-cost" className="input" type="number" inputMode="decimal" min="0" step="any"
+              placeholder="0" value={repairCost} onChange={e => setRepairCost(e.target.value)}
+              disabled={isCompleted} style={{ flex: 1, direction: 'ltr', textAlign: 'right' }} />
+            <span style={{ fontSize: 14, color: 'var(--gray-600)' }}>ريال</span>
+          </div>
+          {!isCompleted && (
+            <button className="btn btn-outline btn-sm" onClick={saveRepairCost}
+              disabled={saving || String(repairCost) === String(fresh.repairCost ?? '')}
+              style={{ marginTop: 10 }}>
+              💾 حفظ
+            </button>
+          )}
+          {costSaved && <div style={{ color: '#16A34A', fontWeight: 700, fontSize: 13, marginTop: 8 }}>✅ تم الحفظ</div>}
+          <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 8 }}>🔒 يظهر لك ولطارق فقط</div>
         </div>
       )}
 

@@ -43,3 +43,6 @@ create policy "Allow all" on activity_log for all using (true) with check (true)
 
 create index if not exists activity_log_request_id_idx on activity_log(request_id);
 create index if not exists activity_log_created_at_idx on activity_log(created_at desc);
+
+-- Repair cost entered by Majed (private to Majed and Tariq in the UI)
+alter table requests add column if not exists repair_cost numeric;

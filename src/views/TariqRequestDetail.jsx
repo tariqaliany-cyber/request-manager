@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import {
   getRequestById, updateRequest, deleteRequest, compressImage, canManageDeliveryNotes,
   STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
-  TECHNICIANS,
 } from '../storage';
 import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
@@ -210,6 +209,16 @@ export default function TariqRequestDetail({ req, user, onClose }) {
             }}>
               {fresh.invoiceAmount != null ? `💰 ${formatSAR(fresh.invoiceAmount)}` : '💰 Invoice: Not added'}
             </span>
+            {/* Entered by Majed; private to Majed and Tariq */}
+            <span title="Entered by Majed — visible to Majed and Tariq only" style={{
+              fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
+              color: fresh.repairCost != null ? '#563b2c' : '#94A3B8',
+              background: fresh.repairCost != null ? '#fdf6f0' : '#F8FAFC',
+              border: '1px solid ' + (fresh.repairCost != null ? '#e8d5c4' : '#E2E8F0'),
+              padding: '3px 10px', borderRadius: 20,
+            }}>
+              {fresh.repairCost != null ? `🔧 Repair / قيمة الإصلاح: ${formatSAR(fresh.repairCost)}` : '🔧 Repair cost: Not added'}
+            </span>
           </div>
         </div>
 
@@ -308,7 +317,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
                 <label className="label">Assign To / إسناد إلى</label>
                 <select className="select" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                   <option value="">— Not Assigned / غير مسند —</option>
-                  {TECHNICIANS.map(t => <option key={t.username} value={t.username}>{t.name} / {t.nameAr}</option>)}
+                  <option value="majed">Workshop Team / فريق الورشة</option>
                 </select>
               </div>
               <div className="form-group">

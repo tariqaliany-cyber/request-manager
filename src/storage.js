@@ -13,14 +13,11 @@ export const USERS = {
   tariq: { password: 'tariq123', role: 'tariq', name: 'Tariq', nameAr: 'طارق'  },
 };
 
-// Workshop technicians: every 'majed'-role user gets the Arabic job view and
-// can be picked in the Assign To list. assigned_to holds their username.
-export const TECHNICIANS = Object.entries(USERS)
-  .filter(([, u]) => u.role === 'majed')
-  .map(([username, u]) => ({ username, name: u.name, nameAr: u.nameAr }));
+// Every 'majed'-role user is a workshop technician: they all share the Arabic
+// job view and see every job assigned to the workshop (assigned_to = 'majed').
 
-export const technicianName = (username) =>
-  TECHNICIANS.find(t => t.username === username)?.name || 'Workshop';
+// Repair cost is private between Majed and Tariq — not Essa, not Abdullah.
+export const canSeeRepairCost = (user) => user?.username === 'majed' || user?.role === 'tariq';
 
 export const STATUS = {
   received:    { en: 'Request Received', ar: 'تم استلام الطلب', color: '#3B82F6', bg: '#EFF6FF' },
@@ -96,6 +93,7 @@ const FIELD_MAP = {
   paymentDate:                  'payment_date',
   internalAccountingNote:       'internal_accounting_note',
   dueDate:                      'due_date',
+  repairCost:                   'repair_cost',
 };
 
 const toDb = (obj) => {
@@ -132,6 +130,7 @@ const fromDb = (row) => ({
   paymentDate:                  row.payment_date         || null,
   internalAccountingNote:       row.internal_accounting_note || '',
   dueDate:                      row.due_date             || null,
+  repairCost:                   row.repair_cost          ?? null,
 });
 
 // ── CRUD ─────────────────────────────────────────────

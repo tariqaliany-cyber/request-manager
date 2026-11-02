@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage, TECHNICIANS, technicianName } from '../storage';
+import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
 import { getBranchInfo, BRANCHES } from '../branchData';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
@@ -203,7 +203,7 @@ function TariqNewRequestForm({ onClose }) {
           <label className="label">إسناد إلى / Assign To</label>
           <select className="select" value={assignedTo} onChange={e => setAssign(e.target.value)}>
             <option value="">— غير مسند / Unassigned —</option>
-            {TECHNICIANS.map(t => <option key={t.username} value={t.username}>{t.name} / {t.nameAr}</option>)}
+            <option value="majed">Workshop Team / فريق الورشة</option>
           </select>
         </div>
 
@@ -464,7 +464,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                       <div className="card-footer">
                         <span className="card-date">{formatDate(req.createdAt)}</span>
                         {req.assignedTo
-                          ? <span className="assigned-tag">👷 Assigned to {technicianName(req.assignedTo)}</span>
+                          ? <span className="assigned-tag">👷 Assigned to Workshop</span>
                           : req.status !== 'completed'
                             ? <span className="unassigned-tag">○ Unassigned</span>
                             : null}
@@ -713,7 +713,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                         </td>
                         <td>
                           {req.assignedTo
-                            ? <span className="assigned-tag" style={{ fontSize: 11 }}>👷 {technicianName(req.assignedTo)}</span>
+                            ? <span className="assigned-tag" style={{ fontSize: 11 }}>👷 Workshop</span>
                             : req.status !== 'completed'
                               ? <span className="unassigned-tag" style={{ fontSize: 11 }}>○ Unassigned</span>
                               : <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>—</span>}
