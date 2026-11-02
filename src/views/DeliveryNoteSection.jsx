@@ -209,7 +209,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
       <PDFPreview src={previewOpen ? DELIVERY_TEMPLATE_URL : null} data={deliveryData}
         onLayout={setLayout} onClose={() => setPreviewOpen(false)} />
 
-      <button className="back-btn mb16" onClick={onBack}>← Back to Request / رجوع</button>
+      <button className="back-btn mb16" onClick={onBack}>← Back to Delivery Notes / رجوع للإشعارات</button>
 
       <div className="dn-layout">
         <div className="dn-main">

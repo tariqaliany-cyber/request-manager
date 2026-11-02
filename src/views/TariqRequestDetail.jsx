@@ -192,10 +192,6 @@ export default function TariqRequestDetail({ req, user, onClose }) {
     if (updated) setFresh(updated);
   };
 
-  if (dnOpen) {
-    return <DeliveryNoteForm req={fresh} user={user} note={dnOpen} onBack={() => setDnOpen(null)} />;
-  }
-
   const photoCount = (fresh.problemPhotos?.length || 0) + (fresh.progressPhotos?.length || 0) + (fresh.completionPhotos?.length || 0);
 
   const docMenuItems = [
@@ -210,19 +206,17 @@ export default function TariqRequestDetail({ req, user, onClose }) {
         fillName="setMaintenanceReportData" layoutName="getMaintenanceReportLayout"
         onClose={() => setReportOpen(false)} />
 
-      {/* Sticky request header */}
-      <div className="card" style={{ marginBottom: 12 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div className="card-id">{fresh.id}</div>
-            <div className="card-branch">Herfy {fresh.branchNumber}</div>
-            <div className="card-date mt4">Created {formatDate(fresh.createdAt)}</div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-            <div style={{ display: 'flex', gap: 6 }}>
-              <StatusBadge status={STATUS[status]} />
-              <StatusBadge status={PRIORITY[priority]} />
-            </div>
+      {/* Request summary: identity · status · documents — one row on desktop */}
+      <div className="card req-head">
+        <div className="req-head-id">
+          <div className="card-id">{fresh.id}</div>
+          <div className="card-branch">Herfy {fresh.branchNumber}</div>
+          <div className="card-date mt4">Created {formatDate(fresh.createdAt)}</div>
+        </div>
+        <div className="req-head-status">
+          <div className="req-head-badges">
+            <StatusBadge status={STATUS[status]} />
+            <StatusBadge status={PRIORITY[priority]} />
             <span style={{
               fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
               color: fresh.invoiceAmount != null ? '#166534' : '#94A3B8',
@@ -243,22 +237,22 @@ export default function TariqRequestDetail({ req, user, onClose }) {
               {fresh.repairCost != null ? `🔧 Repair / قيمة الإصلاح: ${formatSAR(fresh.repairCost)}` : '🔧 Repair cost: Not added'}
             </span>
           </div>
+
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-400)', marginBottom: 4 }}>
+              <span>Progress / نسبة التقدم</span><span>{progressPercentage}%</span>
+            </div>
+            <div style={{ background: '#F1F5F9', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', width: `${progressPercentage}%`,
+                background: progressPercentage >= 95 ? '#15803D' : progressPercentage >= 51 ? '#22C55E' : progressPercentage >= 26 ? '#EAB308' : '#EF4444',
+                borderRadius: 8, transition: 'width .3s ease',
+              }} />
+            </div>
+          </div>
         </div>
 
-        <div style={{ marginTop: 12 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--gray-400)', marginBottom: 4 }}>
-            <span>Progress / نسبة التقدم</span><span>{progressPercentage}%</span>
-          </div>
-          <div style={{ background: '#F1F5F9', borderRadius: 8, height: 8, overflow: 'hidden' }}>
-            <div style={{
-              height: '100%', width: `${progressPercentage}%`,
-              background: progressPercentage >= 95 ? '#15803D' : progressPercentage >= 51 ? '#22C55E' : progressPercentage >= 26 ? '#EAB308' : '#EF4444',
-              borderRadius: 8, transition: 'width .3s ease',
-            }} />
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+        <div className="req-head-actions">
           <GenerateDocumentMenu items={docMenuItems} />
         </div>
       </div>
@@ -295,13 +289,15 @@ export default function TariqRequestDetail({ req, user, onClose }) {
               )}
 
               <div className="section-title">Core Info / البيانات الأساسية</div>
-              <div className="form-group">
-                <label className="label">Herfy Number / رقم هرفي</label>
-                <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="label">Ticket Number / رقم التذكرة</label>
-                <input className="input" inputMode="text" value={ticket} onChange={e => setTicket(e.target.value)} />
+              <div className="field-pair">
+                <div className="form-group">
+                  <label className="label">Herfy Number / رقم هرفي</label>
+                  <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="label">Ticket Number / رقم التذكرة</label>
+                  <input className="input" inputMode="text" value={ticket} onChange={e => setTicket(e.target.value)} />
+                </div>
               </div>
               <div className="form-group">
                 <label className="label">Location Link / رابط الموقع</label>
@@ -309,7 +305,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="label">Problem Description / وصف المشكلة</label>
-                <textarea className="textarea" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
+                <textarea className="textarea textarea-tall" rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
               </div>
             </div>
 
@@ -484,7 +480,12 @@ export default function TariqRequestDetail({ req, user, onClose }) {
       )}
 
       {/* ══ Delivery Note ══ */}
-      {activeTab === 'delivery' && (
+      {dnOpen && (
+        <div hidden={activeTab !== 'delivery'}>
+          <DeliveryNoteForm req={fresh} user={user} note={dnOpen} onBack={() => setDnOpen(null)} />
+        </div>
+      )}
+      {activeTab === 'delivery' && !dnOpen && (
         canManageDeliveryNotes(user)
           ? <DeliveryNoteCard req={fresh} user={user} onOpen={setDnOpen} />
           : <div className="card"><div style={{ fontSize: 13, color: 'var(--gray-400)' }}>Not available for this account.</div></div>

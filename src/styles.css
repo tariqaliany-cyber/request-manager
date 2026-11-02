@@ -78,9 +78,10 @@ body {
 /* ── Wide tab bar (unified request page — more tabs than fit on mobile) ── */
 .tabs-wide { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .tabs-wide .tab-btn { flex: 0 0 auto; white-space: nowrap; padding: 10px 14px; }
-@media (min-width: 900px) {
-  .tabs-wide { overflow-x: visible; }
-  .tabs-wide .tab-btn { flex: 1; }
+/* Wider screens: one row when it fits, otherwise wraps — never scrolls the page */
+@media (min-width: 768px) {
+  .tabs-wide { overflow-x: visible; flex-wrap: wrap; }
+  .tabs-wide .tab-btn { flex: 1 1 auto; }
 }
 
 /* ── Cards ───────────────────────────────────────── */
@@ -311,6 +312,16 @@ body {
 .mb16 { margin-bottom: 16px; }
 
 /* ── Responsive ──────────────────────────────────── */
+/* Phones: touch-sized controls; 16px text stops iOS zooming into fields */
+@media (max-width: 767px) {
+  .input, .textarea, .select { font-size: 16px; min-height: 48px; }
+  /* All request tabs visible at once — a 3×2 grid instead of a sideways scroller */
+  .tabs-wide { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; }
+  .tabs-wide .tab-btn { min-height: 48px; white-space: normal; text-align: center; line-height: 1.25; padding: 6px 4px; font-size: 12.5px; flex-wrap: wrap; }
+  .btn-sm { min-height: 44px; }
+  .req-head-actions > div, .req-head-actions .btn { width: 100%; }
+}
+
 @media (max-width: 400px) {
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
   .photo-grid { grid-template-columns: repeat(2, 1fr); }
@@ -338,6 +349,17 @@ body {
 .dn-info-cell:nth-child(even) { border-right: none; }
 
 /* ── Delivery Note: form + approved-item list side by side ───── */
+/* ── Request detail page ─────────────────────────────────────── */
+.req-head { display: grid; gap: 14px; margin-bottom: 12px; }
+.req-head-id { min-width: 0; }
+.req-head-status { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.req-head-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.req-head-actions { display: flex; justify-content: flex-end; }
+.field-pair { display: grid; grid-template-columns: 1fr; column-gap: 14px; }
+@media (min-width: 640px) {
+  .field-pair { grid-template-columns: 1fr 1fr; }
+}
+
 .dn-layout { display: grid; gap: 16px; align-items: start; }
 .dn-main { min-width: 0; }
 .dn-side { padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 70vh; }
@@ -345,7 +367,7 @@ body {
   .dn-layout { grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); }
   /* Fits the window from where it starts (below the header and Back link),
      so the list's last item is reachable without scrolling the page. */
-  .dn-side { position: sticky; top: 16px; max-height: calc(100vh - 140px); margin-bottom: 0; }
+  .dn-side { position: sticky; top: 74px; max-height: calc(100vh - 90px); margin-bottom: 0; }
 }
 
 .dn-fields { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
@@ -495,6 +517,16 @@ body {
 
   /* Tabs — don't stretch too wide */
   .tabs { max-width: 600px; }
+  /* …except the request page's tab bar, which spans the content width */
+  .tabs-wide { max-width: none; }
+
+  /* Request summary in one row: identity · status + progress · documents */
+  .req-head {
+    grid-template-columns: minmax(200px, auto) minmax(0, 1fr) auto;
+    align-items: center; column-gap: 32px; padding: 18px 24px;
+  }
+  .req-head-status { padding-left: 32px; border-left: 1px solid var(--gray-100); }
+  .detail-col .textarea-tall { min-height: 140px; }
 }
 
 @media (min-width: 1280px) {
@@ -593,6 +625,8 @@ body {
   /* Override .page inside tariq layout */
   .tariq-main .page {
     max-width: none;
+    width: 100%;   /* a flex child with auto margins would shrink to its content */
+    margin: 0;
     padding: 24px 32px 60px;
   }
 
