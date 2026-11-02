@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<!--
+  Altasis — Maintenance Service Report (bilingual, A4).
+  Built to match Altasis-Maintenance-Report.pdf. That PDF was printed by
+  Chrome from a 794px-wide page, so all geometry here is in CSS px taken
+  straight from it: content spans x 49px → 745px, and each line's margin is
+  set so its baseline lands where the reference puts it.
+
+  The app fills it with window.setMaintenanceReportData(data). Empty fields
+  stay empty — nothing is substituted. Photos are sized to keep the report
+  on one page, each shown whole at its own aspect ratio.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Maintenance Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=block" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:    #292929;   /* main text */
+    --ink-2:  #565656;   /* English sub-lines */
+    --label:  #535353;   /* small field labels */
+    --bar:    #464646;   /* title bar */
+    --box:    #f0f0f0;   /* info box */
+    --frame:  #c6c6c6;   /* photo frames */
+    --frame-bg: #fafafa;
+  }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body { background: #fff; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 400;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* One A4 sheet at 96dpi. It only grows past 1123px when the content
+     cannot fit even with the smallest photos; print then flows on. */
+  .page {
+    position: relative;
+    width: 210mm; min-height: 297mm;   /* 793.7 × 1122.5px */
+    padding: 0 49px;   /* footer space is reserved by layoutPhotos() */
+    display: flow-root;                /* keep the title bar's 160px margin inside */
+    background: #fff;
+    text-align: right;
+  }
+
+  /* Text line = block with a 1.3em line box; margins are solved from the
+     reference baselines (Tajawal: baseline sits .97em down, bold .98em). */
+  .ln { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .en { direction: ltr; text-align: right; color: var(--ink-2); }
+  .b  { font-weight: 700; }
+
+  .logo { position: absolute; top: 19px; left: 336.4px; width: 408px; height: 126px; }
+
+  /* Title bar */
+  .title-bar {
+    display: flow-root;
+    margin-top: 160px; height: 79px;
+    background: var(--bar); color: #fff;
+    padding-right: 11.5px;
+  }
+  .title-ar { font-size: 30.66px; line-height: 39.86px; margin-top: 9.95px; font-weight: 700; white-space: nowrap; }
+  .title-en { font-size: 14.66px; line-height: 19.06px; margin-top: 0.97px; color: #fff; white-space: nowrap; }
+
+  /* Info box: ticket / report no. / work order / service date */
+  .info { margin-top: 11px; height: 75px; background: var(--box); display: flex; }
+  .info-cell { width: 169px; padding-right: 15px; position: relative; }
+  .info-cell:last-child { flex: 1; }
+  .info-ar  { font-size: 14.13px; line-height: 18.37px; margin-top: 9.29px; }
+  .info-en  { font-size: 11.2px;  line-height: 14.56px; margin-top: -1.53px; }
+  .info-val { font-size: 16px;    line-height: 20.8px;  margin-top: 3.62px; font-weight: 700; direction: ltr; text-align: right; white-space: nowrap; }
+  /* Blank ticket number → a line to write it in by hand */
+  .ticket-line { position: absolute; top: 65px; left: 1px; right: 15px; height: 1px; background: #bebebe; display: none; }
+  .ticket-empty .ticket-line { display: block; }
+
+  /* Client & site / Asset & technician */
+  .parties { display: flex; }
+  .party { width: 359px; }
+  .party + .party { flex: 1; }
+  .party-label { font-size: 12px;    line-height: 15.6px;  margin-top: 11.36px; color: var(--label); }
+  .party-label .sep { display: inline-block; padding: 0 0.95em; }
+  .party-val   { font-size: 14.66px; line-height: 19.06px; margin-top: 0.67px; font-weight: 700; }
+  .party-sub   { font-size: 11.2px;  line-height: 14.56px; margin-top: -1.56px; }
+
+  /* Problem description (the report's only text section) */
+  .problem {
+    margin-top: 9.3px;
+    border-top: 1px solid #cccccc;
+    border-bottom: 1px solid #555555;
+    min-height: 92px;            /* rules at 394px and 485px when empty */
+    padding-bottom: 10px;
+  }
+  .h-ar { font-size: 16px;   line-height: 20.8px;  font-weight: 700; }
+  .h-en { font-size: 11.2px; line-height: 14.56px; }
+  .problem .h-ar { margin-top: 11.32px; }
+  .problem .h-en { margin-top: 1.02px; }
+  .problem-text { font-size: 14.13px; line-height: 1.6; margin-top: 6px; }
+
+  /* Photos */
+  .photos .h-ar { margin-top: 8.32px; }
+  .photos .h-en { margin-top: -0.98px; }
+  .groups { display: flex; align-items: flex-start; gap: 19px; margin-top: 8.3px; }
+  .group  { flex: 1; min-width: 0; }
+  .grid   { display: grid; gap: 8px; }
+  .cell {
+    background: var(--frame-bg); border: 1px solid var(--frame);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .cell img { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+  .cap-ar { font-size: 14.13px; line-height: 18.37px; margin-top: 4.29px; }
+  .cap-en { font-size: 11.2px;  line-height: 14.56px; margin-top: -0.53px; }
+
+  /* Client signature / stamp — full report width */
+  .sig { margin-top: 12.3px; height: 144px; border: 1px solid #aaaaaa; padding-right: 12px; }
+  .sig-ar { font-size: 14.13px; line-height: 18.37px; margin-top: 7.29px; }
+  .sig-en { font-size: 11.2px;  line-height: 14.56px; margin-top: -1.53px; }
+
+  .footer {
+    position: absolute; left: 49px; right: 49px; bottom: 21px;   /* rule at 1081px */
+    border-top: 1px solid #666666;
+    display: flex; justify-content: space-between; direction: ltr;
+    font-size: 10.66px; line-height: 13.86px; color: #555555;
+    padding-top: 5.66px; white-space: pre;
+  }
+
+  @media screen {
+    html, body { background: #e9e9e9; }
+    body { padding: 16px 0; }
+    .page { margin: 0 auto; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+  }
+</style>
+</head>
+<body>
+<div class="page" id="page">
+  <img class="logo" src="/delivery-note/altasis-logo.png" alt="Altasis Alistratiji" />
+
+  <div class="title-bar">
+    <span class="ln title-ar">تقرير الصيانة</span>
+    <span class="ln title-en en">Maintenance Service Report</span>
+  </div>
+
+  <div class="info">
+    <div class="info-cell" id="ticket-cell">
+      <span class="ln info-ar">رقم التذكرة</span>
+      <span class="ln info-en en">Ticket no.</span>
+      <span class="ln info-val" data-field="ticketNumber"></span>
+      <span class="ticket-line"></span>
+    </div>
+    <div class="info-cell">
+      <span class="ln info-ar">رقم التقرير</span>
+      <span class="ln info-en en">Report no.</span>
+      <span class="ln info-val" data-field="reportNo"></span>
+    </div>
+    <div class="info-cell">
+      <span class="ln info-ar">أمر الصيانة</span>
+      <span class="ln info-en en">Work order</span>
+      <span class="ln info-val" data-field="workOrder"></span>
+    </div>
+    <div class="info-cell">
+      <span class="ln info-ar">تاريخ الصيانة</span>
+      <span class="ln info-en en">Service date</span>
+      <span class="ln info-val" data-field="serviceDate"></span>
+    </div>
+  </div>
+
+  <div class="parties">
+    <div class="party">
+      <span class="ln party-label">العميل والموقع<span class="sep">/</span><span dir="ltr">Client &amp; site</span></span>
+      <span class="ln party-val" data-field="clientAr"></span>
+      <span class="ln party-sub en" data-field="clientEn"></span>
+    </div>
+    <div class="party">
+      <span class="ln party-label">الجهاز والفني<span class="sep">/</span><span dir="ltr">Asset &amp; technician</span></span>
+      <span class="ln party-val" data-field="assetAr"></span>
+      <span class="ln party-sub en" data-field="assetEn"></span>
+    </div>
+  </div>
+
+  <div class="problem">
+    <span class="ln h-ar">وصف المشكلة</span>
+    <span class="ln h-en en">Problem description</span>
+    <span class="ln problem-text" data-field="problemDescription"></span>
+  </div>
+
+  <div class="photos">
+    <span class="ln h-ar">صور الصيانة</span>
+    <span class="ln h-en en">Maintenance photographs</span>
+    <div class="groups" id="groups"></div>
+  </div>
+
+  <div class="sig" id="sig">
+    <span class="ln sig-ar">توقيع/ختم العميل</span>
+    <span class="ln sig-en en">Client signature / stamp</span>
+  </div>
+
+  <div class="footer" id="footer"><span>ALTASIS   /   MAINTENANCE</span><span dir="rtl">التأسيس الاستراتيجي</span></div>
+</div>
+
+<script>
+  var str = function (v) { return v == null ? '' : String(v); };
+
+  var GROUPS = [
+    { key: 'before', ar: 'قبل الصيانة',  en: 'Before service' },
+    { key: 'during', ar: 'أثناء الصيانة', en: 'During service' },
+    { key: 'after',  ar: 'بعد الصيانة',  en: 'After service' },
+  ];
+  var FOOTER_TOP = 1081;   // footer rule, px from the page top
+  var FOOTER_GAP = 24;     // keep this much space above it
+  var REF_FRAME_H = 272;   // single-photo frame height in the reference
+  var MIN_FRAME_H = 150;   // below this the page is allowed to grow
+  var current = {};
+
+  /*
+   * data = {
+   *   ticketNumber, problemDescription,           (shown exactly as given)
+   *   reportNo, workOrder, serviceDate,
+   *   clientAr, clientEn, assetAr, assetEn,
+   *   photos: { before: [url], during: [url], after: [url] },
+   *   fileName
+   * }
+   * Resolves once fonts and photos are loaded and laid out, so callers can print.
+   */
+  window.setMaintenanceReportData = function (data) {
+    current = data || {};
+    document.querySelectorAll('[data-field]').forEach(function (el) {
+      el.textContent = str(current[el.getAttribute('data-field')]);
+    });
+    document.getElementById('ticket-cell').classList.toggle('ticket-empty', !str(current.ticketNumber));
+    if (current.fileName) document.title = current.fileName;
+
+    var groups = buildGroups(current.photos || {});
+    var imgs = [].slice.call(document.querySelectorAll('img'));
+    var loaded = Promise.all(imgs.map(function (img) {
+      return img.complete ? null : new Promise(function (r) { img.onload = img.onerror = r; });
+    }));
+    return Promise.all([document.fonts.ready, loaded]).then(function () { layoutPhotos(groups); });
+  };
+
+  function buildGroups(photos) {
+    var box = document.getElementById('groups');
+    box.innerHTML = '';
+    var used = GROUPS.filter(function (g) { return (photos[g.key] || []).length; });
+    // No photos at all: keep the reference's empty before/after frames.
+    if (!used.length) used = [GROUPS[0], GROUPS[2]];
+    return used.map(function (g) {
+      var el = document.createElement('div');
+      el.className = 'group';
+      el.innerHTML = '<div class="grid"></div>' +
+        '<span class="ln cap-ar"></span><span class="ln cap-en en"></span>';
+      el.querySelector('.cap-ar').textContent = g.ar;
+      el.querySelector('.cap-en').textContent = g.en;
+      var grid = el.querySelector('.grid');
+      var list = photos[g.key] || [];
+      (list.length ? list : [null]).forEach(function (src) {
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        if (src) { var img = document.createElement('img'); img.src = src; img.alt = ''; cell.appendChild(img); }
+        grid.appendChild(cell);
+      });
+      box.appendChild(el);
+      return el;
+    });
+  }
+
+  // Picks the column count that shows the photos largest (whole, at their
+  // own aspect ratio) inside a w × h box.
+  function bestGrid(ratios, w, h, gap) {
+    var n = ratios.length, best = { cols: 1, rows: n, area: -1 };
+    for (var cols = 1; cols <= n; cols++) {
+      var rows = Math.ceil(n / cols);
+      var cw = (w - (cols - 1) * gap) / cols, ch = (h - (rows - 1) * gap) / rows;
+      if (cw <= 0 || ch <= 0) continue;
+      var area = 0;
+      ratios.forEach(function (r) {
+        var pw = Math.min(cw, ch * r);
+        area += pw * (pw / r);
+      });
+      if (area > best.area) best = { cols: cols, rows: rows, area: area };
+    }
+    return best;
+  }
+
+  function layoutPhotos(groups) {
+    var page = document.getElementById('page');
+    var first = groups[0].querySelector('.grid');
+    // Space left for the photo grids so everything ends above the footer.
+    var gridTop = first.getBoundingClientRect().top - page.getBoundingClientRect().top;
+    // Caption block under the grid (measured directly: before sizing, the
+    // grids still hold full-size photos and the groups' heights differ).
+    var capAr = groups[0].querySelector('.cap-ar'), capEn = groups[0].querySelector('.cap-en');
+    var below = capEn.getBoundingClientRect().bottom - capAr.getBoundingClientRect().top
+      + parseFloat(getComputedStyle(capAr).marginTop);
+    var sig = document.getElementById('sig');
+    var sigBlock = sig.offsetHeight + parseFloat(getComputedStyle(sig).marginTop);
+    var avail = FOOTER_TOP - FOOTER_GAP - gridTop - below - sigBlock;
+
+    var many = groups.some(function (g) { return g.querySelectorAll('.cell').length > 1; });
+    var h = Math.max(MIN_FRAME_H, many ? avail : Math.min(avail, REF_FRAME_H));
+
+    groups.forEach(function (g) {
+      var grid = g.querySelector('.grid');
+      var cells = [].slice.call(grid.querySelectorAll('.cell'));
+      var ratios = cells.map(function (c) {
+        var img = c.querySelector('img');
+        return img && img.naturalWidth ? img.naturalWidth / img.naturalHeight : 4 / 3;
+      });
+      var w = grid.clientWidth;
+      var fit = bestGrid(ratios, w, h, 8);
+      grid.style.gridTemplateColumns = 'repeat(' + fit.cols + ', 1fr)';
+      grid.style.gridAutoRows = ((h - (fit.rows - 1) * 8) / fit.rows) + 'px';
+      grid.style.height = h + 'px';
+    });
+
+    // Long description + many photos: let the sheet grow rather than clip.
+    var end = sig.getBoundingClientRect().bottom - page.getBoundingClientRect().top;
+    var needed = end + FOOTER_GAP + (1122 - FOOTER_TOP);
+    page.style.minHeight = needed > 1122 ? needed + 'px' : '';
+  }
+
+  // Lets the app tell whether the report still fits on one A4 page.
+  window.getMaintenanceReportLayout = function () {
+    return { pages: Math.ceil((document.getElementById('page').offsetHeight - 1) / 1122.5) };
+  };
+</script>
+</body>
+</html>

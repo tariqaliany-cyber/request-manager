@@ -50,3 +50,6 @@ alter table requests add column if not exists repair_cost numeric;
 -- Delivery note template: technician and recipient names (serial numbers live inside items jsonb)
 alter table delivery_notes add column if not exists technician_name text default '';
 alter table delivery_notes add column if not exists recipient_name text default '';
+
+-- Maintenance report: ticket number as typed (text keeps leading zeros)
+alter table requests add column if not exists ticket_number text default '';

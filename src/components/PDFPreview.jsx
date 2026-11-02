@@ -1,15 +1,15 @@
 import { useEffect, useRef } from 'react';
 
-/* Generalizes the old DeliveryNotePreviewModal — renders a generated
- * document in an in-app iframe, never window.open. Two modes:
- *   html            → srcDoc (service report)
- *   src + data      → loads a template page and fills it through its
- *                     window.setDeliveryData(data); re-fills whenever
- *                     data changes, so edits show up live. onLayout gets
- *                     the template's getDeliveryLayout() after each fill. */
-export default function PDFPreview({ html, src, data, onLayout, onClose }) {
+/* Generalizes the old DeliveryNotePreviewModal — renders a document
+ * template in an in-app iframe, never window.open. It loads `src` and
+ * fills it through the page's own window[fillName](data) (delivery note:
+ * setDeliveryData, maintenance report: setMaintenanceReportData),
+ * re-filling whenever data changes so edits show up live. onLayout gets
+ * window[layoutName]() after each fill. */
+export default function PDFPreview({ src, data, onLayout, onClose,
+  fillName = 'setDeliveryData', layoutName = 'getDeliveryLayout' }) {
   const frameRef = useRef(null);
-  const open = !!(html || src);
+  const open = !!src;
 
   useEffect(() => {
     if (!open) return;
@@ -20,9 +20,9 @@ export default function PDFPreview({ html, src, data, onLayout, onClose }) {
 
   const fill = async () => {
     const win = frameRef.current?.contentWindow;
-    if (!src || !win || typeof win.setDeliveryData !== 'function') return;
-    await win.setDeliveryData(data);
-    if (onLayout && typeof win.getDeliveryLayout === 'function') onLayout(win.getDeliveryLayout());
+    if (!src || !win || typeof win[fillName] !== 'function') return;
+    await win[fillName](data);
+    if (onLayout && typeof win[layoutName] === 'function') onLayout(win[layoutName]());
   };
 
   useEffect(() => { fill(); }, [data]);
@@ -36,9 +36,7 @@ export default function PDFPreview({ html, src, data, onLayout, onClose }) {
           <span>Preview / معاينة</span>
           <button type="button" className="dn-icon-btn" onClick={onClose}>✕</button>
         </div>
-        {src
-          ? <iframe ref={frameRef} title="Document Preview" src={src} onLoad={fill} className="dn-preview-iframe" />
-          : <iframe title="Document Preview" srcDoc={html} className="dn-preview-iframe" />}
+        <iframe ref={frameRef} title="Document Preview" src={src} onLoad={fill} className="dn-preview-iframe" />
       </div>
     </div>
   );

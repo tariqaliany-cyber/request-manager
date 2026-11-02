@@ -4,7 +4,7 @@
 // file: it loads it (in the Preview iframe, or a print window for Export)
 // and fills it through the page's own window.setDeliveryData(data).
 // Native browser print is kept so Arabic is shaped and RTL-rendered by the
-// browser engine, same as src/generateReport.js.
+// browser engine, same as the maintenance report (src/generateMaintenanceReport.js).
 
 import { ADDRESS_AR } from './branchDataAr';
 

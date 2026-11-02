@@ -94,6 +94,7 @@ const FIELD_MAP = {
   internalAccountingNote:       'internal_accounting_note',
   dueDate:                      'due_date',
   repairCost:                   'repair_cost',
+  ticketNumber:                 'ticket_number',
 };
 
 const toDb = (obj) => {
@@ -131,6 +132,7 @@ const fromDb = (row) => ({
   internalAccountingNote:       row.internal_accounting_note || '',
   dueDate:                      row.due_date             || null,
   repairCost:                   row.repair_cost          ?? null,
+  ticketNumber:                 row.ticket_number        ?? '',   // text: keeps leading zeros
 });
 
 // ── CRUD ─────────────────────────────────────────────

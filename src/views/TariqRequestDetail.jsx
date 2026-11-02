@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   getRequestById, updateRequest, deleteRequest, compressImage, canManageDeliveryNotes,
   STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
 } from '../storage';
-import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
+import { buildMaintenanceReportData, exportMaintenanceReportPdf, MAINTENANCE_REPORT_URL } from '../generateMaintenanceReport';
 import { getBranchInfo } from '../branchData';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
 import PhotoGallery from '../components/PhotoGallery';
@@ -46,9 +46,10 @@ export default function TariqRequestDetail({ req, user, onClose }) {
   const [branch, setBranch]           = useState(req.branchNumber);
   const [location, setLocation]       = useState(req.locationLink || '');
   const [desc, setDesc]               = useState(req.problemDescription || '');
+  const [ticket, setTicket]           = useState(req.ticketNumber || '');
   const [confirmDel, setConfirmDel]   = useState(false);
   const [exporting, setExporting]     = useState(false);
-  const [previewHtml, setPreviewHtml] = useState(null);
+  const [reportOpen, setReportOpen]   = useState(false);
   const [invoiceAmount, setInvoiceAmt]    = useState(req.invoiceAmount ?? '');
   const [progressPercentage, setProgress] = useState(req.progressPercentage ?? 0);
   const [paymentStatus, setPaymentStatus] = useState(req.paymentStatus || 'unpaid');
@@ -72,9 +73,17 @@ export default function TariqRequestDetail({ req, user, onClose }) {
         setPaymentDate(found.paymentDate || '');
         setAccountingNote(found.internalAccountingNote || '');
         setDueDate(found.dueDate || '');
+        setTicket(found.ticketNumber || '');
       }
     });
   }, [req.id]);
+
+  // The report reads the ticket number and problem description as they are
+  // in the form right now, so they show in the preview before saving.
+  const reportData = useMemo(
+    () => buildMaintenanceReportData({ ...fresh, ticketNumber: ticket, problemDescription: desc }),
+    [fresh, ticket, desc]
+  );
 
   const save = async () => {
     setSaving(true);
@@ -88,6 +97,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
       branchNumber:               branch.trim(),
       locationLink:               location.trim(),
       problemDescription:         desc.trim(),
+      ticketNumber:               ticket.trim(),
       assignedTo:                 assignedTo || null,
       finalSummary,
       showWorkDoneToEssa:         showWorkDone,
@@ -178,14 +188,16 @@ export default function TariqRequestDetail({ req, user, onClose }) {
   const photoCount = (fresh.problemPhotos?.length || 0) + (fresh.progressPhotos?.length || 0) + (fresh.completionPhotos?.length || 0);
 
   const docMenuItems = [
-    { label: '👁 Preview Report / معاينة التقرير', onClick: () => setPreviewHtml(buildServiceReportHtml(fresh, { print: false })) },
-    { label: '📄 Export Report PDF / تصدير تقرير PDF', onClick: async () => { setExporting(true); await generateServiceReportPdf(fresh); setExporting(false); } },
+    { label: '👁 Preview Report / معاينة التقرير', onClick: () => setReportOpen(true) },
+    { label: '📄 Export Report PDF / تصدير تقرير PDF', onClick: async () => { setExporting(true); await exportMaintenanceReportPdf(reportData); setExporting(false); } },
     { label: '📋 Go to Delivery Note / إشعار الاستلام', onClick: () => setActiveTab('delivery'), disabled: !canManageDeliveryNotes(user) },
   ];
 
   return (
     <div>
-      <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
+      <PDFPreview src={reportOpen ? MAINTENANCE_REPORT_URL : null} data={reportData}
+        fillName="setMaintenanceReportData" layoutName="getMaintenanceReportLayout"
+        onClose={() => setReportOpen(false)} />
 
       {/* Sticky request header */}
       <div className="card" style={{ marginBottom: 12 }}>
@@ -275,6 +287,10 @@ export default function TariqRequestDetail({ req, user, onClose }) {
               <div className="form-group">
                 <label className="label">Herfy Number / رقم هرفي</label>
                 <input className="input" value={branch} onChange={e => setBranch(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="label">Ticket Number / رقم التذكرة</label>
+                <input className="input" inputMode="text" value={ticket} onChange={e => setTicket(e.target.value)} />
               </div>
               <div className="form-group">
                 <label className="label">Location Link / رابط الموقع</label>
