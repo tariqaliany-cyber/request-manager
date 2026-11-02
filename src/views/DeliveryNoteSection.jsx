@@ -3,7 +3,7 @@ import {
   getDeliveryNotesByRequest, createDeliveryNote, updateDeliveryNote, deleteDeliveryNote,
   logActivity, DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
-import { getBranchInfo } from '../branchData';
+import { getBranchInfo, branchLabel } from '../branchData';
 import { buildDeliveryData, exportDeliveryNotePdf, DELIVERY_TEMPLATE_URL } from '../generateDeliveryNote';
 import { SkuPicker, SkuBrowser } from '../components/SkuPicker';
 import StatusBadge from '../components/StatusBadge';
@@ -227,7 +227,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
             <div className="section-title">Request Info (locked) / بيانات الطلب</div>
             <div className="dn-info-grid">
               <div className="dn-info-cell"><div className="info-label">Request Number</div><div className="info-value">{req.id}</div></div>
-              <div className="dn-info-cell"><div className="info-label">Branch</div><div className="info-value">Herfy {branchNumber}{branchName && branchName !== `Herfy ${branchNumber}` ? ` · ${branchName}` : ''}</div></div>
+              <div className="dn-info-cell"><div className="info-label">Branch</div><div className="info-value">{branchLabel(branchNumber)}{branchName && branchName !== branchLabel(branchNumber) ? ` · ${branchName}` : ''}</div></div>
               <div className="dn-info-cell"><div className="info-label">City / Region</div><div className="info-value">{cityRegion || '—'}</div></div>
               <div className="dn-info-cell"><div className="info-label">Branch Location</div><div className="info-value">{branchLocation || '—'}</div></div>
               <div className="dn-info-cell"><div className="info-label">Request Date</div><div className="info-value">{requestDate}</div></div>

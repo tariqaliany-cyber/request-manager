@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createRequest, getRequestListItems, getRequestById, compressImage, STATUS, formatDate, photoSrc, logActivity } from '../storage';
-import { BRANCHES } from '../branchData';
+import { BRANCHES, branchLabel, locationLinkFor } from '../branchData';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
 
@@ -45,8 +45,8 @@ function getBranchInfo(num) {
 }
 
 /* ── Branch Dropdown ────────────────────────────────── */
-function BranchDropdown({ value, onChange, onMapsFill, hasError }) {
-  const [query, setQuery] = useState(value ? `Herfy ${value}` : '');
+function BranchDropdown({ value, onChange, hasError }) {
+  const [query, setQuery] = useState(value ? branchLabel(value) : '');
   const [open, setOpen]   = useState(false);
   const wrapRef = useRef();
 
@@ -62,7 +62,6 @@ function BranchDropdown({ value, onChange, onMapsFill, hasError }) {
     setQuery(b.label);
     setOpen(false);
     onChange(b.num);
-    if (onMapsFill) onMapsFill(b.mapsUrl || '');
   };
 
   const handleInput = (e) => {
@@ -181,7 +180,6 @@ function EssaNewRequest({ onSubmit }) {
         <BranchDropdown
           value={branch}
           onChange={(num) => { setBranch(num); setErrors(v => ({ ...v, branch: '' })); }}
-          onMapsFill={(url) => setLocation(url)}
           hasError={!!errors.branch}
         />
         {errors.branch && <div className="error-msg">{errors.branch}</div>}
@@ -197,7 +195,7 @@ function EssaNewRequest({ onSubmit }) {
         <input
           className="input"
           type="url"
-          placeholder="https://maps.google.com/..."
+          placeholder="Empty = branch pin / فارغ = موقع الفرع المعتمد"
           value={location}
           onChange={e => setLocation(e.target.value)}
         />
@@ -329,7 +327,7 @@ function EssaRequestList() {
             <div className="card-header">
               <div>
                 <div className="card-id">{req.id}</div>
-                <div className="card-branch">Herfy {req.branchNumber}</div>
+                <div className="card-branch">{branchLabel(req.branchNumber)}</div>
                 {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
               </div>
               <StatusBadge status={s} lang="ar" />
@@ -373,7 +371,7 @@ function EssaRequestDetail({ req, onBack }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div className="card-id">{fresh.id}</div>
-          <div className="card-branch">Herfy {fresh.branchNumber}</div>
+          <div className="card-branch">{branchLabel(fresh.branchNumber)}</div>
         </div>
         <StatusBadge status={s} lang="ar" />
       </div>
@@ -399,10 +397,10 @@ function EssaRequestDetail({ req, onBack }) {
         );
       })()}
 
-      {fresh.locationLink && (
+      {locationLinkFor(fresh) && (
         <>
           <div className="section-title">Google Maps / خرائط جوجل</div>
-          <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
+          <a className="info-link" href={locationLinkFor(fresh)} target="_blank" rel="noopener noreferrer">
             🗺️ Open in Google Maps / فتح في خرائط جوجل
           </a>
         </>

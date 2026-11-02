@@ -5,7 +5,7 @@
 // and fills it through the page's own window.setMaintenanceReportData(data).
 
 import { photoSrc } from './storage';
-import { getBranchInfo } from './branchData';
+import { getBranchInfo, branchLabel } from './branchData';
 import { ADDRESS_AR } from './branchDataAr';
 
 export const MAINTENANCE_REPORT_URL = '/maintenance-report/template.html';
@@ -30,8 +30,8 @@ export function buildMaintenanceReportData(req, items = []) {
     reportNo:    req.id || '',
     workOrder:   '',
     serviceDate: '',
-    clientAr: branchNo ? join(`هرفي ${branchNo}`, addressAr && ` · ${addressAr}`) : '',
-    clientEn: branchNo ? join(`Herfy ${branchNo}`, address && ` · ${address}`) : '',
+    clientAr: branchNo ? join(branchLabel(branchNo, 'ar'), addressAr && ` · ${addressAr}`) : '',
+    clientEn: branchNo ? join(branchLabel(branchNo), address && ` · ${address}`) : '',
     assetAr: workshop ? 'فريق الورشة' : '',
     assetEn: workshop ? 'Workshop team' : '',
     items: items

@@ -1,3 +1,7 @@
+// Generated from location.xlsx — the approved branch list and map pins.
+// Edit the spreadsheet and regenerate rather than changing entries by hand.
+// Herfy branches are keyed by their number ("57"); other brands by their
+// full name ("Doka-1", "Bakeryshop-4").
 export const BRANCHES = [
   {
     "num": "1",
@@ -5,7 +9,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Malaz, Riyadh",
     "location": "Riyadh City - Malaz, Riyadh",
-    "mapsUrl": ""
+    "mapsUrl": "https://goo.gl/maps/Z6NDzJKBmhCaV5PbA"
   },
   {
     "num": "2",
@@ -13,7 +17,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "30th St., Olaya, Riyadh",
     "location": "Riyadh City - 30th St., Olaya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Z6NDzJKBmhCaV5PbA"
+    "mapsUrl": "https://goo.gl/maps/kQxVfvYzTfjttyyu9"
   },
   {
     "num": "3",
@@ -21,7 +25,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Murraba, Riyadh",
     "location": "Riyadh City - Al Murraba, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/kQxVfvYzTfjttyyu9"
+    "mapsUrl": "https://goo.gl/maps/TCiqihz9f2ZzdqaC6"
   },
   {
     "num": "4",
@@ -29,7 +33,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Shemasi, Riyadh",
     "location": "Riyadh City - Shemasi, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/TCiqihz9f2ZzdqaC6"
+    "mapsUrl": "https://goo.gl/maps/3Pso4jEU5rEBDcCq9"
   },
   {
     "num": "5",
@@ -37,7 +41,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Marina MALL",
     "location": "Dammam - Marina MALL",
-    "mapsUrl": "https://goo.gl/maps/3Pso4jEU5rEBDcCq9"
+    "mapsUrl": "https://goo.gl/maps/msqSTqaDjqEwtRtU7"
   },
   {
     "num": "7",
@@ -45,7 +49,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Swedee, Riyadh",
     "location": "Riyadh City - Al Swedee, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/msqSTqaDjqEwtRtU7"
+    "mapsUrl": "https://goo.gl/maps/A2jhZ57NSJgVnHH3A"
   },
   {
     "num": "8",
@@ -53,7 +57,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 12, Riyadh",
     "location": "Riyadh City - Exit 12, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/A2jhZ57NSJgVnHH3A"
+    "mapsUrl": "https://goo.gl/maps/xU5GyrTRePSph2HL6"
   },
   {
     "num": "9",
@@ -61,7 +65,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah Area",
     "location": "Buraidah - Buraidah Area",
-    "mapsUrl": "https://goo.gl/maps/xU5GyrTRePSph2HL6"
+    "mapsUrl": "https://goo.gl/maps/Fd6RmGgKJZ6hiSg27"
   },
   {
     "num": "10",
@@ -69,7 +73,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nassim, Riyadh",
     "location": "Riyadh City - Al Nassim, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Fd6RmGgKJZ6hiSg27"
+    "mapsUrl": "https://goo.gl/maps/4GHy1yyySH1bJoDa7"
   },
   {
     "num": "12",
@@ -77,7 +81,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Salehiya Area, Onaiza, Al Qassim",
     "location": "Unaizah - Salehiya Area, Onaiza, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/4GHy1yyySH1bJoDa7"
+    "mapsUrl": "https://goo.gl/maps/3kgk189eyDW6wxMbA"
   },
   {
     "num": "13",
@@ -85,7 +89,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Kharj, Riyadh",
     "location": "Al-Kharj - Al Kharj, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/3kgk189eyDW6wxMbA"
+    "mapsUrl": "https://goo.gl/maps/TBXYwMDxq7WNiUmg7"
   },
   {
     "num": "14",
@@ -93,7 +97,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Al Ghonaim, Khamys",
     "location": "Khamis - Al Ghonaim, Khamys",
-    "mapsUrl": "https://goo.gl/maps/TBXYwMDxq7WNiUmg7"
+    "mapsUrl": "https://goo.gl/maps/xqsrHqEbSq4338PYA"
   },
   {
     "num": "15",
@@ -101,7 +105,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Masif, Riyadh",
     "location": "Riyadh City - Al Masif, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/xqsrHqEbSq4338PYA"
+    "mapsUrl": "https://goo.gl/maps/HYxesayP4tTRs5q6A"
   },
   {
     "num": "16",
@@ -109,7 +113,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Rabwah, Riyadh",
     "location": "Riyadh City - Rabwah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/HYxesayP4tTRs5q6A"
+    "mapsUrl": "https://goo.gl/maps/giN3kY5feamt4wr96"
   },
   {
     "num": "17",
@@ -117,7 +121,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Panda, Al-Shifa Road",
     "location": "Riyadh City - Panda, Al-Shifa Road",
-    "mapsUrl": "https://goo.gl/maps/giN3kY5feamt4wr96"
+    "mapsUrl": "https://goo.gl/maps/doYhGEAKY7bosUDKA"
   },
   {
     "num": "18",
@@ -125,7 +129,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Takashusi,Riyadh",
     "location": "Riyadh City - Al Takashusi,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/doYhGEAKY7bosUDKA"
+    "mapsUrl": "https://goo.gl/maps/b1PRnm97QmkkWEZR9"
   },
   {
     "num": "19",
@@ -133,7 +137,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Othaim, Al Shifa, Riyadh",
     "location": "Riyadh City - Othaim, Al Shifa, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/b1PRnm97QmkkWEZR9"
+    "mapsUrl": "https://goo.gl/maps/Au93mSG3x4q4QsBS8"
   },
   {
     "num": "20",
@@ -141,7 +145,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Venecia MALL, Khobar",
     "location": "Al Khobar - Venecia MALL, Khobar",
-    "mapsUrl": "https://goo.gl/maps/Au93mSG3x4q4QsBS8"
+    "mapsUrl": "https://goo.gl/maps/XPn3ZmFA11RqVjXr7"
   },
   {
     "num": "21",
@@ -149,7 +153,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Badiya, Riyadh",
     "location": "Riyadh City - Badiya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/XPn3ZmFA11RqVjXr7"
+    "mapsUrl": "https://goo.gl/maps/N8H9iAtDZ7641vDJA"
   },
   {
     "num": "22",
@@ -157,7 +161,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Al Garawi, Abha",
     "location": "Khamis - Al Garawi, Abha",
-    "mapsUrl": "https://goo.gl/maps/N8H9iAtDZ7641vDJA"
+    "mapsUrl": "https://goo.gl/maps/UDuW9PY7Q48GZ1aK7"
   },
   {
     "num": "24",
@@ -165,7 +169,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Madinah Rd. Bhuraidah, Al Qassim",
     "location": "Buraidah - Madinah Rd. Bhuraidah, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/UDuW9PY7Q48GZ1aK7"
+    "mapsUrl": "https://goo.gl/maps/Z9eEPg81wTv48Rv59"
   },
   {
     "num": "25",
@@ -173,7 +177,7 @@ export const BRANCHES = [
     "area": "Al-Raas",
     "address": "Al Rass, Al Qassim",
     "location": "Al-Raas - Al Rass, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/Z9eEPg81wTv48Rv59"
+    "mapsUrl": "https://goo.gl/maps/UTs6QPGCntS8HnMd8"
   },
   {
     "num": "26",
@@ -181,7 +185,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Kharj Road, Riyadh",
     "location": "Riyadh City - Al Kharj Road, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/UTs6QPGCntS8HnMd8"
+    "mapsUrl": "https://goo.gl/maps/99kjuodMLsvg8oxJ8"
   },
   {
     "num": "28",
@@ -189,7 +193,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Abha Rd., Abha",
     "location": "Khamis - Abha Rd., Abha",
-    "mapsUrl": "https://goo.gl/maps/99kjuodMLsvg8oxJ8"
+    "mapsUrl": "https://goo.gl/maps/kHaRbCwFwD7KgrGm8"
   },
   {
     "num": "29",
@@ -197,7 +201,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 11, Riyadh",
     "location": "Riyadh City - Exit 11, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/kHaRbCwFwD7KgrGm8"
+    "mapsUrl": "https://goo.gl/maps/ogYDZGfdmuQqAFqX8"
   },
   {
     "num": "30",
@@ -205,7 +209,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Salam, Riyadh",
     "location": "Riyadh City - Al Salam, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/ogYDZGfdmuQqAFqX8"
+    "mapsUrl": "https://goo.gl/maps/j6GWZNSWnQ89YXKA6"
   },
   {
     "num": "33",
@@ -213,7 +217,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Herald St., Jeddah",
     "location": "Jeddah - Herald St., Jeddah",
-    "mapsUrl": "https://goo.gl/maps/j6GWZNSWnQ89YXKA6"
+    "mapsUrl": "https://goo.gl/maps/XFeDP2yFcrFahSQBA"
   },
   {
     "num": "34",
@@ -221,7 +225,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Siteen St., Jeddah Area",
     "location": "Jeddah - Siteen St., Jeddah Area",
-    "mapsUrl": "https://goo.gl/maps/XFeDP2yFcrFahSQBA"
+    "mapsUrl": "https://goo.gl/maps/1iba2SM3GvyFdJ1F9"
   },
   {
     "num": "35",
@@ -229,7 +233,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Al Qasaba, Abha",
     "location": "Abha - Al Qasaba, Abha",
-    "mapsUrl": "https://goo.gl/maps/1iba2SM3GvyFdJ1F9"
+    "mapsUrl": "https://goo.gl/maps/An5qzuvzY4nUJNht6"
   },
   {
     "num": "36",
@@ -237,7 +241,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Medina Rd., Abha",
     "location": "Abha - Medina Rd., Abha",
-    "mapsUrl": "https://goo.gl/maps/An5qzuvzY4nUJNht6"
+    "mapsUrl": "https://goo.gl/maps/ZmckxU6iGiMu5uWGA"
   },
   {
     "num": "37",
@@ -245,7 +249,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Al Hinawi Center",
     "location": "Jizan - Al Hinawi Center",
-    "mapsUrl": "https://goo.gl/maps/ZmckxU6iGiMu5uWGA"
+    "mapsUrl": "https://goo.gl/maps/u6ZKNcxFgSMgTGJX6"
   },
   {
     "num": "38",
@@ -253,7 +257,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "A-Fakariyah Bhuraidah, Al Qassim",
     "location": "Buraidah - A-Fakariyah Bhuraidah, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/u6ZKNcxFgSMgTGJX6"
+    "mapsUrl": "https://goo.gl/maps/mgUqHhem1iSLgZeZ9"
   },
   {
     "num": "39",
@@ -261,7 +265,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Zulfi Rd., Onaiza, Al Qassim",
     "location": "Unaizah - Zulfi Rd., Onaiza, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/mgUqHhem1iSLgZeZ9"
+    "mapsUrl": "https://goo.gl/maps/uPUW4oHuNe1WzNyW6"
   },
   {
     "num": "40",
@@ -269,7 +273,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Khamis Rd., Abha",
     "location": "Abha - Khamis Rd., Abha",
-    "mapsUrl": "https://goo.gl/maps/uPUW4oHuNe1WzNyW6"
+    "mapsUrl": "https://goo.gl/maps/2Gko3jPWnGFy7r1e9"
   },
   {
     "num": "41",
@@ -277,7 +281,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Salah Uddin, Riyadh",
     "location": "Riyadh City - Salah Uddin, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/2Gko3jPWnGFy7r1e9"
+    "mapsUrl": "https://goo.gl/maps/jvdVZUCkv5nwhcm77"
   },
   {
     "num": "42",
@@ -285,7 +289,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Urajah Badiya, Riyadh",
     "location": "Riyadh City - Urajah Badiya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/jvdVZUCkv5nwhcm77"
+    "mapsUrl": "https://goo.gl/maps/9gt42b1pwvkm76438"
   },
   {
     "num": "43",
@@ -293,7 +297,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nadah, Riyadh",
     "location": "Riyadh City - Al Nadah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/9gt42b1pwvkm76438"
+    "mapsUrl": "https://goo.gl/maps/8BnCcR2APpLmV8Ft6"
   },
   {
     "num": "44",
@@ -301,7 +305,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Ummul Ham St., Riyadh",
     "location": "Riyadh City - Ummul Ham St., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/8BnCcR2APpLmV8Ft6"
+    "mapsUrl": "https://goo.gl/maps/bEAgNDCvHG3YYX8R9"
   },
   {
     "num": "45",
@@ -309,7 +313,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Panda, Takashusi St., Riyadh",
     "location": "Riyadh City - Panda, Takashusi St., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/bEAgNDCvHG3YYX8R9"
+    "mapsUrl": "https://goo.gl/maps/cfgbbPcZ24XzSN4J9"
   },
   {
     "num": "46",
@@ -317,7 +321,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Quds, Riyadh",
     "location": "Riyadh City - Al Quds, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/cfgbbPcZ24XzSN4J9"
+    "mapsUrl": "https://goo.gl/maps/YicQLhfzqLhw51kH8"
   },
   {
     "num": "48",
@@ -325,7 +329,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa",
     "location": "Al Ahsa - Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/YicQLhfzqLhw51kH8"
+    "mapsUrl": "https://goo.gl/maps/PVX7FTPhpEZTdL6B8"
   },
   {
     "num": "49",
@@ -333,7 +337,7 @@ export const BRANCHES = [
     "area": "Qateef",
     "address": "Al Qatif",
     "location": "Qateef - Al Qatif",
-    "mapsUrl": "https://goo.gl/maps/PVX7FTPhpEZTdL6B8"
+    "mapsUrl": "https://goo.gl/maps/bFUzweHCrDe343Bd9"
   },
   {
     "num": "50",
@@ -341,7 +345,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Corniche, Al Khobar",
     "location": "Al Khobar - Corniche, Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/bFUzweHCrDe343Bd9"
+    "mapsUrl": "https://goo.gl/maps/9fhgoMiSktp4V3Ki9"
   },
   {
     "num": "51",
@@ -349,7 +353,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "1st St.",
     "location": "Dammam - 1st St.",
-    "mapsUrl": "https://goo.gl/maps/9fhgoMiSktp4V3Ki9"
+    "mapsUrl": "https://goo.gl/maps/M8NwjygRW9vKeEJE9"
   },
   {
     "num": "52",
@@ -357,7 +361,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "18th St.",
     "location": "Dammam - 18th St.",
-    "mapsUrl": "https://goo.gl/maps/M8NwjygRW9vKeEJE9"
+    "mapsUrl": "https://goo.gl/maps/VH2UQXZcfXrw4Txn8"
   },
   {
     "num": "53",
@@ -365,7 +369,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "42nd Street",
     "location": "Dammam - 42nd Street",
-    "mapsUrl": "https://goo.gl/maps/VH2UQXZcfXrw4Txn8"
+    "mapsUrl": "https://goo.gl/maps/8gLk8kgMSfY5sM1v9"
   },
   {
     "num": "54",
@@ -373,7 +377,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Al Mazarah",
     "location": "Dammam - Al Mazarah",
-    "mapsUrl": "https://goo.gl/maps/8gLk8kgMSfY5sM1v9"
+    "mapsUrl": "https://goo.gl/maps/BzMUDALhzGbc4ehC9"
   },
   {
     "num": "56",
@@ -381,7 +385,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Badiya, Riyadh",
     "location": "Riyadh City - Badiya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/BzMUDALhzGbc4ehC9"
+    "mapsUrl": "https://goo.gl/maps/pipf1mZEnv5mMmS76"
   },
   {
     "num": "57",
@@ -389,7 +393,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Abdullah Fouad Quarter",
     "location": "Dammam - Abdullah Fouad Quarter",
-    "mapsUrl": "https://goo.gl/maps/pipf1mZEnv5mMmS76"
+    "mapsUrl": "https://goo.gl/maps/rdKcNcf1owDbtf4K7"
   },
   {
     "num": "58",
@@ -397,7 +401,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Tokbah, Al Khobar",
     "location": "Al Khobar - Tokbah, Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/rdKcNcf1owDbtf4K7"
+    "mapsUrl": "https://goo.gl/maps/8tDarwj4UPhYvtzU7"
   },
   {
     "num": "59",
@@ -405,7 +409,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "Naval Entrance, Jubail",
     "location": "Jubail - Naval Entrance, Jubail",
-    "mapsUrl": "https://goo.gl/maps/8tDarwj4UPhYvtzU7"
+    "mapsUrl": "https://goo.gl/maps/K3yjLyqV4dD2xaS7A"
   },
   {
     "num": "60",
@@ -413,7 +417,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nakhil, Riyadh",
     "location": "Riyadh City - Al Nakhil, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/K3yjLyqV4dD2xaS7A"
+    "mapsUrl": "https://goo.gl/maps/4grCzKdw7QQ5NfEe8"
   },
   {
     "num": "61",
@@ -421,7 +425,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Sulai, Exit 16, Riyadh",
     "location": "Riyadh City - Sulai, Exit 16, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/4grCzKdw7QQ5NfEe8"
+    "mapsUrl": "https://goo.gl/maps/sdnJyE9qEHxbUyX49"
   },
   {
     "num": "63",
@@ -429,7 +433,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Kharj Road",
     "location": "Riyadh City - Al-Kharj Road",
-    "mapsUrl": "https://goo.gl/maps/sdnJyE9qEHxbUyX49"
+    "mapsUrl": "https://goo.gl/maps/jJFEbRvSSRerq8nw7"
   },
   {
     "num": "64",
@@ -437,7 +441,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Jaw MALL, Al-Kharj",
     "location": "Al-Kharj - Jaw MALL, Al-Kharj",
-    "mapsUrl": "https://goo.gl/maps/jJFEbRvSSRerq8nw7"
+    "mapsUrl": "https://goo.gl/maps/h9Q4KDFyVRAhTvKd8"
   },
   {
     "num": "65",
@@ -445,7 +449,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Khudari, Riyadh",
     "location": "Riyadh City - Al Khudari, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/h9Q4KDFyVRAhTvKd8"
+    "mapsUrl": "https://goo.gl/maps/PyWFoSj7MNDjeREeA"
   },
   {
     "num": "67",
@@ -453,7 +457,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Cor. K.Fhd - Alkhazan Riyadh",
     "location": "Riyadh City - Cor. K.Fhd - Alkhazan Riyadh",
-    "mapsUrl": "https://goo.gl/maps/PyWFoSj7MNDjeREeA"
+    "mapsUrl": "https://goo.gl/maps/JJYHL4fh2ftyDM2L7"
   },
   {
     "num": "68",
@@ -461,7 +465,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Riyadh Galleria",
     "location": "Riyadh City - Riyadh Galleria",
-    "mapsUrl": "https://goo.gl/maps/JJYHL4fh2ftyDM2L7"
+    "mapsUrl": "https://goo.gl/maps/jSFsPj1zSJWNNXcX8"
   },
   {
     "num": "70",
@@ -469,7 +473,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Al Ghunaim, Abha",
     "location": "Abha - Al Ghunaim, Abha",
-    "mapsUrl": "https://goo.gl/maps/jSFsPj1zSJWNNXcX8"
+    "mapsUrl": "https://goo.gl/maps/qo6XYQXnWUJtdboKA"
   },
   {
     "num": "71",
@@ -477,7 +481,7 @@ export const BRANCHES = [
     "area": "Al-Raas",
     "address": "Madinah Rd., Al Rass, Al Qassim",
     "location": "Al-Raas - Madinah Rd., Al Rass, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/qo6XYQXnWUJtdboKA"
+    "mapsUrl": "https://goo.gl/maps/LY2jhkYUnHWaJF5r7"
   },
   {
     "num": "72",
@@ -485,7 +489,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Scan Area, Bhuraidah, Al Qassim",
     "location": "Buraidah - Scan Area, Bhuraidah, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/LY2jhkYUnHWaJF5r7"
+    "mapsUrl": "https://goo.gl/maps/Jj4BMZYZcKPsNveJ9"
   },
   {
     "num": "73",
@@ -493,7 +497,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 7, Riyadh",
     "location": "Riyadh City - Exit 7, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Jj4BMZYZcKPsNveJ9"
+    "mapsUrl": "https://goo.gl/maps/FV6Sr1VFKUKQFVvw8"
   },
   {
     "num": "74",
@@ -501,7 +505,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Azizia Area, Riyadh",
     "location": "Riyadh City - Azizia Area, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/FV6Sr1VFKUKQFVvw8"
+    "mapsUrl": "https://goo.gl/maps/NF3HT6zuJUHwmUqp9"
   },
   {
     "num": "76",
@@ -509,7 +513,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Reef Park Thumama Riyadh",
     "location": "Riyadh City - Al Reef Park Thumama Riyadh",
-    "mapsUrl": "https://goo.gl/maps/NF3HT6zuJUHwmUqp9"
+    "mapsUrl": "https://goo.gl/maps/AV3vNGTcdR63YWYDA"
   },
   {
     "num": "77",
@@ -517,7 +521,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Hamza Badiah, Riyadh",
     "location": "Riyadh City - Al Hamza Badiah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/AV3vNGTcdR63YWYDA"
+    "mapsUrl": "https://goo.gl/maps/P9PVzC7S829WsTvu5"
   },
   {
     "num": "78",
@@ -525,7 +529,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Azizia, Riyadh",
     "location": "Riyadh City - Al Azizia, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/P9PVzC7S829WsTvu5"
+    "mapsUrl": "https://goo.gl/maps/zhpt1fgoMi8sUZSs8"
   },
   {
     "num": "79",
@@ -533,7 +537,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Al-Othaim MALL, AlQassim",
     "location": "Buraidah - Al-Othaim MALL, AlQassim",
-    "mapsUrl": "https://goo.gl/maps/zhpt1fgoMi8sUZSs8"
+    "mapsUrl": "https://goo.gl/maps/7zJYur118yhMp5i96"
   },
   {
     "num": "80",
@@ -541,7 +545,7 @@ export const BRANCHES = [
     "area": "Hafer Baten",
     "address": "Ikariyah Market, Riyadh Rd",
     "location": "Hafer Baten - Ikariyah Market, Riyadh Rd",
-    "mapsUrl": "https://goo.gl/maps/7zJYur118yhMp5i96"
+    "mapsUrl": "https://goo.gl/maps/DM7jvG6kLJUAHWGZ7"
   },
   {
     "num": "81",
@@ -549,7 +553,7 @@ export const BRANCHES = [
     "area": "Hafer Baten",
     "address": "KKMC",
     "location": "Hafer Baten - KKMC",
-    "mapsUrl": "https://goo.gl/maps/DM7jvG6kLJUAHWGZ7"
+    "mapsUrl": "https://goo.gl/maps/P8koVZ5NhLKwmmy98"
   },
   {
     "num": "82",
@@ -557,7 +561,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "91st Area, Dammam",
     "location": "Dammam - 91st Area, Dammam",
-    "mapsUrl": "https://goo.gl/maps/P8koVZ5NhLKwmmy98"
+    "mapsUrl": "https://goo.gl/maps/KoMqSmmcNP4Zc4r8A"
   },
   {
     "num": "83",
@@ -565,7 +569,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Toytown, Dammam",
     "location": "Dammam - Toytown, Dammam",
-    "mapsUrl": "https://goo.gl/maps/KoMqSmmcNP4Zc4r8A"
+    "mapsUrl": "https://goo.gl/maps/C1du4Rbg2Sare7kW8"
   },
   {
     "num": "85",
@@ -573,7 +577,7 @@ export const BRANCHES = [
     "area": "Tabouk",
     "address": "King Fahad Rd.",
     "location": "Tabouk - King Fahad Rd.",
-    "mapsUrl": "https://goo.gl/maps/C1du4Rbg2Sare7kW8"
+    "mapsUrl": "https://goo.gl/maps/NEAhA1WUrX4fbKMq5"
   },
   {
     "num": "89",
@@ -581,7 +585,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Khurais Rd., Riyadh",
     "location": "Riyadh City - Khurais Rd., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/NEAhA1WUrX4fbKMq5"
+    "mapsUrl": "https://goo.gl/maps/PYy9YRqHCf6rbT4y5"
   },
   {
     "num": "90",
@@ -589,7 +593,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Shifa Area",
     "location": "Riyadh City - Al Shifa Area",
-    "mapsUrl": "https://goo.gl/maps/PYy9YRqHCf6rbT4y5"
+    "mapsUrl": "https://goo.gl/maps/5WdbLt2BapiZZpNRA"
   },
   {
     "num": "91",
@@ -597,7 +601,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Enkas, Al-Shorky Rd, Riyadh",
     "location": "Riyadh City - Enkas, Al-Shorky Rd, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/5WdbLt2BapiZZpNRA"
+    "mapsUrl": "https://goo.gl/maps/rRRvGv3RjVkgASJi8"
   },
   {
     "num": "92",
@@ -605,7 +609,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Musa MALL, Diriya, Riyadh",
     "location": "Riyadh City - Al Musa MALL, Diriya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/rRRvGv3RjVkgASJi8"
+    "mapsUrl": "https://goo.gl/maps/c4RNQHjAJvyfU9mH8"
   },
   {
     "num": "93",
@@ -613,7 +617,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Sulaimaniah, Riyadh",
     "location": "Riyadh City - Sulaimaniah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/c4RNQHjAJvyfU9mH8"
+    "mapsUrl": "https://goo.gl/maps/v6TkNseydwQoeupm7"
   },
   {
     "num": "94",
@@ -621,7 +625,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Sahara MALL Riyadh",
     "location": "Riyadh City - Sahara MALL Riyadh",
-    "mapsUrl": "https://goo.gl/maps/v6TkNseydwQoeupm7"
+    "mapsUrl": "https://goo.gl/maps/jhiPrHBqrjEWm4LD7"
   },
   {
     "num": "95",
@@ -629,7 +633,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Shifa Area, Riyadh",
     "location": "Riyadh City - Al-Shifa Area, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/jhiPrHBqrjEWm4LD7"
+    "mapsUrl": "https://goo.gl/maps/q2j7j9o8dZ4HCUXFA"
   },
   {
     "num": "96",
@@ -637,7 +641,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Corniche, Jeddah",
     "location": "Jeddah - Corniche, Jeddah",
-    "mapsUrl": "https://goo.gl/maps/q2j7j9o8dZ4HCUXFA"
+    "mapsUrl": "https://goo.gl/maps/5ru9B27qbVusU6Dv9"
   },
   {
     "num": "97",
@@ -645,7 +649,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Hodaity MALL,Kharj, Riyadh",
     "location": "Al-Kharj - Al Hodaity MALL,Kharj, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/5ru9B27qbVusU6Dv9"
+    "mapsUrl": "https://goo.gl/maps/Ugcin5bLJ4gSvDE96"
   },
   {
     "num": "99",
@@ -653,7 +657,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Othaim MALL, Exit 10, Riyadh",
     "location": "Riyadh City - Othaim MALL, Exit 10, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Ugcin5bLJ4gSvDE96"
+    "mapsUrl": "https://goo.gl/maps/BMsg64x549Nikj8j6"
   },
   {
     "num": "100",
@@ -661,7 +665,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Shifa, Riyadh",
     "location": "Riyadh City - Al-Shifa, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/BMsg64x549Nikj8j6"
+    "mapsUrl": "https://goo.gl/maps/GrjeLE1G1917Cocu7"
   },
   {
     "num": "101",
@@ -669,7 +673,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Granada Center, Riyadh",
     "location": "Riyadh City - Granada Center, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/GrjeLE1G1917Cocu7"
+    "mapsUrl": "https://goo.gl/maps/m3AUeACBbdvjUFVM7"
   },
   {
     "num": "102",
@@ -677,7 +681,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Haram MALL,Riyadh",
     "location": "Riyadh City - Al Haram MALL,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/m3AUeACBbdvjUFVM7"
+    "mapsUrl": "https://goo.gl/maps/EGKnDa5tz2PfZww28"
   },
   {
     "num": "103",
@@ -685,7 +689,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Doha, Dammam",
     "location": "Al Khobar - Doha, Dammam",
-    "mapsUrl": "https://goo.gl/maps/EGKnDa5tz2PfZww28"
+    "mapsUrl": "https://goo.gl/maps/JHrL5QCNyhLPKfg56"
   },
   {
     "num": "104",
@@ -693,7 +697,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Rowdah, Riyadh",
     "location": "Riyadh City - Al-Rowdah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/JHrL5QCNyhLPKfg56"
+    "mapsUrl": "https://goo.gl/maps/Sgxt2zTeBgHnEi4g9"
   },
   {
     "num": "105",
@@ -701,7 +705,7 @@ export const BRANCHES = [
     "area": "Bukariah",
     "address": "Al Bokariah, Buraidah",
     "location": "Bukariah - Al Bokariah, Buraidah",
-    "mapsUrl": "https://goo.gl/maps/Sgxt2zTeBgHnEi4g9"
+    "mapsUrl": "https://goo.gl/maps/AQcb4cVrp8A79sZ66"
   },
   {
     "num": "106",
@@ -709,7 +713,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "le MALL, Exit 5, Riyadh",
     "location": "Riyadh City - le MALL, Exit 5, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/AQcb4cVrp8A79sZ66"
+    "mapsUrl": "https://goo.gl/maps/kzz2k5F2szgGgKR88"
   },
   {
     "num": "107",
@@ -717,7 +721,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Sharq, Al Hamra Riyadh",
     "location": "Riyadh City - Al Sharq, Al Hamra Riyadh",
-    "mapsUrl": "https://goo.gl/maps/kzz2k5F2szgGgKR88"
+    "mapsUrl": "https://goo.gl/maps/X4tyNnZCmqeYhDcz6"
   },
   {
     "num": "108",
@@ -725,7 +729,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Royal Center, Riyadh",
     "location": "Riyadh City - Royal Center, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/X4tyNnZCmqeYhDcz6"
+    "mapsUrl": "https://goo.gl/maps/rQ5zDoe54PKbfqmH8"
   },
   {
     "num": "109",
@@ -733,7 +737,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Remal Center, Riyadh",
     "location": "Riyadh City - Remal Center, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/rQ5zDoe54PKbfqmH8"
+    "mapsUrl": "https://goo.gl/maps/RQDW58btkDM5fhgf7"
   },
   {
     "num": "110",
@@ -741,7 +745,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Moroj, Riyadh",
     "location": "Riyadh City - Al Moroj, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/RQDW58btkDM5fhgf7"
+    "mapsUrl": "https://goo.gl/maps/77vKaMZfEoSVc8w27"
   },
   {
     "num": "111",
@@ -749,7 +753,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Abha MALL, Abha",
     "location": "Abha - Abha MALL, Abha",
-    "mapsUrl": "https://goo.gl/maps/77vKaMZfEoSVc8w27"
+    "mapsUrl": "https://goo.gl/maps/L3wQYSdmvBmZbD379"
   },
   {
     "num": "112",
@@ -757,7 +761,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Sherfia, Abha",
     "location": "Khamis - Sherfia, Abha",
-    "mapsUrl": "https://goo.gl/maps/L3wQYSdmvBmZbD379"
+    "mapsUrl": "https://goo.gl/maps/3gQNamKon3vxqmHA7"
   },
   {
     "num": "113",
@@ -765,7 +769,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Asser MALL, Abha",
     "location": "Abha - Asser MALL, Abha",
-    "mapsUrl": "https://goo.gl/maps/3gQNamKon3vxqmHA7"
+    "mapsUrl": "https://goo.gl/maps/kdQRkgz3obtQGD4S9"
   },
   {
     "num": "115",
@@ -773,7 +777,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Taif Road, Abha",
     "location": "Abha - Taif Road, Abha",
-    "mapsUrl": "https://goo.gl/maps/kdQRkgz3obtQGD4S9"
+    "mapsUrl": "https://goo.gl/maps/pERerLU5dT7e7N1B7"
   },
   {
     "num": "116",
@@ -781,7 +785,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Aziz MALL, Jeddah",
     "location": "Jeddah - Aziz MALL, Jeddah",
-    "mapsUrl": "https://goo.gl/maps/pERerLU5dT7e7N1B7"
+    "mapsUrl": "https://goo.gl/maps/SK2s4ei6fzq85CMB8"
   },
   {
     "num": "118",
@@ -789,7 +793,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Red Sea MALL,Jeddah",
     "location": "Jeddah - Red Sea MALL,Jeddah",
-    "mapsUrl": "https://goo.gl/maps/SK2s4ei6fzq85CMB8"
+    "mapsUrl": "https://goo.gl/maps/3m5aYuS5kZdrXab28"
   },
   {
     "num": "119",
@@ -797,7 +801,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "City MALL, Al Shifa, Riyadh",
     "location": "Riyadh City - City MALL, Al Shifa, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/3m5aYuS5kZdrXab28"
+    "mapsUrl": "https://goo.gl/maps/EhxE3E8fCWzqceh17"
   },
   {
     "num": "121",
@@ -805,7 +809,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Onaizah St., Exit 14, Riyadh",
     "location": "Riyadh City - Onaizah St., Exit 14, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/EhxE3E8fCWzqceh17"
+    "mapsUrl": "https://goo.gl/maps/s7aDYnuEjw9ag9wq7"
   },
   {
     "num": "122",
@@ -813,7 +817,7 @@ export const BRANCHES = [
     "area": "Tabouk",
     "address": "Tabouk",
     "location": "Tabouk - Tabouk",
-    "mapsUrl": "https://goo.gl/maps/s7aDYnuEjw9ag9wq7"
+    "mapsUrl": "https://goo.gl/maps/EDiAaGMFfs1vuYF19"
   },
   {
     "num": "123",
@@ -821,7 +825,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Prince Bandar Riyadh",
     "location": "Riyadh City - Prince Bandar Riyadh",
-    "mapsUrl": "https://goo.gl/maps/EDiAaGMFfs1vuYF19"
+    "mapsUrl": "https://goo.gl/maps/i65hZ3E1wwTgcUep6"
   },
   {
     "num": "124",
@@ -829,7 +833,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Falah, Exit 7, Riyadh",
     "location": "Riyadh City - Al Falah, Exit 7, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/i65hZ3E1wwTgcUep6"
+    "mapsUrl": "https://goo.gl/maps/YsuwbWwRsELj2K4k8"
   },
   {
     "num": "125",
@@ -837,7 +841,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/YsuwbWwRsELj2K4k8"
+    "mapsUrl": "https://goo.gl/maps/wSFVG6wZpF4SP4cK9"
   },
   {
     "num": "126",
@@ -845,7 +849,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Panda Al-Oroba",
     "location": "Riyadh City - Panda Al-Oroba",
-    "mapsUrl": "https://goo.gl/maps/wSFVG6wZpF4SP4cK9"
+    "mapsUrl": "https://goo.gl/maps/PQChtAgHCDTxVYCHA"
   },
   {
     "num": "127",
@@ -853,7 +857,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Yarmok, Exit 9, Riyadh",
     "location": "Riyadh City - Al-Yarmok, Exit 9, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/PQChtAgHCDTxVYCHA"
+    "mapsUrl": "https://goo.gl/maps/S8onECy7F8H4GZcN9"
   },
   {
     "num": "128",
@@ -861,7 +865,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Hassan Bin Hossain, Riyadh",
     "location": "Riyadh City - Hassan Bin Hossain, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/S8onECy7F8H4GZcN9"
+    "mapsUrl": "https://goo.gl/maps/5ZQhqefTwy2jZraSA"
   },
   {
     "num": "129",
@@ -869,7 +873,7 @@ export const BRANCHES = [
     "area": "Shaqra",
     "address": "Shagra, Riyadh",
     "location": "Shaqra - Shagra, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/5ZQhqefTwy2jZraSA"
+    "mapsUrl": "https://goo.gl/maps/3QB5vftcXdcoLvDR6"
   },
   {
     "num": "130",
@@ -877,7 +881,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Makkah Rd, Urajah, Badiya Riyadh",
     "location": "Riyadh City - Makkah Rd, Urajah, Badiya Riyadh",
-    "mapsUrl": "https://goo.gl/maps/3QB5vftcXdcoLvDR6"
+    "mapsUrl": "https://goo.gl/maps/W4FufuQg5rJLES5T9"
   },
   {
     "num": "132",
@@ -885,7 +889,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Hyat MALL, Riyadh",
     "location": "Riyadh City - Hyat MALL, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/W4FufuQg5rJLES5T9"
+    "mapsUrl": "https://goo.gl/maps/kuRBXhva561Yk7Wx5"
   },
   {
     "num": "133",
@@ -893,7 +897,7 @@ export const BRANCHES = [
     "area": "Muzneb",
     "address": "Al-Muznib, Qassim Area",
     "location": "Muzneb - Al-Muznib, Qassim Area",
-    "mapsUrl": "https://goo.gl/maps/kuRBXhva561Yk7Wx5"
+    "mapsUrl": "https://goo.gl/maps/XKqjcbhPmLPrZVFj6"
   },
   {
     "num": "134",
@@ -901,7 +905,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Panda Al-Mojel Plaza, Hail",
     "location": "Hail - Panda Al-Mojel Plaza, Hail",
-    "mapsUrl": "https://goo.gl/maps/XKqjcbhPmLPrZVFj6"
+    "mapsUrl": "https://goo.gl/maps/MET9QV3e5bMCr96n7"
   },
   {
     "num": "137",
@@ -909,7 +913,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Othaim, Imam Saud Rd., Exit 9, Riyadh",
     "location": "Riyadh City - Othaim, Imam Saud Rd., Exit 9, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/MET9QV3e5bMCr96n7"
+    "mapsUrl": "https://goo.gl/maps/Y5Gp9K3iMfYb7AYU9"
   },
   {
     "num": "138",
@@ -917,7 +921,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Sadhan Sahafa, Riyadh",
     "location": "Riyadh City - Al-Sadhan Sahafa, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Y5Gp9K3iMfYb7AYU9"
+    "mapsUrl": "https://goo.gl/maps/QkedRaYSta7RjU3A9"
   },
   {
     "num": "139",
@@ -925,7 +929,7 @@ export const BRANCHES = [
     "area": "Tabouk",
     "address": "Tabouk",
     "location": "Tabouk - Tabouk",
-    "mapsUrl": "https://goo.gl/maps/QkedRaYSta7RjU3A9"
+    "mapsUrl": "https://goo.gl/maps/rWf4bCtFT2nXTDgt7"
   },
   {
     "num": "140",
@@ -933,7 +937,7 @@ export const BRANCHES = [
     "area": "Al-Raas",
     "address": "City Center, Salathy MALL, Al Rass",
     "location": "Al-Raas - City Center, Salathy MALL, Al Rass",
-    "mapsUrl": "https://goo.gl/maps/rWf4bCtFT2nXTDgt7"
+    "mapsUrl": "https://goo.gl/maps/Kb6NDtyWLfj2HZVt6"
   },
   {
     "num": "141",
@@ -941,7 +945,7 @@ export const BRANCHES = [
     "area": "Majmaa",
     "address": "Majma Area",
     "location": "Majmaa - Majma Area",
-    "mapsUrl": "https://goo.gl/maps/Kb6NDtyWLfj2HZVt6"
+    "mapsUrl": "https://goo.gl/maps/MaBAfU9fWtTh8rgS6"
   },
   {
     "num": "142",
@@ -949,7 +953,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Othaim MALL, Al-Ahsa",
     "location": "Al Ahsa - Othaim MALL, Al-Ahsa",
-    "mapsUrl": "https://goo.gl/maps/MaBAfU9fWtTh8rgS6"
+    "mapsUrl": "https://goo.gl/maps/xjYTxG5cjPeVkHd37"
   },
   {
     "num": "143",
@@ -957,7 +961,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa Area",
     "location": "Al Ahsa - Al Ahsa Area",
-    "mapsUrl": "https://goo.gl/maps/xjYTxG5cjPeVkHd37"
+    "mapsUrl": "https://goo.gl/maps/PaUwu99kgkXJrQM4A"
   },
   {
     "num": "144",
@@ -965,7 +969,7 @@ export const BRANCHES = [
     "area": "Rastanurah",
     "address": "Rahima Ras Tanura, Dammam",
     "location": "Rastanurah - Rahima Ras Tanura, Dammam",
-    "mapsUrl": "https://goo.gl/maps/PaUwu99kgkXJrQM4A"
+    "mapsUrl": "https://goo.gl/maps/CEqSbgAFbX7oLFbB6"
   },
   {
     "num": "145",
@@ -973,7 +977,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Othaim, Khurais Road",
     "location": "Riyadh City - Al-Othaim, Khurais Road",
-    "mapsUrl": "https://goo.gl/maps/CEqSbgAFbX7oLFbB6"
+    "mapsUrl": "https://goo.gl/maps/UZfWZdo6SY74T8BL8"
   },
   {
     "num": "146",
@@ -981,7 +985,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Sahafa Bldg.,Riyadh",
     "location": "Riyadh City - Sahafa Bldg.,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/UZfWZdo6SY74T8BL8"
+    "mapsUrl": "https://goo.gl/maps/qpdqH62nsGnx88e29"
   },
   {
     "num": "147",
@@ -989,7 +993,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Sahafa",
     "location": "Riyadh City - Al-Sahafa",
-    "mapsUrl": "https://goo.gl/maps/qpdqH62nsGnx88e29"
+    "mapsUrl": "https://goo.gl/maps/WVqXXMbnseiGP1SbA"
   },
   {
     "num": "148",
@@ -997,7 +1001,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Othaim MALL, Exit 14, Riyadh",
     "location": "Riyadh City - Al-Othaim MALL, Exit 14, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/WVqXXMbnseiGP1SbA"
+    "mapsUrl": "https://goo.gl/maps/UWJRrtyFTGEwBoG19"
   },
   {
     "num": "149",
@@ -1005,7 +1009,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Onaiza Area, Al Qassim",
     "location": "Unaizah - Onaiza Area, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/UWJRrtyFTGEwBoG19"
+    "mapsUrl": "https://goo.gl/maps/kjPKHWAaAVhA499P8"
   },
   {
     "num": "150",
@@ -1013,7 +1017,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Urajah, Exit 30 Riyadh",
     "location": "Riyadh City - Urajah, Exit 30 Riyadh",
-    "mapsUrl": "https://goo.gl/maps/kjPKHWAaAVhA499P8"
+    "mapsUrl": "https://goo.gl/maps/vhF82fuEHvX6zEVq8"
   },
   {
     "num": "151",
@@ -1021,7 +1025,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Uraja, Badiyah",
     "location": "Riyadh City - Uraja, Badiyah",
-    "mapsUrl": "https://goo.gl/maps/vhF82fuEHvX6zEVq8"
+    "mapsUrl": "https://goo.gl/maps/3AQ5ZvRfK9iq9vEN6"
   },
   {
     "num": "152",
@@ -1029,7 +1033,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "As-Salam MALL, Baiya",
     "location": "Riyadh City - As-Salam MALL, Baiya",
-    "mapsUrl": "https://goo.gl/maps/3AQ5ZvRfK9iq9vEN6"
+    "mapsUrl": "https://goo.gl/maps/s5BwaPrVH7EdVYPf9"
   },
   {
     "num": "153",
@@ -1037,7 +1041,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Abdullah Rd. (beside Gas Station)",
     "location": "Riyadh City - King Abdullah Rd. (beside Gas Station)",
-    "mapsUrl": "https://goo.gl/maps/s5BwaPrVH7EdVYPf9"
+    "mapsUrl": "https://goo.gl/maps/8VGvPvTqc4MTbxK86"
   },
   {
     "num": "154",
@@ -1045,7 +1049,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Nassim",
     "location": "Riyadh City - Al-Nassim",
-    "mapsUrl": "https://goo.gl/maps/8VGvPvTqc4MTbxK86"
+    "mapsUrl": "https://goo.gl/maps/Dfnz4DiMKTWgtJBdA"
   },
   {
     "num": "155",
@@ -1053,7 +1057,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al-Nadha",
     "location": "Riyadh City - Al-Nadha",
-    "mapsUrl": "https://goo.gl/maps/Dfnz4DiMKTWgtJBdA"
+    "mapsUrl": "https://goo.gl/maps/XZAC57uKSdR3wLwB7"
   },
   {
     "num": "156",
@@ -1061,7 +1065,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Marina MALL",
     "location": "Riyadh City - Marina MALL",
-    "mapsUrl": "https://goo.gl/maps/XZAC57uKSdR3wLwB7"
+    "mapsUrl": "https://goo.gl/maps/ZLCymyt2uEomLgJq9"
   },
   {
     "num": "157",
@@ -1069,7 +1073,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "exit 15, Sulai , Riyadh",
     "location": "Riyadh City - exit 15, Sulai , Riyadh",
-    "mapsUrl": "https://goo.gl/maps/ZLCymyt2uEomLgJq9"
+    "mapsUrl": "https://goo.gl/maps/ShywQbYVdTgPfxbk8"
   },
   {
     "num": "158",
@@ -1077,7 +1081,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Panorama MALL, Riyadh",
     "location": "Riyadh City - Panorama MALL, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/ShywQbYVdTgPfxbk8"
+    "mapsUrl": "https://goo.gl/maps/sQA8wFneA1aCActQ6"
   },
   {
     "num": "159",
@@ -1085,7 +1089,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Swedie,. Riyadh",
     "location": "Riyadh City - Al Swedie,. Riyadh",
-    "mapsUrl": "https://goo.gl/maps/sQA8wFneA1aCActQ6"
+    "mapsUrl": "https://goo.gl/maps/ZWzEPJ1yakvmGmX86"
   },
   {
     "num": "160",
@@ -1093,7 +1097,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Al-Manar MALL, Al Madinah",
     "location": "Madinah - Al-Manar MALL, Al Madinah",
-    "mapsUrl": "https://goo.gl/maps/ZWzEPJ1yakvmGmX86"
+    "mapsUrl": "https://goo.gl/maps/5SnuV4oApT88BWGr6"
   },
   {
     "num": "161",
@@ -1101,7 +1105,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Madinah",
     "location": "Madinah - Madinah",
-    "mapsUrl": "https://goo.gl/maps/5SnuV4oApT88BWGr6"
+    "mapsUrl": "https://goo.gl/maps/TqdEjd2jeU6Gce5m9"
   },
   {
     "num": "162",
@@ -1109,7 +1113,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Al-Nour MALL, Al Madinah",
     "location": "Madinah - Al-Nour MALL, Al Madinah",
-    "mapsUrl": "https://goo.gl/maps/TqdEjd2jeU6Gce5m9"
+    "mapsUrl": "https://goo.gl/maps/sjaiHFGtRm8JK5c18"
   },
   {
     "num": "163",
@@ -1117,7 +1121,7 @@ export const BRANCHES = [
     "area": "Najran",
     "address": "Najran Area",
     "location": "Najran - Najran Area",
-    "mapsUrl": "https://goo.gl/maps/sjaiHFGtRm8JK5c18"
+    "mapsUrl": "https://goo.gl/maps/FDV1TSqvakdAMstQA"
   },
   {
     "num": "164",
@@ -1125,7 +1129,7 @@ export const BRANCHES = [
     "area": "Najran",
     "address": "Najran MALL",
     "location": "Najran - Najran MALL",
-    "mapsUrl": "https://goo.gl/maps/FDV1TSqvakdAMstQA"
+    "mapsUrl": "https://goo.gl/maps/Dkdiac8ZLXTqgjQ79"
   },
   {
     "num": "165",
@@ -1133,7 +1137,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Madinah",
     "location": "Madinah - Madinah",
-    "mapsUrl": "https://goo.gl/maps/Dkdiac8ZLXTqgjQ79"
+    "mapsUrl": "https://goo.gl/maps/U84DgdXMvSXFVUZY8"
   },
   {
     "num": "166",
@@ -1141,7 +1145,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Abha Area",
     "location": "Khamis - Abha Area",
-    "mapsUrl": "https://goo.gl/maps/U84DgdXMvSXFVUZY8"
+    "mapsUrl": "https://goo.gl/maps/ex3q8Bdqptgzgfc96"
   },
   {
     "num": "167",
@@ -1149,7 +1153,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Al Rashed MALL, Madinah",
     "location": "Madinah - Al Rashed MALL, Madinah",
-    "mapsUrl": "https://goo.gl/maps/ex3q8Bdqptgzgfc96"
+    "mapsUrl": "https://goo.gl/maps/1TwoveuoJ8eZZRH37"
   },
   {
     "num": "168",
@@ -1157,7 +1161,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Jizan",
     "location": "Jizan - Jizan",
-    "mapsUrl": "https://goo.gl/maps/1TwoveuoJ8eZZRH37"
+    "mapsUrl": "https://goo.gl/maps/ekW9iZajuxB2ksd68"
   },
   {
     "num": "169",
@@ -1165,7 +1169,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa MALL",
     "location": "Al Ahsa - Al Ahsa MALL",
-    "mapsUrl": "https://goo.gl/maps/ekW9iZajuxB2ksd68"
+    "mapsUrl": "https://goo.gl/maps/foxMBa4NhePnnbJq7"
   },
   {
     "num": "170",
@@ -1173,7 +1177,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 2 Riyadh",
     "location": "Riyadh City - Exit 2 Riyadh",
-    "mapsUrl": "https://goo.gl/maps/foxMBa4NhePnnbJq7"
+    "mapsUrl": "https://goo.gl/maps/DqGBQY3rvn613UgS7"
   },
   {
     "num": "171",
@@ -1181,7 +1185,7 @@ export const BRANCHES = [
     "area": "Yanbu",
     "address": "Dana MALL,Yanbu",
     "location": "Yanbu - Dana MALL,Yanbu",
-    "mapsUrl": "https://goo.gl/maps/DqGBQY3rvn613UgS7"
+    "mapsUrl": "https://goo.gl/maps/SdLT9Yw5mgVwUBz66"
   },
   {
     "num": "172",
@@ -1189,7 +1193,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah Area",
     "location": "Buraidah - Buraidah Area",
-    "mapsUrl": "https://goo.gl/maps/SdLT9Yw5mgVwUBz66"
+    "mapsUrl": "https://goo.gl/maps/w6tADBvSm8vMcQbp7"
   },
   {
     "num": "173",
@@ -1197,7 +1201,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Nakhel MALL, Buraidah,Qassim",
     "location": "Buraidah - Nakhel MALL, Buraidah,Qassim",
-    "mapsUrl": "https://goo.gl/maps/w6tADBvSm8vMcQbp7"
+    "mapsUrl": "https://goo.gl/maps/1gQTVEh8bpBycoof7"
   },
   {
     "num": "174",
@@ -1205,7 +1209,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Omar, Buraidah Area",
     "location": "Buraidah - Omar, Buraidah Area",
-    "mapsUrl": "https://goo.gl/maps/1gQTVEh8bpBycoof7"
+    "mapsUrl": "https://goo.gl/maps/Q5Gy8UBuebw56oDj7"
   },
   {
     "num": "175",
@@ -1213,7 +1217,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah Area",
     "location": "Buraidah - Buraidah Area",
-    "mapsUrl": "https://goo.gl/maps/Q5Gy8UBuebw56oDj7"
+    "mapsUrl": "https://goo.gl/maps/XpYBtkMbqmnsN2W27"
   },
   {
     "num": "176",
@@ -1221,7 +1225,7 @@ export const BRANCHES = [
     "area": "Badiaa",
     "address": "Badaya, Al Qassim",
     "location": "Badiaa - Badaya, Al Qassim",
-    "mapsUrl": "https://goo.gl/maps/XpYBtkMbqmnsN2W27"
+    "mapsUrl": "https://goo.gl/maps/nPDZoojii7i8SiUR9"
   },
   {
     "num": "177",
@@ -1229,7 +1233,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Kharj, Riyadh",
     "location": "Al-Kharj - Al Kharj, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/nPDZoojii7i8SiUR9"
+    "mapsUrl": "https://goo.gl/maps/C53re7ut7JJzCHi46"
   },
   {
     "num": "178",
@@ -1237,7 +1241,7 @@ export const BRANCHES = [
     "area": "Rafhaa",
     "address": "Rafha Area",
     "location": "Rafhaa - Rafha Area",
-    "mapsUrl": "https://goo.gl/maps/C53re7ut7JJzCHi46"
+    "mapsUrl": "https://goo.gl/maps/fvaBZP7jU1mFKUvm9"
   },
   {
     "num": "179",
@@ -1245,7 +1249,7 @@ export const BRANCHES = [
     "area": "Ar-Ar",
     "address": "Ar-ar",
     "location": "Ar-Ar - Ar-ar",
-    "mapsUrl": "https://goo.gl/maps/fvaBZP7jU1mFKUvm9"
+    "mapsUrl": "https://goo.gl/maps/eRTzpPfgNLTwwwqG8"
   },
   {
     "num": "180",
@@ -1253,7 +1257,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dareen MALL, Dammam",
     "location": "Dammam - Dareen MALL, Dammam",
-    "mapsUrl": "https://goo.gl/maps/eRTzpPfgNLTwwwqG8"
+    "mapsUrl": "https://goo.gl/maps/MSKFUY85YfPSKCXa9"
   },
   {
     "num": "181",
@@ -1261,7 +1265,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Al Rasheed MALL,Jizan",
     "location": "Jizan - Al Rasheed MALL,Jizan",
-    "mapsUrl": "https://goo.gl/maps/MSKFUY85YfPSKCXa9"
+    "mapsUrl": "https://goo.gl/maps/4aeEJHq4wD2vNZGb9"
   },
   {
     "num": "182",
@@ -1269,7 +1273,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Wadi laben, Riyadh",
     "location": "Riyadh City - Wadi laben, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/4aeEJHq4wD2vNZGb9"
+    "mapsUrl": "https://goo.gl/maps/dab32oVDSTf7wSm87"
   },
   {
     "num": "183",
@@ -1277,7 +1281,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Wadi Laben,Badia Area,Riyadh",
     "location": "Riyadh City - Wadi Laben,Badia Area,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/dab32oVDSTf7wSm87"
+    "mapsUrl": "https://goo.gl/maps/TRusqbvakx4kdhrw6"
   },
   {
     "num": "184",
@@ -1285,7 +1289,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Faisaliyah,Dammam",
     "location": "Dammam - Faisaliyah,Dammam",
-    "mapsUrl": "https://goo.gl/maps/TRusqbvakx4kdhrw6"
+    "mapsUrl": "https://goo.gl/maps/gocwojgPsxPX6xyq5"
   },
   {
     "num": "185",
@@ -1293,7 +1297,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Badiah MALL,Riyadh",
     "location": "Riyadh City - Badiah MALL,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/gocwojgPsxPX6xyq5"
+    "mapsUrl": "https://goo.gl/maps/WNSTEH6jEvpYcH1h9"
   },
   {
     "num": "187",
@@ -1301,7 +1305,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Onaiza MALL,Qassim",
     "location": "Unaizah - Onaiza MALL,Qassim",
-    "mapsUrl": "https://goo.gl/maps/WNSTEH6jEvpYcH1h9"
+    "mapsUrl": "https://goo.gl/maps/BkiB61HpDHYqzmL26"
   },
   {
     "num": "188",
@@ -1309,7 +1313,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Madinah Area",
     "location": "Madinah - Madinah Area",
-    "mapsUrl": "https://goo.gl/maps/BkiB61HpDHYqzmL26"
+    "mapsUrl": "https://goo.gl/maps/zD3nvNcNTKqpv9fw7"
   },
   {
     "num": "189",
@@ -1317,7 +1321,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Hijra Rd.,Madinah",
     "location": "Madinah - Hijra Rd.,Madinah",
-    "mapsUrl": "https://goo.gl/maps/zD3nvNcNTKqpv9fw7"
+    "mapsUrl": "https://goo.gl/maps/LHjTNXSWbQRgYkBP8"
   },
   {
     "num": "190",
@@ -1325,7 +1329,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Othaim Road.,Dammam",
     "location": "Dammam - Othaim Road.,Dammam",
-    "mapsUrl": "https://goo.gl/maps/LHjTNXSWbQRgYkBP8"
+    "mapsUrl": "https://goo.gl/maps/8iPK83N14kLA9dAd9"
   },
   {
     "num": "191",
@@ -1333,7 +1337,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 24, Riyadh",
     "location": "Riyadh City - Exit 24, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/8iPK83N14kLA9dAd9"
+    "mapsUrl": "https://goo.gl/maps/dfiqyBdYctEgQEMt9"
   },
   {
     "num": "192",
@@ -1341,7 +1345,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah MALL, Makkah",
     "location": "Makkah - Makkah MALL, Makkah",
-    "mapsUrl": "https://goo.gl/maps/dfiqyBdYctEgQEMt9"
+    "mapsUrl": "https://goo.gl/maps/WsY2De46Uzb9Pafg9"
   },
   {
     "num": "193",
@@ -1349,7 +1353,7 @@ export const BRANCHES = [
     "area": "Al Baha",
     "address": "Al Baha Area",
     "location": "Al Baha - Al Baha Area",
-    "mapsUrl": "https://goo.gl/maps/WsY2De46Uzb9Pafg9"
+    "mapsUrl": "https://goo.gl/maps/W6ghEcJQTi1oW31A7"
   },
   {
     "num": "194",
@@ -1357,7 +1361,7 @@ export const BRANCHES = [
     "area": "Sakaka",
     "address": "Sakaka Area",
     "location": "Sakaka - Sakaka Area",
-    "mapsUrl": "https://goo.gl/maps/W6ghEcJQTi1oW31A7"
+    "mapsUrl": "https://goo.gl/maps/bsUVP4tcEuFuTVef8"
   },
   {
     "num": "195",
@@ -1365,7 +1369,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Sultana cor. Madina Rd.",
     "location": "Riyadh City - Sultana cor. Madina Rd.",
-    "mapsUrl": "https://goo.gl/maps/bsUVP4tcEuFuTVef8"
+    "mapsUrl": "https://goo.gl/maps/XwAM22pQsNDvGdQN9"
   },
   {
     "num": "196",
@@ -1373,7 +1377,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Kadi MALL,Jizan",
     "location": "Jizan - Kadi MALL,Jizan",
-    "mapsUrl": "https://goo.gl/maps/XwAM22pQsNDvGdQN9"
+    "mapsUrl": "https://goo.gl/maps/yTUtZNHe8h6rdxyH7"
   },
   {
     "num": "197",
@@ -1381,7 +1385,7 @@ export const BRANCHES = [
     "area": "Al Bisha",
     "address": "Al Bisha",
     "location": "Al Bisha - Al Bisha",
-    "mapsUrl": "https://goo.gl/maps/yTUtZNHe8h6rdxyH7"
+    "mapsUrl": "https://goo.gl/maps/xJGUKQWdwZG5Pgzg6"
   },
   {
     "num": "198",
@@ -1389,7 +1393,7 @@ export const BRANCHES = [
     "area": "Yanbu",
     "address": "Yanbu MALL, Yanbu",
     "location": "Yanbu - Yanbu MALL, Yanbu",
-    "mapsUrl": "https://goo.gl/maps/xJGUKQWdwZG5Pgzg6"
+    "mapsUrl": "https://goo.gl/maps/H5c3kCmjcfjbqwid6"
   },
   {
     "num": "199",
@@ -1397,7 +1401,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Kingdom Tower,Riyadh",
     "location": "Riyadh City - Kingdom Tower,Riyadh",
-    "mapsUrl": "https://goo.gl/maps/H5c3kCmjcfjbqwid6"
+    "mapsUrl": "https://goo.gl/maps/mjBpDBvngdgd8cLU7"
   },
   {
     "num": "200",
@@ -1405,7 +1409,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Kharj , Riyadh",
     "location": "Al-Kharj - Al Kharj , Riyadh",
-    "mapsUrl": "https://goo.gl/maps/mjBpDBvngdgd8cLU7"
+    "mapsUrl": "https://goo.gl/maps/QcevfWvpioJ4dyVn8"
   },
   {
     "num": "201",
@@ -1413,7 +1417,7 @@ export const BRANCHES = [
     "area": "Zulfi",
     "address": "Zulfi",
     "location": "Zulfi - Zulfi",
-    "mapsUrl": "https://goo.gl/maps/QcevfWvpioJ4dyVn8"
+    "mapsUrl": "https://goo.gl/maps/PtZQkaaa2jYHC25m8"
   },
   {
     "num": "202",
@@ -1421,7 +1425,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Jeddah Area",
     "location": "Jeddah - Jeddah Area",
-    "mapsUrl": "https://goo.gl/maps/PtZQkaaa2jYHC25m8"
+    "mapsUrl": "https://goo.gl/maps/tDH5JwFHCdopUDrW6"
   },
   {
     "num": "203",
@@ -1429,7 +1433,7 @@ export const BRANCHES = [
     "area": "Dawadmi",
     "address": "Dawadmi, Riyadh",
     "location": "Dawadmi - Dawadmi, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/tDH5JwFHCdopUDrW6"
+    "mapsUrl": "https://goo.gl/maps/R6niGwiY7Lur3KTS7"
   },
   {
     "num": "204",
@@ -1437,7 +1441,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Abha Area",
     "location": "Khamis - Abha Area",
-    "mapsUrl": "https://goo.gl/maps/R6niGwiY7Lur3KTS7"
+    "mapsUrl": "https://goo.gl/maps/kzbgJpwRY9UoTFQx6"
   },
   {
     "num": "205",
@@ -1445,7 +1449,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Al Khobar Area, Dammam",
     "location": "Al Khobar - Al Khobar Area, Dammam",
-    "mapsUrl": "https://goo.gl/maps/kzbgJpwRY9UoTFQx6"
+    "mapsUrl": "https://goo.gl/maps/7iryXuKQSkwuCWyz6"
   },
   {
     "num": "206",
@@ -1453,7 +1457,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Dharan MALL,Al Khobar",
     "location": "Al Khobar - Dharan MALL,Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/7iryXuKQSkwuCWyz6"
+    "mapsUrl": "https://goo.gl/maps/1Fcr3tce4TvMbuGaA"
   },
   {
     "num": "207",
@@ -1461,7 +1465,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dammam Road, Riyadh",
     "location": "Riyadh City - Dammam Road, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/1Fcr3tce4TvMbuGaA"
+    "mapsUrl": "https://goo.gl/maps/YKJyovDkT1GLkCLm7"
   },
   {
     "num": "208",
@@ -1469,7 +1473,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Hifa MALL, Jeddah",
     "location": "Jeddah - Hifa MALL, Jeddah",
-    "mapsUrl": "https://goo.gl/maps/YKJyovDkT1GLkCLm7"
+    "mapsUrl": "https://goo.gl/maps/HcHosqyuK3fSY4WY7"
   },
   {
     "num": "209",
@@ -1477,7 +1481,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Twaik, Riyadh",
     "location": "Riyadh City - Al Twaik, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/HcHosqyuK3fSY4WY7"
+    "mapsUrl": "https://goo.gl/maps/uRzJFXhgqx5H3DWp6"
   },
   {
     "num": "210",
@@ -1485,7 +1489,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Jwazat, Riyadh",
     "location": "Riyadh City - Jwazat, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/uRzJFXhgqx5H3DWp6"
+    "mapsUrl": "https://goo.gl/maps/nMSuRju6GMPSHwCp6"
   },
   {
     "num": "211",
@@ -1493,7 +1497,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/nMSuRju6GMPSHwCp6"
+    "mapsUrl": "https://goo.gl/maps/28pMpnJKc1ZjYCnb8"
   },
   {
     "num": "212",
@@ -1501,7 +1505,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/28pMpnJKc1ZjYCnb8"
+    "mapsUrl": "https://goo.gl/maps/bbxrAei4wPXY7HMQ7"
   },
   {
     "num": "214",
@@ -1509,7 +1513,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Arqa, Riyadh",
     "location": "Riyadh City - Arqa, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/bbxrAei4wPXY7HMQ7"
+    "mapsUrl": "https://goo.gl/maps/ePUC63SyjrxFnHqe8"
   },
   {
     "num": "215",
@@ -1517,7 +1521,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/ePUC63SyjrxFnHqe8"
+    "mapsUrl": "https://goo.gl/maps/VKihNaBumFa4CxD66"
   },
   {
     "num": "216",
@@ -1525,7 +1529,7 @@ export const BRANCHES = [
     "area": "Qawiaiyah",
     "address": "Al Kwaya",
     "location": "Qawiaiyah - Al Kwaya",
-    "mapsUrl": "https://goo.gl/maps/VKihNaBumFa4CxD66"
+    "mapsUrl": "https://goo.gl/maps/sSnaUth2hfNWMwxm6"
   },
   {
     "num": "217",
@@ -1533,7 +1537,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Khobar",
     "location": "Al Khobar - Khobar",
-    "mapsUrl": "https://goo.gl/maps/sSnaUth2hfNWMwxm6"
+    "mapsUrl": "https://goo.gl/maps/we8pGKw57raa7Pz89"
   },
   {
     "num": "218",
@@ -1541,7 +1545,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/we8pGKw57raa7Pz89"
+    "mapsUrl": "https://goo.gl/maps/aTBTXNJ8ykqNB8ua7"
   },
   {
     "num": "219",
@@ -1549,7 +1553,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah",
     "location": "Buraidah - Buraidah",
-    "mapsUrl": "https://goo.gl/maps/aTBTXNJ8ykqNB8ua7"
+    "mapsUrl": "https://goo.gl/maps/XAVTbvjZzqCAuq5WA"
   },
   {
     "num": "220",
@@ -1557,7 +1561,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah",
     "location": "Makkah - Makkah",
-    "mapsUrl": "https://goo.gl/maps/XAVTbvjZzqCAuq5WA"
+    "mapsUrl": "https://goo.gl/maps/MsTrKiEdi6VUkCG38"
   },
   {
     "num": "221",
@@ -1565,7 +1569,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Kharj , Riyadh Area",
     "location": "Al-Kharj - Al Kharj , Riyadh Area",
-    "mapsUrl": "https://goo.gl/maps/MsTrKiEdi6VUkCG38"
+    "mapsUrl": "https://goo.gl/maps/xaXuyU2EAfdqW1LbA"
   },
   {
     "num": "223",
@@ -1573,7 +1577,7 @@ export const BRANCHES = [
     "area": "Sakaka",
     "address": "Sakaka Area",
     "location": "Sakaka - Sakaka Area",
-    "mapsUrl": "https://goo.gl/maps/xaXuyU2EAfdqW1LbA"
+    "mapsUrl": "https://goo.gl/maps/4ntGAyc9Z3ERKroY8"
   },
   {
     "num": "224",
@@ -1581,7 +1585,7 @@ export const BRANCHES = [
     "area": "Sakaka",
     "address": "Al Faisaliah Qtr, Sakaka",
     "location": "Sakaka - Al Faisaliah Qtr, Sakaka",
-    "mapsUrl": "https://goo.gl/maps/4ntGAyc9Z3ERKroY8"
+    "mapsUrl": "https://goo.gl/maps/mnYxwXDBePhZEMP36"
   },
   {
     "num": "225",
@@ -1589,7 +1593,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Abha",
     "location": "Abha - Abha",
-    "mapsUrl": "https://goo.gl/maps/mnYxwXDBePhZEMP36"
+    "mapsUrl": "https://goo.gl/maps/KuFoVod22wpCnHP2A"
   },
   {
     "num": "226",
@@ -1597,7 +1601,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Corniche, Al Khobar",
     "location": "Al Khobar - Corniche, Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/KuFoVod22wpCnHP2A"
+    "mapsUrl": "https://goo.gl/maps/Mh6MQM3XErNYcjH27"
   },
   {
     "num": "227",
@@ -1605,7 +1609,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Corniche, Al Khobar",
     "location": "Al Khobar - Corniche, Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/Mh6MQM3XErNYcjH27"
+    "mapsUrl": "https://goo.gl/maps/WpTnCcgCiXZAscY97"
   },
   {
     "num": "228",
@@ -1613,7 +1617,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "King Saud Rd. Dammam",
     "location": "Dammam - King Saud Rd. Dammam",
-    "mapsUrl": "https://goo.gl/maps/WpTnCcgCiXZAscY97"
+    "mapsUrl": "https://goo.gl/maps/16ZTDsfg51rvWuaL6"
   },
   {
     "num": "229",
@@ -1621,7 +1625,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Abu Baker St, Dammam",
     "location": "Dammam - Abu Baker St, Dammam",
-    "mapsUrl": "https://goo.gl/maps/16ZTDsfg51rvWuaL6"
+    "mapsUrl": "https://goo.gl/maps/y9dED7xtsftwry4F8"
   },
   {
     "num": "230",
@@ -1629,7 +1633,7 @@ export const BRANCHES = [
     "area": "Yanbu",
     "address": "Yanbu",
     "location": "Yanbu - Yanbu",
-    "mapsUrl": "https://goo.gl/maps/y9dED7xtsftwry4F8"
+    "mapsUrl": "https://goo.gl/maps/tthUc2YumrMrKMwEA"
   },
   {
     "num": "232",
@@ -1637,7 +1641,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Al hofuf Area Buraidah",
     "location": "Buraidah - Al hofuf Area Buraidah",
-    "mapsUrl": "https://goo.gl/maps/tthUc2YumrMrKMwEA"
+    "mapsUrl": "https://goo.gl/maps/ArXaaGSovdhdmHAM7"
   },
   {
     "num": "233",
@@ -1645,7 +1649,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Narjran Rd. Khamis",
     "location": "Khamis - Narjran Rd. Khamis",
-    "mapsUrl": "https://goo.gl/maps/ArXaaGSovdhdmHAM7"
+    "mapsUrl": "https://goo.gl/maps/s9TVqxBRG55PM1W79"
   },
   {
     "num": "234",
@@ -1653,7 +1657,7 @@ export const BRANCHES = [
     "area": "Yanbu",
     "address": "Yanbu",
     "location": "Yanbu - Yanbu",
-    "mapsUrl": "https://goo.gl/maps/s9TVqxBRG55PM1W79"
+    "mapsUrl": "https://goo.gl/maps/pMLahfSYKwjeQLmT9"
   },
   {
     "num": "235",
@@ -1661,7 +1665,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Qassim Rd",
     "location": "Riyadh City - Qassim Rd",
-    "mapsUrl": "https://goo.gl/maps/pMLahfSYKwjeQLmT9"
+    "mapsUrl": "https://goo.gl/maps/Si5YcnxTSm5aE3ks6"
   },
   {
     "num": "236",
@@ -1669,7 +1673,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Malkah, Riyadh Area",
     "location": "Riyadh City - Al Malkah, Riyadh Area",
-    "mapsUrl": "https://goo.gl/maps/Si5YcnxTSm5aE3ks6"
+    "mapsUrl": "https://goo.gl/maps/77BFZ3Z2CwtvjcGQ6"
   },
   {
     "num": "237",
@@ -1677,7 +1681,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 25, Riyadh",
     "location": "Riyadh City - Exit 25, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/77BFZ3Z2CwtvjcGQ6"
+    "mapsUrl": "https://goo.gl/maps/nTGDZJ3n2q6eob9R9"
   },
   {
     "num": "238",
@@ -1685,7 +1689,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 16, Sulay",
     "location": "Riyadh City - Exit 16, Sulay",
-    "mapsUrl": "https://goo.gl/maps/nTGDZJ3n2q6eob9R9"
+    "mapsUrl": "https://goo.gl/maps/27GEHctrTqoJ6tHU7"
   },
   {
     "num": "239",
@@ -1693,7 +1697,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Qurtoba",
     "location": "Riyadh City - Qurtoba",
-    "mapsUrl": "https://goo.gl/maps/27GEHctrTqoJ6tHU7"
+    "mapsUrl": "https://goo.gl/maps/e4cgbSag9ZCLSb9W8"
   },
   {
     "num": "241",
@@ -1701,7 +1705,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Fayha, Riyadh Area",
     "location": "Riyadh City - Al Fayha, Riyadh Area",
-    "mapsUrl": "https://goo.gl/maps/e4cgbSag9ZCLSb9W8"
+    "mapsUrl": "https://goo.gl/maps/r1pR91Y2VHB5dmmD7"
   },
   {
     "num": "242",
@@ -1709,7 +1713,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Nadim",
     "location": "Riyadh City - Nadim",
-    "mapsUrl": "https://goo.gl/maps/r1pR91Y2VHB5dmmD7"
+    "mapsUrl": "https://goo.gl/maps/nvjPnGAw81hcVwUo8"
   },
   {
     "num": "243",
@@ -1717,7 +1721,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Khalid Bin Waleed Rd.",
     "location": "Riyadh City - Khalid Bin Waleed Rd.",
-    "mapsUrl": "https://goo.gl/maps/nvjPnGAw81hcVwUo8"
+    "mapsUrl": "https://goo.gl/maps/zgzgf6n4E82ZL3dA6"
   },
   {
     "num": "244",
@@ -1725,7 +1729,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Yarmuk",
     "location": "Riyadh City - Yarmuk",
-    "mapsUrl": "https://goo.gl/maps/zgzgf6n4E82ZL3dA6"
+    "mapsUrl": "https://goo.gl/maps/5UFoFg3ee3dgqEVr7"
   },
   {
     "num": "245",
@@ -1733,7 +1737,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Al Khobar",
     "location": "Al Khobar - Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/5UFoFg3ee3dgqEVr7"
+    "mapsUrl": "https://goo.gl/maps/RvbE9EpMQiLnbxGP9"
   },
   {
     "num": "246",
@@ -1741,7 +1745,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 922, Makkah Rd",
     "location": "Riyadh City - Exit 922, Makkah Rd",
-    "mapsUrl": "https://goo.gl/maps/RvbE9EpMQiLnbxGP9"
+    "mapsUrl": "https://goo.gl/maps/szaoKHMeDswBui8H8"
   },
   {
     "num": "247",
@@ -1749,7 +1753,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dammam Rd.",
     "location": "Riyadh City - Dammam Rd.",
-    "mapsUrl": "https://goo.gl/maps/szaoKHMeDswBui8H8"
+    "mapsUrl": "https://goo.gl/maps/zy4bE1eaKGoxsomaA"
   },
   {
     "num": "248",
@@ -1757,7 +1761,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Wadi Laban",
     "location": "Riyadh City - Wadi Laban",
-    "mapsUrl": "https://goo.gl/maps/zy4bE1eaKGoxsomaA"
+    "mapsUrl": "https://goo.gl/maps/rfZBbUy2D8yTUnz88"
   },
   {
     "num": "249",
@@ -1765,7 +1769,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Thumama Rd.",
     "location": "Riyadh City - Thumama Rd.",
-    "mapsUrl": "https://goo.gl/maps/rfZBbUy2D8yTUnz88"
+    "mapsUrl": "https://goo.gl/maps/gGTHAST7EnizCkLy9"
   },
   {
     "num": "250",
@@ -1773,7 +1777,7 @@ export const BRANCHES = [
     "area": "Al-Raas",
     "address": "Al Rass",
     "location": "Al-Raas - Al Rass",
-    "mapsUrl": "https://goo.gl/maps/gGTHAST7EnizCkLy9"
+    "mapsUrl": "https://goo.gl/maps/L1zgu7UrpmVfR6sf8"
   },
   {
     "num": "251",
@@ -1781,7 +1785,7 @@ export const BRANCHES = [
     "area": "Al Khafji",
     "address": "Al Khafji",
     "location": "Al Khafji - Al Khafji",
-    "mapsUrl": "https://goo.gl/maps/L1zgu7UrpmVfR6sf8"
+    "mapsUrl": "https://goo.gl/maps/7BYD4jq3KNY8cVJE7"
   },
   {
     "num": "252",
@@ -1789,7 +1793,7 @@ export const BRANCHES = [
     "area": "Hafer Baten",
     "address": "Hafer al Batin",
     "location": "Hafer Baten - Hafer al Batin",
-    "mapsUrl": "https://goo.gl/maps/7BYD4jq3KNY8cVJE7"
+    "mapsUrl": "https://goo.gl/maps/Hg71RyPH2jjd8eSW7"
   },
   {
     "num": "253",
@@ -1797,7 +1801,7 @@ export const BRANCHES = [
     "area": "Zulfi",
     "address": "Zulfi",
     "location": "Zulfi - Zulfi",
-    "mapsUrl": "https://goo.gl/maps/Hg71RyPH2jjd8eSW7"
+    "mapsUrl": "https://goo.gl/maps/zfSmJvwrGAi2hHp7A"
   },
   {
     "num": "254",
@@ -1805,7 +1809,7 @@ export const BRANCHES = [
     "area": "Qurrayat",
     "address": "Qurrayat",
     "location": "Qurrayat - Qurrayat",
-    "mapsUrl": "https://goo.gl/maps/zfSmJvwrGAi2hHp7A"
+    "mapsUrl": "https://goo.gl/maps/DQRDM5q3RM6PUWsg8"
   },
   {
     "num": "255",
@@ -1813,7 +1817,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Muzamiah",
     "location": "Riyadh City - Muzamiah",
-    "mapsUrl": "https://goo.gl/maps/DQRDM5q3RM6PUWsg8"
+    "mapsUrl": "https://goo.gl/maps/MM7m9hnAHLFQNNYr7"
   },
   {
     "num": "256",
@@ -1821,7 +1825,7 @@ export const BRANCHES = [
     "area": "Majmaa",
     "address": "Majma Area",
     "location": "Majmaa - Majma Area",
-    "mapsUrl": "https://goo.gl/maps/MM7m9hnAHLFQNNYr7"
+    "mapsUrl": "https://goo.gl/maps/g2Cg5onPcG4JLiVv9"
   },
   {
     "num": "257",
@@ -1829,7 +1833,7 @@ export const BRANCHES = [
     "area": "Majmaa",
     "address": "Majma Area",
     "location": "Majmaa - Majma Area",
-    "mapsUrl": "https://goo.gl/maps/g2Cg5onPcG4JLiVv9"
+    "mapsUrl": "https://goo.gl/maps/bbSn8V6bGzuiejgZ9"
   },
   {
     "num": "258",
@@ -1837,7 +1841,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/bbSn8V6bGzuiejgZ9"
+    "mapsUrl": "https://goo.gl/maps/zbSEdZLydKH9FzbNA"
   },
   {
     "num": "259",
@@ -1845,7 +1849,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/zbSEdZLydKH9FzbNA"
+    "mapsUrl": "https://goo.gl/maps/5De6np5tGB3AqT7H6"
   },
   {
     "num": "260",
@@ -1853,7 +1857,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/5De6np5tGB3AqT7H6"
+    "mapsUrl": "https://goo.gl/maps/7KygaEWnWFNWdsUS7"
   },
   {
     "num": "261",
@@ -1861,7 +1865,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/7KygaEWnWFNWdsUS7"
+    "mapsUrl": "https://goo.gl/maps/6MiWyWPonYrf15aS6"
   },
   {
     "num": "262",
@@ -1869,7 +1873,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah",
     "location": "Makkah - Makkah",
-    "mapsUrl": "https://goo.gl/maps/6MiWyWPonYrf15aS6"
+    "mapsUrl": "https://goo.gl/maps/zGCQVH95nvUUs2s8A"
   },
   {
     "num": "263",
@@ -1877,7 +1881,7 @@ export const BRANCHES = [
     "area": "Najran",
     "address": "NAJRAN",
     "location": "Najran - NAJRAN",
-    "mapsUrl": "https://goo.gl/maps/zGCQVH95nvUUs2s8A"
+    "mapsUrl": "https://goo.gl/maps/5KN274Nroc4X5Xio6"
   },
   {
     "num": "264",
@@ -1885,7 +1889,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/5KN274Nroc4X5Xio6"
+    "mapsUrl": "https://goo.gl/maps/UqjN2HtRhiixpFnh7"
   },
   {
     "num": "265",
@@ -1893,7 +1897,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/UqjN2HtRhiixpFnh7"
+    "mapsUrl": "https://goo.gl/maps/uTKHciNDi6Muuig57"
   },
   {
     "num": "266",
@@ -1901,7 +1905,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dammam Rd",
     "location": "Riyadh City - Dammam Rd",
-    "mapsUrl": "https://goo.gl/maps/uTKHciNDi6Muuig57"
+    "mapsUrl": "https://goo.gl/maps/TZRg1bC4t8g1muhH8"
   },
   {
     "num": "267",
@@ -1909,7 +1913,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Riyadh",
     "location": "Riyadh City - Riyadh",
-    "mapsUrl": "https://goo.gl/maps/TZRg1bC4t8g1muhH8"
+    "mapsUrl": "https://goo.gl/maps/Rz1Qdz5dbZWTn9s26"
   },
   {
     "num": "268",
@@ -1917,7 +1921,7 @@ export const BRANCHES = [
     "area": "Ad Darb",
     "address": "Ad Darb",
     "location": "Ad Darb - Ad Darb",
-    "mapsUrl": "https://goo.gl/maps/Rz1Qdz5dbZWTn9s26"
+    "mapsUrl": "https://goo.gl/maps/sULvU9aED3HWEjwN9"
   },
   {
     "num": "269",
@@ -1925,7 +1929,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Nairiya",
     "location": "Dammam - Nairiya",
-    "mapsUrl": "https://goo.gl/maps/sULvU9aED3HWEjwN9"
+    "mapsUrl": "https://goo.gl/maps/QqvBAMFCT5Z1RtxY9"
   },
   {
     "num": "270",
@@ -1933,7 +1937,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 10 Riyadh Exhibition",
     "location": "Riyadh City - Exit 10 Riyadh Exhibition",
-    "mapsUrl": "https://goo.gl/maps/QqvBAMFCT5Z1RtxY9"
+    "mapsUrl": "https://goo.gl/maps/8yfBfKjsYJ97X67T8"
   },
   {
     "num": "271",
@@ -1941,7 +1945,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Ardh",
     "location": "Riyadh City - Al Ardh",
-    "mapsUrl": "https://goo.gl/maps/8yfBfKjsYJ97X67T8"
+    "mapsUrl": "https://goo.gl/maps/dnTZYC2sntWJ8WKz5"
   },
   {
     "num": "272",
@@ -1949,7 +1953,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Training Center",
     "location": "Riyadh City - Training Center",
-    "mapsUrl": "https://goo.gl/maps/dnTZYC2sntWJ8WKz5"
+    "mapsUrl": "https://goo.gl/maps/NA5GLieXPL54mawcA"
   },
   {
     "num": "273",
@@ -1957,7 +1961,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nakheel Mall",
     "location": "Riyadh City - Al Nakheel Mall",
-    "mapsUrl": "https://goo.gl/maps/NA5GLieXPL54mawcA"
+    "mapsUrl": "https://goo.gl/maps/8mAdSGs2Xur2xcBG6"
   },
   {
     "num": "275",
@@ -1965,7 +1969,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Qurtobah",
     "location": "Riyadh City - Qurtobah",
-    "mapsUrl": "https://goo.gl/maps/8mAdSGs2Xur2xcBG6"
+    "mapsUrl": "https://goo.gl/maps/9GCNDHFeDvDuaLD29"
   },
   {
     "num": "276",
@@ -1973,7 +1977,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/9GCNDHFeDvDuaLD29"
+    "mapsUrl": "https://goo.gl/maps/fbbp96yjAjAUmMzr9"
   },
   {
     "num": "277",
@@ -1981,7 +1985,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Al Khaleq Rd, Dammam",
     "location": "Dammam - Al Khaleq Rd, Dammam",
-    "mapsUrl": "https://goo.gl/maps/fbbp96yjAjAUmMzr9"
+    "mapsUrl": "https://goo.gl/maps/MidZrbXEziwrutEdA"
   },
   {
     "num": "278",
@@ -1989,7 +1993,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah, Qassim",
     "location": "Buraidah - Buraidah, Qassim",
-    "mapsUrl": "https://goo.gl/maps/MidZrbXEziwrutEdA"
+    "mapsUrl": "https://goo.gl/maps/mdabihoHBUvHLQ3j8"
   },
   {
     "num": "279",
@@ -1997,7 +2001,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "Sparkys Al fanater",
     "location": "Jubail - Sparkys Al fanater",
-    "mapsUrl": "https://goo.gl/maps/mdabihoHBUvHLQ3j8"
+    "mapsUrl": "https://goo.gl/maps/yAV5VGae8ZHHK3NS9"
   },
   {
     "num": "280",
@@ -2005,7 +2009,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Um Al Sahek, Dammam",
     "location": "Dammam - Um Al Sahek, Dammam",
-    "mapsUrl": "https://goo.gl/maps/yAV5VGae8ZHHK3NS9"
+    "mapsUrl": "https://goo.gl/maps/RpnjeUuh8K7mFvnCA"
   },
   {
     "num": "281",
@@ -2013,7 +2017,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Onaiza Mall",
     "location": "Unaizah - Onaiza Mall",
-    "mapsUrl": "https://goo.gl/maps/RpnjeUuh8K7mFvnCA"
+    "mapsUrl": "https://goo.gl/maps/uJgBDu3Cruk4sHETA"
   },
   {
     "num": "282",
@@ -2021,7 +2025,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Grand Mall (Othaim), Hail",
     "location": "Hail - Grand Mall (Othaim), Hail",
-    "mapsUrl": "https://goo.gl/maps/uJgBDu3Cruk4sHETA"
+    "mapsUrl": "https://goo.gl/maps/4irHeEVa5wLUKi1F7"
   },
   {
     "num": "284",
@@ -2029,7 +2033,7 @@ export const BRANCHES = [
     "area": "Ar-Ar",
     "address": "Ar-Ar Mall",
     "location": "Ar-Ar - Ar-Ar Mall",
-    "mapsUrl": "https://goo.gl/maps/4irHeEVa5wLUKi1F7"
+    "mapsUrl": "https://goo.gl/maps/cCiCgUW7zqYkhTGj8"
   },
   {
     "num": "285",
@@ -2037,7 +2041,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Muzamiah",
     "location": "Riyadh City - Muzamiah",
-    "mapsUrl": "https://goo.gl/maps/cCiCgUW7zqYkhTGj8"
+    "mapsUrl": "https://goo.gl/maps/vhrjyARnt51gg1U36"
   },
   {
     "num": "286",
@@ -2045,7 +2049,7 @@ export const BRANCHES = [
     "area": "Unaizah",
     "address": "Onaiza",
     "location": "Unaizah - Onaiza",
-    "mapsUrl": "https://goo.gl/maps/vhrjyARnt51gg1U36"
+    "mapsUrl": "https://goo.gl/maps/PeoFYni9ih5w8roq5"
   },
   {
     "num": "287",
@@ -2053,7 +2057,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/PeoFYni9ih5w8roq5"
+    "mapsUrl": "https://goo.gl/maps/wM3AQB6VV2NaSaFP6"
   },
   {
     "num": "288",
@@ -2061,7 +2065,7 @@ export const BRANCHES = [
     "area": "Turaif",
     "address": "Turaif",
     "location": "Turaif - Turaif",
-    "mapsUrl": "https://goo.gl/maps/wM3AQB6VV2NaSaFP6"
+    "mapsUrl": "https://goo.gl/maps/3ihqpetW8HDWxWYZ8"
   },
   {
     "num": "289",
@@ -2069,7 +2073,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah",
     "location": "Buraidah - Buraidah",
-    "mapsUrl": "https://goo.gl/maps/3ihqpetW8HDWxWYZ8"
+    "mapsUrl": "https://goo.gl/maps/vbjrhQQZBdXnchna9"
   },
   {
     "num": "290",
@@ -2077,7 +2081,7 @@ export const BRANCHES = [
     "area": "Al Dawasir",
     "address": "Al Dawasir",
     "location": "Al Dawasir - Al Dawasir",
-    "mapsUrl": "https://goo.gl/maps/vbjrhQQZBdXnchna9"
+    "mapsUrl": "https://goo.gl/maps/FQAsSDZuHzV7VDJn7"
   },
   {
     "num": "291",
@@ -2085,7 +2089,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Abdulaziz Rd.",
     "location": "Riyadh City - King Abdulaziz Rd.",
-    "mapsUrl": "https://goo.gl/maps/FQAsSDZuHzV7VDJn7"
+    "mapsUrl": "https://goo.gl/maps/hVgRgSgqkKfpsumA6"
   },
   {
     "num": "292",
@@ -2093,7 +2097,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Abdullah Rd.",
     "location": "Riyadh City - King Abdullah Rd.",
-    "mapsUrl": "https://goo.gl/maps/hVgRgSgqkKfpsumA6"
+    "mapsUrl": "https://goo.gl/maps/ZrSmVYQZtQpBUVui6"
   },
   {
     "num": "293",
@@ -2101,7 +2105,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Sahafa",
     "location": "Riyadh City - Al Sahafa",
-    "mapsUrl": "https://goo.gl/maps/ZrSmVYQZtQpBUVui6"
+    "mapsUrl": "https://goo.gl/maps/qGcC3vbfrxsUj61v7"
   },
   {
     "num": "294",
@@ -2109,7 +2113,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Sahafa",
     "location": "Riyadh City - Al Sahafa",
-    "mapsUrl": "https://goo.gl/maps/qGcC3vbfrxsUj61v7"
+    "mapsUrl": "https://goo.gl/maps/LL88Cm8N3UWZsSjEA"
   },
   {
     "num": "295",
@@ -2117,7 +2121,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Qurtobah",
     "location": "Riyadh City - Qurtobah",
-    "mapsUrl": "https://goo.gl/maps/LL88Cm8N3UWZsSjEA"
+    "mapsUrl": "https://goo.gl/maps/VsTSfygf9jhs9yqX6"
   },
   {
     "num": "296",
@@ -2125,7 +2129,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nadim Rd",
     "location": "Riyadh City - Al Nadim Rd",
-    "mapsUrl": "https://goo.gl/maps/VsTSfygf9jhs9yqX6"
+    "mapsUrl": "https://goo.gl/maps/jfk99Sozs21Zhq2CA"
   },
   {
     "num": "297",
@@ -2133,7 +2137,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dirab Rd., Riyadh",
     "location": "Riyadh City - Dirab Rd., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/jfk99Sozs21Zhq2CA"
+    "mapsUrl": "https://goo.gl/maps/5PzjFpVSeGG3yLu67"
   },
   {
     "num": "298",
@@ -2141,7 +2145,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Abdullah Rd.",
     "location": "Riyadh City - King Abdullah Rd.",
-    "mapsUrl": "https://goo.gl/maps/5PzjFpVSeGG3yLu67"
+    "mapsUrl": "https://goo.gl/maps/qrNMapff3hveLcbN9"
   },
   {
     "num": "299",
@@ -2149,7 +2153,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Qasr Mall",
     "location": "Riyadh City - Al Qasr Mall",
-    "mapsUrl": "https://goo.gl/maps/qrNMapff3hveLcbN9"
+    "mapsUrl": "https://goo.gl/maps/GMpULfiMqegydHQYA"
   },
   {
     "num": "300",
@@ -2157,7 +2161,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Azizia, Riyadh",
     "location": "Riyadh City - Al Azizia, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/GMpULfiMqegydHQYA"
+    "mapsUrl": "https://goo.gl/maps/SgLkSSFKxhDXCzuRA"
   },
   {
     "num": "301",
@@ -2165,7 +2169,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa",
     "location": "Al Ahsa - Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/SgLkSSFKxhDXCzuRA"
+    "mapsUrl": "https://goo.gl/maps/LiAZ1yYZAbAsBDEx7"
   },
   {
     "num": "302",
@@ -2173,7 +2177,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa",
     "location": "Al Ahsa - Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/LiAZ1yYZAbAsBDEx7"
+    "mapsUrl": "https://goo.gl/maps/MqWFm2oGiUhLwwmX6"
   },
   {
     "num": "303",
@@ -2181,7 +2185,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Jizan",
     "location": "Jizan - Jizan",
-    "mapsUrl": "https://goo.gl/maps/MqWFm2oGiUhLwwmX6"
+    "mapsUrl": "https://goo.gl/maps/RehQwCQC8rpMddvG7"
   },
   {
     "num": "304",
@@ -2189,7 +2193,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Al Qanah Road",
     "location": "Buraidah - Al Qanah Road",
-    "mapsUrl": "https://goo.gl/maps/RehQwCQC8rpMddvG7"
+    "mapsUrl": "https://goo.gl/maps/MdznVCLSTMJUMgrN6"
   },
   {
     "num": "305",
@@ -2197,7 +2201,7 @@ export const BRANCHES = [
     "area": "Bukariah",
     "address": "Al Bokariah, Buraidah",
     "location": "Bukariah - Al Bokariah, Buraidah",
-    "mapsUrl": "https://goo.gl/maps/MdznVCLSTMJUMgrN6"
+    "mapsUrl": "https://goo.gl/maps/vtBcwisEMa9PjATQ8"
   },
   {
     "num": "307",
@@ -2205,7 +2209,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Madinah",
     "location": "Madinah - Madinah",
-    "mapsUrl": "https://goo.gl/maps/vtBcwisEMa9PjATQ8"
+    "mapsUrl": "https://goo.gl/maps/KwU3sPjawyMe3yJL8"
   },
   {
     "num": "308",
@@ -2213,7 +2217,7 @@ export const BRANCHES = [
     "area": "Yanbu",
     "address": "Yanbu",
     "location": "Yanbu - Yanbu",
-    "mapsUrl": "https://goo.gl/maps/KwU3sPjawyMe3yJL8"
+    "mapsUrl": "https://goo.gl/maps/SFLTTCGQmEfsdE977"
   },
   {
     "num": "309",
@@ -2221,7 +2225,7 @@ export const BRANCHES = [
     "area": "Hail",
     "address": "Hail",
     "location": "Hail - Hail",
-    "mapsUrl": "https://goo.gl/maps/SFLTTCGQmEfsdE977"
+    "mapsUrl": "https://goo.gl/maps/iKYFACGtgoZXAq6m9"
   },
   {
     "num": "310",
@@ -2229,7 +2233,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 6",
     "location": "Riyadh City - Exit 6",
-    "mapsUrl": "https://goo.gl/maps/iKYFACGtgoZXAq6m9"
+    "mapsUrl": "https://goo.gl/maps/NkU3JzLBRsbaaCv89"
   },
   {
     "num": "311",
@@ -2237,7 +2241,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Jeddah",
     "location": "Jeddah - Jeddah",
-    "mapsUrl": "https://goo.gl/maps/NkU3JzLBRsbaaCv89"
+    "mapsUrl": "https://goo.gl/maps/bfha9w5WC8ANdw566"
   },
   {
     "num": "312",
@@ -2245,7 +2249,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/bfha9w5WC8ANdw566"
+    "mapsUrl": "https://goo.gl/maps/u4RrAMWC7e9W7TaR6"
   },
   {
     "num": "313",
@@ -2253,7 +2257,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Jeddah",
     "location": "Jeddah - Jeddah",
-    "mapsUrl": "https://goo.gl/maps/u4RrAMWC7e9W7TaR6"
+    "mapsUrl": "https://goo.gl/maps/qs2J7HXcNGQzDAJK6"
   },
   {
     "num": "314",
@@ -2261,7 +2265,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Khamis",
     "location": "Khamis - Khamis",
-    "mapsUrl": "https://goo.gl/maps/qs2J7HXcNGQzDAJK6"
+    "mapsUrl": "https://goo.gl/maps/6mbncB1fisiHCR4S6"
   },
   {
     "num": "315",
@@ -2269,7 +2273,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "SASCO",
     "location": "Dammam - SASCO",
-    "mapsUrl": "https://goo.gl/maps/6mbncB1fisiHCR4S6"
+    "mapsUrl": "https://goo.gl/maps/h9pYg6itUi6kiBJFA"
   },
   {
     "num": "316",
@@ -2277,7 +2281,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/h9pYg6itUi6kiBJFA"
+    "mapsUrl": "https://goo.gl/maps/4gaQZcLGD8N9He388"
   },
   {
     "num": "317",
@@ -2285,7 +2289,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/4gaQZcLGD8N9He388"
+    "mapsUrl": "https://goo.gl/maps/Hp1RMoDuKNZbY4wa6"
   },
   {
     "num": "318",
@@ -2293,7 +2297,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Hera Street, Jeddah",
     "location": "Jeddah - Hera Street, Jeddah",
-    "mapsUrl": "https://goo.gl/maps/Hp1RMoDuKNZbY4wa6"
+    "mapsUrl": "https://goo.gl/maps/XuFt89aGBLdCGNX3A"
   },
   {
     "num": "319",
@@ -2301,7 +2305,7 @@ export const BRANCHES = [
     "area": "Al Humiyat",
     "address": "Al Humiyat (near Gas Station)",
     "location": "Al Humiyat - Al Humiyat (near Gas Station)",
-    "mapsUrl": "https://goo.gl/maps/XuFt89aGBLdCGNX3A"
+    "mapsUrl": "https://goo.gl/maps/PbFyX6J7Gf55Vy7k6"
   },
   {
     "num": "320",
@@ -2309,7 +2313,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 15, Malaz",
     "location": "Riyadh City - Exit 15, Malaz",
-    "mapsUrl": "https://goo.gl/maps/PbFyX6J7Gf55Vy7k6"
+    "mapsUrl": "https://goo.gl/maps/fjbBrf214SQXwisL7"
   },
   {
     "num": "321",
@@ -2317,7 +2321,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nadim Rd",
     "location": "Riyadh City - Al Nadim Rd",
-    "mapsUrl": "https://goo.gl/maps/fjbBrf214SQXwisL7"
+    "mapsUrl": "https://goo.gl/maps/ygzrvcPH9TfmymTQA"
   },
   {
     "num": "322",
@@ -2325,7 +2329,7 @@ export const BRANCHES = [
     "area": "Khamis",
     "address": "Juri Mall",
     "location": "Khamis - Juri Mall",
-    "mapsUrl": "https://goo.gl/maps/ygzrvcPH9TfmymTQA"
+    "mapsUrl": "https://goo.gl/maps/7Yur3RgqKu7YDf7C9"
   },
   {
     "num": "323",
@@ -2333,7 +2337,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Al Rasheed Mall, Abha",
     "location": "Abha - Al Rasheed Mall, Abha",
-    "mapsUrl": "https://goo.gl/maps/7Yur3RgqKu7YDf7C9"
+    "mapsUrl": "https://goo.gl/maps/NK77haUCghULctVb8"
   },
   {
     "num": "324",
@@ -2341,7 +2345,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Immam Saud University",
     "location": "Riyadh City - Immam Saud University",
-    "mapsUrl": "https://goo.gl/maps/NK77haUCghULctVb8"
+    "mapsUrl": "https://goo.gl/maps/1951LHaJMye4kUSJ9"
   },
   {
     "num": "326",
@@ -2349,7 +2353,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dirab Rd.",
     "location": "Riyadh City - Dirab Rd.",
-    "mapsUrl": "https://goo.gl/maps/1951LHaJMye4kUSJ9"
+    "mapsUrl": "https://goo.gl/maps/jFqCapRLkUGx6y8a6"
   },
   {
     "num": "327",
@@ -2357,7 +2361,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 14, Mall",
     "location": "Riyadh City - Exit 14, Mall",
-    "mapsUrl": "https://goo.gl/maps/jFqCapRLkUGx6y8a6"
+    "mapsUrl": "https://goo.gl/maps/EwSXzDxwNzMikSzbA"
   },
   {
     "num": "328",
@@ -2365,7 +2369,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 14",
     "location": "Riyadh City - Exit 14",
-    "mapsUrl": "https://goo.gl/maps/EwSXzDxwNzMikSzbA"
+    "mapsUrl": "https://goo.gl/maps/D6jsTJkkysxmYfMM8"
   },
   {
     "num": "329",
@@ -2373,7 +2377,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Hamra, Riyadh",
     "location": "Riyadh City - Al Hamra, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/D6jsTJkkysxmYfMM8"
+    "mapsUrl": "https://goo.gl/maps/UuPmJFJiLDkK3fdB6"
   },
   {
     "num": "330",
@@ -2381,7 +2385,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Exit 20",
     "location": "Riyadh City - Exit 20",
-    "mapsUrl": "https://goo.gl/maps/UuPmJFJiLDkK3fdB6"
+    "mapsUrl": "https://goo.gl/maps/dvtgkwa28TS31qFu6"
   },
   {
     "num": "331",
@@ -2389,7 +2393,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Jeddah",
     "location": "Jeddah - Jeddah",
-    "mapsUrl": "https://goo.gl/maps/dvtgkwa28TS31qFu6"
+    "mapsUrl": "https://goo.gl/maps/zHDAfF8SNyeod57K6"
   },
   {
     "num": "332",
@@ -2397,7 +2401,7 @@ export const BRANCHES = [
     "area": "Afif",
     "address": "Dhalm Area, Highway 40",
     "location": "Afif - Dhalm Area, Highway 40",
-    "mapsUrl": "https://goo.gl/maps/zHDAfF8SNyeod57K6"
+    "mapsUrl": "https://goo.gl/maps/1bQktC46NBqWFz6f7"
   },
   {
     "num": "333",
@@ -2405,7 +2409,7 @@ export const BRANCHES = [
     "area": "Afif",
     "address": "AFIF",
     "location": "Afif - AFIF",
-    "mapsUrl": "https://goo.gl/maps/1bQktC46NBqWFz6f7"
+    "mapsUrl": "https://goo.gl/maps/it1muSbDNwHKAnfk7"
   },
   {
     "num": "334",
@@ -2413,7 +2417,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Kidzania - Mall of Arabia",
     "location": "Jeddah - Kidzania - Mall of Arabia",
-    "mapsUrl": "https://goo.gl/maps/it1muSbDNwHKAnfk7"
+    "mapsUrl": "https://goo.gl/maps/CAZohbuJH8r9GCsSA"
   },
   {
     "num": "335",
@@ -2421,7 +2425,7 @@ export const BRANCHES = [
     "area": "Hotta",
     "address": "Hotta",
     "location": "Hotta - Hotta",
-    "mapsUrl": "https://goo.gl/maps/CAZohbuJH8r9GCsSA"
+    "mapsUrl": "https://goo.gl/maps/xNZHpN98c18mMuzv9"
   },
   {
     "num": "336",
@@ -2429,7 +2433,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Tanumah, Abha",
     "location": "Abha - Tanumah, Abha",
-    "mapsUrl": "https://goo.gl/maps/xNZHpN98c18mMuzv9"
+    "mapsUrl": "https://goo.gl/maps/sm9KJoVePz3Z4obk8"
   },
   {
     "num": "337",
@@ -2437,7 +2441,7 @@ export const BRANCHES = [
     "area": "Abu Areesh",
     "address": "Prince Sultan Rd.",
     "location": "Abu Areesh - Prince Sultan Rd.",
-    "mapsUrl": "https://goo.gl/maps/sm9KJoVePz3Z4obk8"
+    "mapsUrl": "https://goo.gl/maps/gWjs1Y1rTqWzT1SE7"
   },
   {
     "num": "338",
@@ -2445,7 +2449,7 @@ export const BRANCHES = [
     "area": "Sabya",
     "address": "King Abdul Aziz Rd.",
     "location": "Sabya - King Abdul Aziz Rd.",
-    "mapsUrl": "https://goo.gl/maps/gWjs1Y1rTqWzT1SE7"
+    "mapsUrl": "https://goo.gl/maps/Y29ZsBh8EsGLtmLs9"
   },
   {
     "num": "339",
@@ -2453,7 +2457,7 @@ export const BRANCHES = [
     "area": "Tabouk",
     "address": "Tabouk",
     "location": "Tabouk - Tabouk",
-    "mapsUrl": "https://goo.gl/maps/Y29ZsBh8EsGLtmLs9"
+    "mapsUrl": "https://goo.gl/maps/4T8JmPnF1bFYG32Z8"
   },
   {
     "num": "340",
@@ -2461,7 +2465,7 @@ export const BRANCHES = [
     "area": "Al Namas",
     "address": "Al Namas",
     "location": "Al Namas - Al Namas",
-    "mapsUrl": "https://goo.gl/maps/4T8JmPnF1bFYG32Z8"
+    "mapsUrl": "https://goo.gl/maps/EgD8r1DSNHjGkGaq8"
   },
   {
     "num": "341",
@@ -2469,7 +2473,7 @@ export const BRANCHES = [
     "area": "Majmaa",
     "address": "Al Dress Station",
     "location": "Majmaa - Al Dress Station",
-    "mapsUrl": "https://goo.gl/maps/EgD8r1DSNHjGkGaq8"
+    "mapsUrl": "https://goo.gl/maps/yfKuCpqaXLHU5H768"
   },
   {
     "num": "342",
@@ -2477,7 +2481,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa",
     "location": "Al Ahsa - Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/yfKuCpqaXLHU5H768"
+    "mapsUrl": "https://goo.gl/maps/YKph7YZS3Ex41a4Q8"
   },
   {
     "num": "343",
@@ -2485,7 +2489,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Khaldiyah Qtr., Al Ahsa",
     "location": "Al Ahsa - Al Khaldiyah Qtr., Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/YKph7YZS3Ex41a4Q8"
+    "mapsUrl": "https://goo.gl/maps/UqjNv61HqfyQHbSh7"
   },
   {
     "num": "344",
@@ -2493,7 +2497,7 @@ export const BRANCHES = [
     "area": "Al-Ghatt",
     "address": "Al Ghatt",
     "location": "Al-Ghatt - Al Ghatt",
-    "mapsUrl": "https://goo.gl/maps/UqjNv61HqfyQHbSh7"
+    "mapsUrl": "https://goo.gl/maps/URQv4w8GdKzkHWdR6"
   },
   {
     "num": "345",
@@ -2501,7 +2505,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Nadim Rd",
     "location": "Riyadh City - Al Nadim Rd",
-    "mapsUrl": "https://goo.gl/maps/URQv4w8GdKzkHWdR6"
+    "mapsUrl": "https://goo.gl/maps/mrG3Lo9hPgcZB9wPA"
   },
   {
     "num": "346",
@@ -2509,7 +2513,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Abdullah Rd., Riyadh",
     "location": "Riyadh City - King Abdullah Rd., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/mrG3Lo9hPgcZB9wPA"
+    "mapsUrl": "https://goo.gl/maps/Gbuwi6yC2pMNb6kt8"
   },
   {
     "num": "347",
@@ -2517,7 +2521,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Takashosi, King Abullah Rd",
     "location": "Riyadh City - Takashosi, King Abullah Rd",
-    "mapsUrl": "https://goo.gl/maps/Gbuwi6yC2pMNb6kt8"
+    "mapsUrl": "https://goo.gl/maps/HwUpSfvELWvvzje89"
   },
   {
     "num": "348",
@@ -2525,7 +2529,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Ahsa",
     "location": "Al Ahsa - Al Ahsa",
-    "mapsUrl": "https://goo.gl/maps/HwUpSfvELWvvzje89"
+    "mapsUrl": "https://goo.gl/maps/NenHkv8vYwvLHJwR7"
   },
   {
     "num": "350",
@@ -2533,7 +2537,7 @@ export const BRANCHES = [
     "area": "Al Khobar",
     "address": "Al Khobar",
     "location": "Al Khobar - Al Khobar",
-    "mapsUrl": "https://goo.gl/maps/NenHkv8vYwvLHJwR7"
+    "mapsUrl": "https://goo.gl/maps/q4pXeMA9vEJ685eB9"
   },
   {
     "num": "351",
@@ -2541,7 +2545,7 @@ export const BRANCHES = [
     "area": "Hafer Baten",
     "address": "Hafer Al Batin",
     "location": "Hafer Baten - Hafer Al Batin",
-    "mapsUrl": "https://goo.gl/maps/q4pXeMA9vEJ685eB9"
+    "mapsUrl": "https://goo.gl/maps/YXRVVxsMKFEoT3pR9"
   },
   {
     "num": "352",
@@ -2549,7 +2553,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/YXRVVxsMKFEoT3pR9"
+    "mapsUrl": "https://goo.gl/maps/wS2fyJEDGd4vMtrb6"
   },
   {
     "num": "353",
@@ -2557,7 +2561,7 @@ export const BRANCHES = [
     "area": "Hautat Sudair",
     "address": "King Fahad Rd.",
     "location": "Hautat Sudair - King Fahad Rd.",
-    "mapsUrl": "https://goo.gl/maps/wS2fyJEDGd4vMtrb6"
+    "mapsUrl": "https://goo.gl/maps/7jezphm1AjsGgqkZA"
   },
   {
     "num": "354",
@@ -2565,7 +2569,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/7jezphm1AjsGgqkZA"
+    "mapsUrl": "https://goo.gl/maps/8YY7TevnpYsrrQRh6"
   },
   {
     "num": "356",
@@ -2573,7 +2577,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Qirawan Qtr.",
     "location": "Riyadh City - Al Qirawan Qtr.",
-    "mapsUrl": "https://goo.gl/maps/8YY7TevnpYsrrQRh6"
+    "mapsUrl": "https://goo.gl/maps/LR2nN1ssRodP2uZFA"
   },
   {
     "num": "357",
@@ -2581,7 +2585,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Dammam",
     "location": "Dammam - Dammam",
-    "mapsUrl": "https://goo.gl/maps/LR2nN1ssRodP2uZFA"
+    "mapsUrl": "https://goo.gl/maps/54F1fA5iixWRrLrP8"
   },
   {
     "num": "358",
@@ -2589,7 +2593,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "King Faisal Road (West), Tebah, Jubail",
     "location": "Jubail - King Faisal Road (West), Tebah, Jubail",
-    "mapsUrl": "https://goo.gl/maps/54F1fA5iixWRrLrP8"
+    "mapsUrl": "https://goo.gl/maps/vyLCTMG5b4WmZink7"
   },
   {
     "num": "359",
@@ -2597,7 +2601,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "Jubail Mall",
     "location": "Jubail - Jubail Mall",
-    "mapsUrl": "https://goo.gl/maps/vyLCTMG5b4WmZink7"
+    "mapsUrl": "https://goo.gl/maps/eSJBAWv849pUrDSi9"
   },
   {
     "num": "360",
@@ -2605,7 +2609,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah",
     "location": "Makkah - Makkah",
-    "mapsUrl": "https://goo.gl/maps/eSJBAWv849pUrDSi9"
+    "mapsUrl": "https://goo.gl/maps/JaF3QCMvP7Rtzor88"
   },
   {
     "num": "361",
@@ -2613,7 +2617,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Hijaz Mall, Makkah",
     "location": "Makkah - Hijaz Mall, Makkah",
-    "mapsUrl": "https://goo.gl/maps/JaF3QCMvP7Rtzor88"
+    "mapsUrl": "https://goo.gl/maps/S63GBJaG9LMxoM2p9"
   },
   {
     "num": "362",
@@ -2621,7 +2625,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah",
     "location": "Makkah - Makkah",
-    "mapsUrl": "https://goo.gl/maps/S63GBJaG9LMxoM2p9"
+    "mapsUrl": "https://goo.gl/maps/EVSfEtq9R8hFNvCy8"
   },
   {
     "num": "363",
@@ -2629,7 +2633,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Muhayil",
     "location": "Abha - Muhayil",
-    "mapsUrl": "https://goo.gl/maps/EVSfEtq9R8hFNvCy8"
+    "mapsUrl": "https://goo.gl/maps/jNnda3PJTmATznQj7"
   },
   {
     "num": "364",
@@ -2637,7 +2641,7 @@ export const BRANCHES = [
     "area": "Al-Kharj",
     "address": "Al Kharj",
     "location": "Al-Kharj - Al Kharj",
-    "mapsUrl": "https://goo.gl/maps/jNnda3PJTmATznQj7"
+    "mapsUrl": "https://goo.gl/maps/mPTTatediG3vX5ww7"
   },
   {
     "num": "365",
@@ -2645,7 +2649,7 @@ export const BRANCHES = [
     "area": "Taif",
     "address": "Taif",
     "location": "Taif - Taif",
-    "mapsUrl": "https://goo.gl/maps/mPTTatediG3vX5ww7"
+    "mapsUrl": "https://goo.gl/maps/tbSV2o18spHYLuJZ9"
   },
   {
     "num": "367",
@@ -2653,7 +2657,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Atyaf Mall, Immam Saud Rd., Yarmuk Qtr.",
     "location": "Riyadh City - Atyaf Mall, Immam Saud Rd., Yarmuk Qtr.",
-    "mapsUrl": "https://goo.gl/maps/tbSV2o18spHYLuJZ9"
+    "mapsUrl": "https://goo.gl/maps/LQoZ2yVmvA6zmLa16"
   },
   {
     "num": "368",
@@ -2661,7 +2665,7 @@ export const BRANCHES = [
     "area": "Makkah",
     "address": "Makkah",
     "location": "Makkah - Makkah",
-    "mapsUrl": "https://goo.gl/maps/LQoZ2yVmvA6zmLa16"
+    "mapsUrl": "https://goo.gl/maps/8kYrCB3pnraG3BEu9"
   },
   {
     "num": "370",
@@ -2669,7 +2673,7 @@ export const BRANCHES = [
     "area": "Umluj",
     "address": "Umluj",
     "location": "Umluj - Umluj",
-    "mapsUrl": "https://goo.gl/maps/8kYrCB3pnraG3BEu9"
+    "mapsUrl": "https://goo.gl/maps/P7C9LnSYsSf4Fuz5A"
   },
   {
     "num": "371",
@@ -2677,7 +2681,7 @@ export const BRANCHES = [
     "area": "Al-Raas",
     "address": "Al-Rass",
     "location": "Al-Raas - Al-Rass",
-    "mapsUrl": "https://goo.gl/maps/P7C9LnSYsSf4Fuz5A"
+    "mapsUrl": "https://goo.gl/maps/wjhHJ5v8sqmvr5Wi9"
   },
   {
     "num": "372",
@@ -2685,7 +2689,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah",
     "location": "Buraidah - Buraidah",
-    "mapsUrl": "https://goo.gl/maps/wjhHJ5v8sqmvr5Wi9"
+    "mapsUrl": "https://goo.gl/maps/Qp1UJj6pfktRdUC4A"
   },
   {
     "num": "373",
@@ -2693,7 +2697,7 @@ export const BRANCHES = [
     "area": "Buraidah",
     "address": "Buraidah Area",
     "location": "Buraidah - Buraidah Area",
-    "mapsUrl": "https://goo.gl/maps/Qp1UJj6pfktRdUC4A"
+    "mapsUrl": "https://goo.gl/maps/GtcuAXh3gaCj8DhL9"
   },
   {
     "num": "374",
@@ -2701,7 +2705,7 @@ export const BRANCHES = [
     "area": "Rafhaa",
     "address": "Airport Rd., Rafha Area",
     "location": "Rafhaa - Airport Rd., Rafha Area",
-    "mapsUrl": "https://goo.gl/maps/GtcuAXh3gaCj8DhL9"
+    "mapsUrl": "https://goo.gl/maps/nWJF8trW4xjMtQZX8"
   },
   {
     "num": "376",
@@ -2709,7 +2713,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Thumama",
     "location": "Riyadh City - Thumama",
-    "mapsUrl": "https://goo.gl/maps/nWJF8trW4xjMtQZX8"
+    "mapsUrl": "https://goo.gl/maps/LMvNF3qmhnLb8CSf9"
   },
   {
     "num": "377",
@@ -2717,7 +2721,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Rimal, Riyadh",
     "location": "Riyadh City - Rimal, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/LMvNF3qmhnLb8CSf9"
+    "mapsUrl": "https://goo.gl/maps/cqzWwyZui79nT6UU8"
   },
   {
     "num": "378",
@@ -2725,7 +2729,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Goroub, Riyadh",
     "location": "Riyadh City - Al Goroub, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/cqzWwyZui79nT6UU8"
+    "mapsUrl": "https://goo.gl/maps/S7PFQzkNyXbRCLQr6"
   },
   {
     "num": "379",
@@ -2733,7 +2737,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Riyadh",
     "location": "Riyadh City - Riyadh",
-    "mapsUrl": "https://goo.gl/maps/S7PFQzkNyXbRCLQr6"
+    "mapsUrl": "https://goo.gl/maps/6Vd13MZpyNR4er3d6"
   },
   {
     "num": "380",
@@ -2741,7 +2745,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "Khonaini Petrol Stn, Rd. 101, 1st Indstrl Area",
     "location": "Jubail - Khonaini Petrol Stn, Rd. 101, 1st Indstrl Area",
-    "mapsUrl": "https://goo.gl/maps/6Vd13MZpyNR4er3d6"
+    "mapsUrl": "https://goo.gl/maps/UoRRXRxpUbxAchW87"
   },
   {
     "num": "381",
@@ -2749,7 +2753,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Al Dress Station, Abu Hadriyyah Rd, Badr Qtr.",
     "location": "Dammam - Al Dress Station, Abu Hadriyyah Rd, Badr Qtr.",
-    "mapsUrl": "https://goo.gl/maps/UoRRXRxpUbxAchW87"
+    "mapsUrl": "https://goo.gl/maps/mw3ksT16GbHtsqmq9"
   },
   {
     "num": "382",
@@ -2757,7 +2761,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Abu Main Qtr., Dammam",
     "location": "Dammam - Abu Main Qtr., Dammam",
-    "mapsUrl": "https://goo.gl/maps/mw3ksT16GbHtsqmq9"
+    "mapsUrl": "https://goo.gl/maps/uNaUYtaJxVPaGFe47"
   },
   {
     "num": "383",
@@ -2765,7 +2769,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Al Dress Station",
     "location": "Al Ahsa - Al Dress Station",
-    "mapsUrl": "https://goo.gl/maps/uNaUYtaJxVPaGFe47"
+    "mapsUrl": "https://goo.gl/maps/aLjYDfvzpLhpc2FP8"
   },
   {
     "num": "384",
@@ -2773,7 +2777,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dhurma (near Al Muzahamiya)",
     "location": "Riyadh City - Dhurma (near Al Muzahamiya)",
-    "mapsUrl": "https://goo.gl/maps/aLjYDfvzpLhpc2FP8"
+    "mapsUrl": "https://goo.gl/maps/M9LaVHUJKPjnXaJN6"
   },
   {
     "num": "385",
@@ -2781,7 +2785,7 @@ export const BRANCHES = [
     "area": "Tabouk",
     "address": "Tabouk",
     "location": "Tabouk - Tabouk",
-    "mapsUrl": "https://goo.gl/maps/M9LaVHUJKPjnXaJN6"
+    "mapsUrl": "https://goo.gl/maps/Qsc4nWDEEqehnzxp6"
   },
   {
     "num": "386",
@@ -2789,7 +2793,7 @@ export const BRANCHES = [
     "area": "Umluj",
     "address": "Umluj",
     "location": "Umluj - Umluj",
-    "mapsUrl": "https://goo.gl/maps/Qsc4nWDEEqehnzxp6"
+    "mapsUrl": "https://goo.gl/maps/1Y1QBznigP3K6JEz6"
   },
   {
     "num": "387",
@@ -2797,7 +2801,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "King Khalid Rd., Al Jalawiyah Qtr.",
     "location": "Dammam - King Khalid Rd., Al Jalawiyah Qtr.",
-    "mapsUrl": "https://goo.gl/maps/1Y1QBznigP3K6JEz6"
+    "mapsUrl": "https://goo.gl/maps/ZEioWASnDuT7VTkT8"
   },
   {
     "num": "389",
@@ -2805,7 +2809,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Qarat Mall",
     "location": "Madinah - Qarat Mall",
-    "mapsUrl": "https://goo.gl/maps/ZEioWASnDuT7VTkT8"
+    "mapsUrl": "https://goo.gl/maps/iXzxgQrY2aN6Hkfs6"
   },
   {
     "num": "390",
@@ -2813,7 +2817,7 @@ export const BRANCHES = [
     "area": "Al Aflaj",
     "address": "King Abudllah corner King Abdul Aziz Rd.",
     "location": "Al Aflaj - King Abudllah corner King Abdul Aziz Rd.",
-    "mapsUrl": "https://goo.gl/maps/iXzxgQrY2aN6Hkfs6"
+    "mapsUrl": "https://goo.gl/maps/awDg938bvKvG4fHt5"
   },
   {
     "num": "391",
@@ -2821,7 +2825,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Mansourah, Riyadh",
     "location": "Riyadh City - Al Mansourah, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/awDg938bvKvG4fHt5"
+    "mapsUrl": "https://goo.gl/maps/pUmzrFPvMUpjidNb8"
   },
   {
     "num": "392",
@@ -2829,7 +2833,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Dariya, Riyadh",
     "location": "Riyadh City - Al Dariya, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/pUmzrFPvMUpjidNb8"
+    "mapsUrl": "https://goo.gl/maps/aRmPQBXqvjiBNNVg8"
   },
   {
     "num": "393",
@@ -2837,7 +2841,7 @@ export const BRANCHES = [
     "area": "Sarat Abidah",
     "address": "Rawdah Qtr.",
     "location": "Sarat Abidah - Rawdah Qtr.",
-    "mapsUrl": "https://goo.gl/maps/aRmPQBXqvjiBNNVg8"
+    "mapsUrl": "https://goo.gl/maps/xRHQxPcdmeFhZiuU6"
   },
   {
     "num": "394",
@@ -2845,7 +2849,7 @@ export const BRANCHES = [
     "area": "Al Wadeen",
     "address": "Prince Sultan Bin Abdul Aziz Rd.",
     "location": "Al Wadeen - Prince Sultan Bin Abdul Aziz Rd.",
-    "mapsUrl": "https://goo.gl/maps/xRHQxPcdmeFhZiuU6"
+    "mapsUrl": "https://goo.gl/maps/ViciCvyBhpzcT9gt8"
   },
   {
     "num": "395",
@@ -2853,7 +2857,7 @@ export const BRANCHES = [
     "area": "Rafayah",
     "address": "Rafayah, near Dawadmi, Riyadh",
     "location": "Rafayah - Rafayah, near Dawadmi, Riyadh",
-    "mapsUrl": "https://goo.gl/maps/ViciCvyBhpzcT9gt8"
+    "mapsUrl": "https://goo.gl/maps/JfYydSUycTsADFEd6"
   },
   {
     "num": "396",
@@ -2861,7 +2865,7 @@ export const BRANCHES = [
     "area": "Domat Al Jamal",
     "address": "King Abdul Aziz Rd., Old Industrial Area",
     "location": "Domat Al Jamal - King Abdul Aziz Rd., Old Industrial Area",
-    "mapsUrl": "https://goo.gl/maps/JfYydSUycTsADFEd6"
+    "mapsUrl": "https://goo.gl/maps/uwgmSraMjp9N1m8b8"
   },
   {
     "num": "397",
@@ -2869,7 +2873,7 @@ export const BRANCHES = [
     "area": "Al Dilam",
     "address": "Al Dilam",
     "location": "Al Dilam - Al Dilam",
-    "mapsUrl": "https://goo.gl/maps/uwgmSraMjp9N1m8b8"
+    "mapsUrl": "https://goo.gl/maps/LUY44EnUjFKoNcJJ8"
   },
   {
     "num": "398",
@@ -2877,7 +2881,7 @@ export const BRANCHES = [
     "area": "Rumah",
     "address": "Rumah, Riyadh Area",
     "location": "Rumah - Rumah, Riyadh Area",
-    "mapsUrl": "https://goo.gl/maps/LUY44EnUjFKoNcJJ8"
+    "mapsUrl": "https://goo.gl/maps/fFCnsXfATdac8LPEA"
   },
   {
     "num": "399",
@@ -2885,7 +2889,7 @@ export const BRANCHES = [
     "area": "Tabarjal",
     "address": "Tabarjal",
     "location": "Tabarjal - Tabarjal",
-    "mapsUrl": "https://goo.gl/maps/fFCnsXfATdac8LPEA"
+    "mapsUrl": "https://goo.gl/maps/hnEet5vTjPHWCx3E6"
   },
   {
     "num": "400",
@@ -2893,7 +2897,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Al Jazera Area, Exit 15",
     "location": "Riyadh City - Al Jazera Area, Exit 15",
-    "mapsUrl": "https://goo.gl/maps/hnEet5vTjPHWCx3E6"
+    "mapsUrl": "https://goo.gl/maps/BGm4Gw5udDfNYWNE8"
   },
   {
     "num": "401",
@@ -2901,7 +2905,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Abu Baker St (Sahel Station), Riyadh",
     "location": "Riyadh City - Abu Baker St (Sahel Station), Riyadh",
-    "mapsUrl": "https://goo.gl/maps/BGm4Gw5udDfNYWNE8"
+    "mapsUrl": "https://goo.gl/maps/AW87UTnD6y2iJZPa8"
   },
   {
     "num": "402",
@@ -2909,7 +2913,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "Lulu Hypermarket",
     "location": "Al Ahsa - Lulu Hypermarket",
-    "mapsUrl": "https://goo.gl/maps/AW87UTnD6y2iJZPa8"
+    "mapsUrl": "https://goo.gl/maps/Vr6cisxmPXu4TgZ7A"
   },
   {
     "num": "403",
@@ -2917,7 +2921,7 @@ export const BRANCHES = [
     "area": "Al Ahsa",
     "address": "King Saud Rd. corner King Fahad Rd (Dharan Rd.)",
     "location": "Al Ahsa - King Saud Rd. corner King Fahad Rd (Dharan Rd.)",
-    "mapsUrl": "https://goo.gl/maps/Vr6cisxmPXu4TgZ7A"
+    "mapsUrl": "https://goo.gl/maps/3VkK14sfa7pAE6qW7"
   },
   {
     "num": "404",
@@ -2925,7 +2929,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Khamis",
     "location": "Abha - Khamis",
-    "mapsUrl": "https://goo.gl/maps/3VkK14sfa7pAE6qW7"
+    "mapsUrl": "https://goo.gl/maps/cFb8pL17e8jDEvCa9"
   },
   {
     "num": "405",
@@ -2933,7 +2937,7 @@ export const BRANCHES = [
     "area": "Khabra",
     "address": "Al Khabra",
     "location": "Khabra - Al Khabra",
-    "mapsUrl": "https://goo.gl/maps/cFb8pL17e8jDEvCa9"
+    "mapsUrl": "https://goo.gl/maps/AS1nFjbNvhBT97gw8"
   },
   {
     "num": "406",
@@ -2941,7 +2945,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "4624 Ayman Bin Nabel Street Al Samir",
     "location": "Jeddah - 4624 Ayman Bin Nabel Street Al Samir",
-    "mapsUrl": "https://goo.gl/maps/AS1nFjbNvhBT97gw8"
+    "mapsUrl": ""
   },
   {
     "num": "407",
@@ -2949,7 +2953,7 @@ export const BRANCHES = [
     "area": "Jubail",
     "address": "King Abdulaziz Rd., Al Hamra Qtr.",
     "location": "Jubail - King Abdulaziz Rd., Al Hamra Qtr.",
-    "mapsUrl": ""
+    "mapsUrl": "https://goo.gl/maps/Nym7ysKiAY9UKSvX6"
   },
   {
     "num": "408",
@@ -2957,7 +2961,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Al Gabrin Gas Station (King Fahad Military City Exit Way) Dammam - Hofuf Rd (615 or Higway 10)",
     "location": "Dammam - Al Gabrin Gas Station (King Fahad Military City Exit Way) Dammam - Hofuf Rd (615 or Higway 10)",
-    "mapsUrl": "https://goo.gl/maps/Nym7ysKiAY9UKSvX6"
+    "mapsUrl": "https://goo.gl/maps/bY2tBWurZx5etkwk6"
   },
   {
     "num": "409",
@@ -2965,7 +2969,7 @@ export const BRANCHES = [
     "area": "Qatif",
     "address": "SASCO Gas Station, Dharan - Jubail Exprswy (after Qatif Drving School)",
     "location": "Qatif - SASCO Gas Station, Dharan - Jubail Exprswy (after Qatif Drving School)",
-    "mapsUrl": "https://goo.gl/maps/bY2tBWurZx5etkwk6"
+    "mapsUrl": "https://goo.gl/maps/bGRV5HMfU1VhTomT7"
   },
   {
     "num": "410",
@@ -2973,7 +2977,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Khalid International Airport - Terminal 2",
     "location": "Riyadh City - King Khalid International Airport - Terminal 2",
-    "mapsUrl": "https://goo.gl/maps/bGRV5HMfU1VhTomT7"
+    "mapsUrl": "https://goo.gl/maps/J2Tj2wdSsEYZQgYHA"
   },
   {
     "num": "411",
@@ -2981,7 +2985,7 @@ export const BRANCHES = [
     "area": "Jeddah",
     "address": "Al Masurah Rd., Al Hamadaniyyah",
     "location": "Jeddah - Al Masurah Rd., Al Hamadaniyyah",
-    "mapsUrl": "https://goo.gl/maps/J2Tj2wdSsEYZQgYHA"
+    "mapsUrl": "https://goo.gl/maps/K8oryneZjb8J4Fep9"
   },
   {
     "num": "414",
@@ -2989,7 +2993,7 @@ export const BRANCHES = [
     "area": "Jizan",
     "address": "Prince Metibb Bin Abdulaziz Rd., An Nasim Qtr.",
     "location": "Jizan - Prince Metibb Bin Abdulaziz Rd., An Nasim Qtr.",
-    "mapsUrl": "https://goo.gl/maps/K8oryneZjb8J4Fep9"
+    "mapsUrl": "https://goo.gl/maps/DwBBhdAS34t9sdYeA"
   },
   {
     "num": "415",
@@ -2997,7 +3001,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "King Salman Rd.",
     "location": "Riyadh City - King Salman Rd.",
-    "mapsUrl": "https://goo.gl/maps/DwBBhdAS34t9sdYeA"
+    "mapsUrl": "https://goo.gl/maps/LzJDq7fvxEcBBwdf7"
   },
   {
     "num": "416",
@@ -3005,7 +3009,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Dammam Rd.",
     "location": "Riyadh City - Dammam Rd.",
-    "mapsUrl": "https://goo.gl/maps/LzJDq7fvxEcBBwdf7"
+    "mapsUrl": "https://goo.gl/maps/GxrWrisuWAxj4osY9"
   },
   {
     "num": "417",
@@ -3013,7 +3017,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Khuzam Gas Station, Thumama Rd., Riyadh",
     "location": "Riyadh City - Khuzam Gas Station, Thumama Rd., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/GxrWrisuWAxj4osY9"
+    "mapsUrl": "https://goo.gl/maps/Yb87pFwzirGUmHsbA"
   },
   {
     "num": "418",
@@ -3021,7 +3025,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Abu Baker Rd., Riyadh",
     "location": "Riyadh City - Abu Baker Rd., Riyadh",
-    "mapsUrl": "https://goo.gl/maps/Yb87pFwzirGUmHsbA"
+    "mapsUrl": "https://goo.gl/maps/nrXf9AhCiRPVcqq59"
   },
   {
     "num": "419",
@@ -3029,7 +3033,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "Anas Ibn Malik Rd., Al Yasmin Qtr.",
     "location": "Riyadh City - Anas Ibn Malik Rd., Al Yasmin Qtr.",
-    "mapsUrl": "https://goo.gl/maps/nrXf9AhCiRPVcqq59"
+    "mapsUrl": "https://goo.gl/maps/rh386GmfCH2uceqw9"
   },
   {
     "num": "420",
@@ -3037,7 +3041,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Airport Road",
     "location": "Dammam - Airport Road",
-    "mapsUrl": "https://goo.gl/maps/rh386GmfCH2uceqw9"
+    "mapsUrl": "https://goo.gl/maps/y72K1UCKqBLib9NF8"
   },
   {
     "num": "425",
@@ -3045,7 +3049,7 @@ export const BRANCHES = [
     "area": "Dammam",
     "address": "Nakheel Mall, Dammam",
     "location": "Dammam - Nakheel Mall, Dammam",
-    "mapsUrl": "https://goo.gl/maps/y72K1UCKqBLib9NF8"
+    "mapsUrl": ""
   },
   {
     "num": "426",
@@ -3053,7 +3057,7 @@ export const BRANCHES = [
     "area": "Riyadh City",
     "address": "",
     "location": "Riyadh City",
-    "mapsUrl": ""
+    "mapsUrl": "https://goo.gl/maps/hg7EUZQKHBke4rzJ7"
   },
   {
     "num": "428",
@@ -3061,7 +3065,7 @@ export const BRANCHES = [
     "area": "Abha",
     "address": "Aseer Industrial Area, Khamis (South. Region)",
     "location": "Abha - Aseer Industrial Area, Khamis (South. Region)",
-    "mapsUrl": "https://goo.gl/maps/hg7EUZQKHBke4rzJ7"
+    "mapsUrl": "https://goo.gl/maps/kBs2MBpi2hG7vbQa6"
   },
   {
     "num": "431",
@@ -3069,7 +3073,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Jama Taiba",
     "location": "Madinah - Jama Taiba",
-    "mapsUrl": "https://goo.gl/maps/kBs2MBpi2hG7vbQa6"
+    "mapsUrl": "https://goo.gl/maps/apbrTSLFMjLWLMAj8"
   },
   {
     "num": "432",
@@ -3077,7 +3081,7 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "Madinah",
     "location": "Madinah - Madinah",
-    "mapsUrl": "https://goo.gl/maps/apbrTSLFMjLWLMAj8"
+    "mapsUrl": "https://goo.gl/maps/EES71iqJ5Dao8qyKA"
   },
   {
     "num": "433",
@@ -3085,10 +3089,151 @@ export const BRANCHES = [
     "area": "Madinah",
     "address": "2303 Umm Manea Asma Bint Amr Road, Shoran, Ar Ranuna",
     "location": "Madinah - 2303 Umm Manea Asma Bint Amr Road, Shoran, Ar Ranuna",
-    "mapsUrl": "https://goo.gl/maps/EES71iqJ5Dao8qyKA"
+    "mapsUrl": "https://goo.gl/maps/xRJV1LXBsyLACyeZ7"
+  },
+  {
+    "num": "Doka-1",
+    "label": "Doka-1",
+    "area": "Riyadh City",
+    "address": "",
+    "location": "Riyadh City",
+    "mapsUrl": "https://goo.gl/maps/zCyvVNELzcfHWyxz9"
+  },
+  {
+    "num": "Doka-2",
+    "label": "Doka-2",
+    "area": "Riyadh City",
+    "address": "",
+    "location": "Riyadh City",
+    "mapsUrl": "https://goo.gl/maps/n1Q65TTN6rZCkdVSA"
+  },
+  {
+    "num": "Doka-3",
+    "label": "Doka-3",
+    "area": "Riyadh City",
+    "address": "",
+    "location": "Riyadh City",
+    "mapsUrl": "https://g.page/Doka_Uthman?share"
+  },
+  {
+    "num": "Doka-4",
+    "label": "Doka-4",
+    "area": "Riyadh City",
+    "address": "Abi Bakr As Siddiq Rd.",
+    "location": "Riyadh City - Abi Bakr As Siddiq Rd.",
+    "mapsUrl": "https://goo.gl/maps/PXUKMzP8yp4t5MNZ6"
+  },
+  {
+    "num": "Doka-5",
+    "label": "Doka-5",
+    "area": "Riyadh City",
+    "address": "",
+    "location": "Riyadh City",
+    "mapsUrl": ""
+  },
+  {
+    "num": "Doka-6",
+    "label": "Doka-6",
+    "area": "Riyadh City",
+    "address": "",
+    "location": "Riyadh City",
+    "mapsUrl": ""
+  },
+  {
+    "num": "Bakeryshop-1",
+    "label": "Bakeryshop-1",
+    "area": "Riyadh City",
+    "address": "Al Morouj",
+    "location": "Riyadh City - Al Morouj",
+    "mapsUrl": "https://goo.gl/maps/pajnE89hx8Tb59Mv6"
+  },
+  {
+    "num": "Bakeryshop-4",
+    "label": "Bakeryshop-4",
+    "area": "Riyadh City",
+    "address": "Al Salam (H-30)",
+    "location": "Riyadh City - Al Salam (H-30)",
+    "mapsUrl": "https://goo.gl/maps/j6GWZNSWnQ89YXKA6"
+  },
+  {
+    "num": "Bakeryshop-8",
+    "label": "Bakeryshop-8",
+    "area": "Riyadh City",
+    "address": "Al Hamza, Badiyah (H-77)",
+    "location": "Riyadh City - Al Hamza, Badiyah (H-77)",
+    "mapsUrl": "https://goo.gl/maps/P9PVzC7S829WsTvu5"
+  },
+  {
+    "num": "Bakeryshop-9",
+    "label": "Bakeryshop-9",
+    "area": "Riyadh City",
+    "address": "Al Nahda, P. Bander (H-123)",
+    "location": "Riyadh City - Al Nahda, P. Bander (H-123)",
+    "mapsUrl": "https://goo.gl/maps/i65hZ3E1wwTgcUep6"
+  },
+  {
+    "num": "Bakeryshop-13",
+    "label": "Bakeryshop-13",
+    "area": "Riyadh City",
+    "address": "Badiyah (H-21)",
+    "location": "Riyadh City - Badiyah (H-21)",
+    "mapsUrl": "https://goo.gl/maps/N8H9iAtDZ7641vDJA"
+  },
+  {
+    "num": "Bakeryshop-18",
+    "label": "Bakeryshop-18",
+    "area": "Riyadh City",
+    "address": "Al Rawdah, Exit 12 (H-104)",
+    "location": "Riyadh City - Al Rawdah, Exit 12 (H-104)",
+    "mapsUrl": "https://goo.gl/maps/Sgxt2zTeBgHnEi4g9"
+  },
+  {
+    "num": "Bakeryshop-20",
+    "label": "Bakeryshop-20",
+    "area": "Riyadh City",
+    "address": "Exit 20, Azizia II (H-74)",
+    "location": "Riyadh City - Exit 20, Azizia II (H-74)",
+    "mapsUrl": "https://goo.gl/maps/NF3HT6zuJUHwmUqp9"
+  },
+  {
+    "num": "Bakeryshop-27",
+    "label": "Bakeryshop-27",
+    "area": "Riyadh City",
+    "address": "Al Swedy (H-159)",
+    "location": "Riyadh City - Al Swedy (H-159)",
+    "mapsUrl": "https://goo.gl/maps/ZWzEPJ1yakvmGmX86"
+  },
+  {
+    "num": "Bakeryshop-28",
+    "label": "Bakeryshop-28",
+    "area": "Riyadh City",
+    "address": "Wadi Laben II (H-182)",
+    "location": "Riyadh City - Wadi Laben II (H-182)",
+    "mapsUrl": "https://goo.gl/maps/dab32oVDSTf7wSm87"
+  },
+  {
+    "num": "Bakeryshop-30",
+    "label": "Bakeryshop-30",
+    "area": "Riyadh City",
+    "address": "SAHAFA (H-146)",
+    "location": "Riyadh City - SAHAFA (H-146)",
+    "mapsUrl": "https://goo.gl/maps/qpdqH62nsGnx88e29"
   }
 ];
 
 export function getBranchInfo(num) {
   return BRANCHES.find(b => b.num === String(num)) || null;
+}
+
+// "Herfy 57" / "هرفي 57" for Herfy branches; other brands show as named.
+export function branchLabel(num, lang = 'en') {
+  if (num == null || num === '') return '';
+  const n = String(num);
+  if (!/^\d+$/.test(n)) return n;
+  return lang === 'ar' ? `هرفي ${n}` : `Herfy ${n}`;
+}
+
+// The request's own link (entered by hand) first, then the branch's pin.
+export function locationLinkFor(req) {
+  return req?.locationLink || getBranchInfo(req?.branchNumber)?.mapsUrl || '';
 }

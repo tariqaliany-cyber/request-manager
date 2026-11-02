@@ -4,7 +4,7 @@ import {
   getDeliveryNotesByRequest, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
 } from '../storage';
 import { buildMaintenanceReportData, exportMaintenanceReportPdf, MAINTENANCE_REPORT_URL } from '../generateMaintenanceReport';
-import { getBranchInfo } from '../branchData';
+import { getBranchInfo, branchLabel, locationLinkFor } from '../branchData';
 import { DeliveryNoteCard, DeliveryNoteForm } from './DeliveryNoteSection';
 import PhotoGallery from '../components/PhotoGallery';
 import StatusBadge from '../components/StatusBadge';
@@ -210,7 +210,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
       <div className="card req-head">
         <div className="req-head-id">
           <div className="card-id">{fresh.id}</div>
-          <div className="card-branch">Herfy {fresh.branchNumber}</div>
+          <div className="card-branch">{branchLabel(fresh.branchNumber)}</div>
           <div className="card-date mt4">Created {formatDate(fresh.createdAt)}</div>
         </div>
         <div className="req-head-status">
@@ -280,9 +280,9 @@ export default function TariqRequestDetail({ req, user, onClose }) {
                   </div>
                 );
               })()}
-              {fresh.locationLink && (
+              {locationLinkFor(fresh) && (
                 <div className="mt8">
-                  <a className="info-link" href={fresh.locationLink} target="_blank" rel="noopener noreferrer">
+                  <a className="info-link" href={locationLinkFor(fresh)} target="_blank" rel="noopener noreferrer">
                     🗺️ Google Maps / خرائط جوجل
                   </a>
                 </div>
@@ -301,7 +301,8 @@ export default function TariqRequestDetail({ req, user, onClose }) {
               </div>
               <div className="form-group">
                 <label className="label">Location Link / رابط الموقع</label>
-                <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)} />
+                <input className="input" type="url" value={location} onChange={e => setLocation(e.target.value)}
+                  placeholder="Empty = branch pin from the approved list / فارغ = موقع الفرع المعتمد" />
               </div>
               <div className="form-group" style={{ marginBottom: 0 }}>
                 <label className="label">Problem Description / وصف المشكلة</label>

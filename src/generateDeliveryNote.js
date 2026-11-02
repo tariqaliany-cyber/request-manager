@@ -7,6 +7,7 @@
 // browser engine, same as the maintenance report (src/generateMaintenanceReport.js).
 
 import { ADDRESS_AR } from './branchDataAr';
+import { branchLabel } from './branchData';
 
 export const DELIVERY_TEMPLATE_URL = '/delivery-note/template.html';
 
@@ -36,8 +37,8 @@ export function buildDeliveryData(note) {
     deliveryNo:   note.number || '',
     workOrder:    note.wrpNumber || '',
     deliveryDate: note.completionDate || '',
-    partyAr: branchNo ? join(`هرفي ${branchNo}`, locationAr && `   /   ${locationAr}`) : '',
-    partyEn: branchNo ? join(`Herfy ${branchNo}`, location && `  /  ${location}`) : '',
+    partyAr: branchNo ? join(branchLabel(branchNo, 'ar'), locationAr && `   /   ${locationAr}`) : '',
+    partyEn: branchNo ? join(branchLabel(branchNo), location && `  /  ${location}`) : '',
     technicianAr: note.technicianName || '',
     technicianEn: latinOnly(note.technicianName),
     items: (note.items || []).map(it => ({

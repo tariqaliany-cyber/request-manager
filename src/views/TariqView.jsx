@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
-import { getBranchInfo, BRANCHES } from '../branchData';
+import { getBranchInfo, BRANCHES, branchLabel } from '../branchData';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
 import StatusBadge from '../components/StatusBadge';
@@ -57,7 +57,7 @@ export default function TariqView({ user, onLogout }) {
   const topbarTitle = newReqMode
     ? '➕ New Request / طلب جديد'
     : selected
-    ? `Herfy ${selected.branchNumber} · ${selected.id}`
+    ? `${branchLabel(selected.branchNumber)} · ${selected.id}`
     : filter === 'all'        ? '🏠 Dashboard / الرئيسية'
     : filter === 'updates'    ? '🔔 Updates / التحديثات'
     : filter === 'unassigned' ? '⚠️ Unassigned / غير مسندة'
@@ -174,7 +174,7 @@ function TariqNewRequestForm({ onClose }) {
             <option value="">— اختر الفرع / Select Branch —</option>
             {BRANCHES.map(b => (
               <option key={b.num} value={b.num}>
-                {b.num} — {b.area}
+                {b.label}{b.area ? ` — ${b.area}` : ''}
               </option>
             ))}
           </select>
@@ -442,7 +442,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                       <div className="card-header">
                         <div>
                           <div className="card-id">{req.id}</div>
-                          <div className="card-branch">Herfy {req.branchNumber}</div>
+                          <div className="card-branch">{branchLabel(req.branchNumber)}</div>
                           {(() => { const info = getBranchInfo(req.branchNumber); return <div style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>📍 {info ? info.area : 'Location: Not specified'}</div>; })()}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
@@ -534,7 +534,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                     }}>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--gray-800)' }}>
-                        Herfy {req.branchNumber}
+                        {branchLabel(req.branchNumber)}
                         {info && <span style={{ fontWeight: 400, color: 'var(--gray-400)' }}> · {info.area}</span>}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -581,7 +581,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 12, fontWeight: 700, color: '#334155' }}>
-                        {n.request_id} · Herfy {reqMap[n.request_id]?.branchNumber ?? '—'}
+                        {n.request_id} · {branchLabel(reqMap[n.request_id]?.branchNumber) || '—'}
                       </div>
                       <div style={{ fontSize: 11, color: 'var(--gray-600)', marginTop: 1 }}>{label.en}</div>
                       {n.detail && (
@@ -682,7 +682,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
                           <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--gray-400)', letterSpacing: .5 }}>{req.id}</div>
                         </td>
                         <td>
-                          <div style={{ fontWeight: 700 }}>Herfy {req.branchNumber}</div>
+                          <div style={{ fontWeight: 700 }}>{branchLabel(req.branchNumber)}</div>
                         </td>
                         <td>
                           <div style={{ fontSize: 12, color: 'var(--gray-400)' }}>
@@ -776,7 +776,7 @@ function NotificationsPanel({ notifs, lastRead, reqMap, onSelect }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                 {isUnread && <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#7C3AED', display: 'inline-block', flexShrink: 0 }} />}
                 <span style={{ fontSize: 13, fontWeight: 700, color: '#7C3AED' }}>{n.request_id}</span>
-                <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· Herfy {req?.branchNumber ?? '—'}</span>
+                <span style={{ fontSize: 12, color: 'var(--gray-400)' }}>· {branchLabel(req?.branchNumber) || '—'}</span>
                 {n.actor && <span style={{ fontSize: 11, color: 'var(--gray-400)' }}>· {n.actor}</span>}
                 {req?.invoiceAmount != null && (
                   <span style={{ fontSize: 11, fontWeight: 700, color: '#166534', background: '#F0FDF4', border: '1px solid #BBF7D0', padding: '1px 7px', borderRadius: 20 }}>

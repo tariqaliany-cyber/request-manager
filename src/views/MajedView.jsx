@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getRequestListItems, getRequestById, updateRequest, addMajedComment, logActivity, compressImage, STATUS, photoSrc, canSeeRepairCost } from '../storage';
-import { BRANCHES } from '../branchData';
+import { BRANCHES, branchLabel } from '../branchData';
 import { AREA_AR, ADDRESS_AR } from '../branchDataAr';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
@@ -123,7 +123,7 @@ function MajedList({ onSelect }) {
       <div className="card card-clickable" onClick={() => onSelect(req)}>
         <div className="card-header">
           <div>
-            <div className="card-branch">هرفي {req.branchNumber}</div>
+            <div className="card-branch">{branchLabel(req.branchNumber, 'ar')}</div>
             <div style={{ fontSize: 12, color: '#64748B', marginTop: 2 }}>📍 {info ? `${info.areaAr} — ${info.addressAr}` : 'الموقع غير محدد'}</div>
             {mapsLink && (
               <a href={mapsLink} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
@@ -351,7 +351,7 @@ function MajedDetail({ req, user }) {
       )}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div className="card-branch">هرفي {fresh.branchNumber}</div>
+          <div className="card-branch">{branchLabel(fresh.branchNumber, 'ar')}</div>
           <StatusBadge status={STATUS[fresh.status]} lang="ar" />
         </div>
 

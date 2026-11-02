@@ -385,4 +385,16 @@ export const ADDRESS_AR = {
   'Aseer Industrial Area, Khamis (South. Region)': 'صناعية عسير، خميس مشيط',
   'Jama Taiba': 'جامعة طيبة',
   '2303 Umm Manea Asma Bint Amr Road, Shoran, Ar Ranuna': '2303 طريق أم منيع أسماء بنت عمرو، شوران، الرانوناء',
+  // Doka and Bakeryshop branches
+  'Abi Bakr As Siddiq Rd.': 'طريق أبي بكر الصديق',
+  'Al Morouj': 'المروج',
+  'Al Salam (H-30)': 'السلام (H-30)',
+  'Al Hamza, Badiyah (H-77)': 'الحمزة، البديعة (H-77)',
+  'Al Nahda, P. Bander (H-123)': 'النهضة، الأمير بندر (H-123)',
+  'Badiyah (H-21)': 'البديعة (H-21)',
+  'Al Rawdah, Exit 12 (H-104)': 'الروضة، مخرج 12 (H-104)',
+  'Exit 20, Azizia II (H-74)': 'مخرج 20، العزيزية 2 (H-74)',
+  'Al Swedy (H-159)': 'السويدي (H-159)',
+  'Wadi Laben II (H-182)': 'وادي لبن 2 (H-182)',
+  'SAHAFA (H-146)': 'الصحافة (H-146)',
 };
