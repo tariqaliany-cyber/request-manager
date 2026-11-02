@@ -122,6 +122,18 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const startCustomItem = (key, prefillName) => setItems(rows => rows.map(r => r.key === key
     ? { ...r, isCustom: true, itemNo: '', itemName: prefillName || '', description: '' }
     : r));
+  // An item typed by hand, not from the approved list: fill the first empty
+  // row, or add a new one, and put the cursor in its name.
+  const addCustomItem = () => {
+    const target = items.find(r => !rowHasContent(r));
+    const key = target ? target.key : newKey();
+    const custom = r => ({ ...r, isCustom: true, itemNo: '', itemName: '', description: '' });
+    setItems(rows => target
+      ? rows.map(r => r.key === key ? custom(r) : r)
+      : [...rows, custom({ ...emptyRow(), key })]);
+    setJustAdded(key);
+    setTimeout(() => setJustAdded(k => (k === key ? null : k)), 1500);
+  };
   const backToList = (key) => setItems(rows => rows.map(r => r.key === key
     ? { ...r, isCustom: false, itemNo: '', itemName: '', description: '' }
     : r));
@@ -258,7 +270,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
           <div className="card">
             <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Items / البنود</div>
             <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>
-              Pick from the approved list — the item number and description fill in automatically. No rates or prices.
+              Pick from the approved list — the item number and description fill in automatically — or add your own item. No rates or prices.
             </div>
 
             <div className="dn-rows">
@@ -269,7 +281,8 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
                     <div className="dn-row-pick">
                       {row.isCustom ? (
                         <div className="dn-custom-name-row">
-                          <input className="input" placeholder="Custom item name / اسم البند" value={row.itemName}
+                          <input className="input" placeholder="Your item name / اسم البند" value={row.itemName}
+                            autoFocus={justAdded === row.key}
                             onChange={e => updateItemField(row.key, 'itemName', e.target.value)} />
                           <button type="button" className="dn-icon-btn" title="Pick from the approved list instead" onClick={() => backToList(row.key)}>🔍</button>
                         </div>
@@ -286,8 +299,8 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
 
                   {row.isCustom ? (
                     <div className="dn-row-fields">
-                      <label className="dn-mini">Item No. <span>/ رقم البند</span>
-                        <input className="input" placeholder="Optional" value={row.itemNo} onChange={e => updateItemField(row.key, 'itemNo', e.target.value)} />
+                      <label className="dn-mini">BOQ No. <span>/ رقم BOQ</span>
+                        <input className="input" placeholder="Optional / اختياري" value={row.itemNo} onChange={e => updateItemField(row.key, 'itemNo', e.target.value)} />
                       </label>
                       <label className="dn-mini dn-mini-wide">Description <span>/ الوصف</span>
                         <input className="input" value={row.description} onChange={e => updateItemField(row.key, 'description', e.target.value)} />
@@ -321,7 +334,10 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
               ))}
             </div>
 
-            <button type="button" className="btn btn-outline mt12" onClick={addItem}>＋ Add Item / إضافة بند</button>
+            <div className="dn-add-row mt12">
+              <button type="button" className="btn btn-outline" onClick={addItem}>＋ Add Item / إضافة بند</button>
+              <button type="button" className="btn btn-outline" onClick={addCustomItem}>✎ Add Your Own Item / إضافة بند من عندي</button>
+            </div>
           </div>
 
           {/* Report + confirmation */}
