@@ -1,23 +1,22 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   getDeliveryNotesByRequest, createDeliveryNote, updateDeliveryNote, deleteDeliveryNote,
-  getBoqLibraryItems, createBoqLibraryItem, logActivity,
-  DELIVERY_NOTE_STATUS, formatDate,
+  logActivity, DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
 import { getBranchInfo } from '../branchData';
 import { buildDeliveryData, exportDeliveryNotePdf, DELIVERY_TEMPLATE_URL } from '../generateDeliveryNote';
-import BoqItemPicker from '../components/BoqItemPicker';
+import { SkuPicker, SkuBrowser } from '../components/SkuPicker';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmationDialog from '../components/ConfirmationDialog';
 import PDFPreview from '../components/PDFPreview';
 
 const newKey = () => Math.random().toString(36).slice(2);
 const emptyRow = () => ({
-  key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '', serial: '',
-  itemName: '', isCustom: false, savedToLibrary: false,
+  key: newKey(), itemNo: '', description: '', unit: '', qty: 1, remarks: '', serial: '',
+  itemName: '', isCustom: false,
 });
 const decimalUnits = new Set(['m', 'm²']);
-// A row counts as "filled" once it has either a picked BOQ item number, or —
+// A row counts as "filled" once it has either a picked item number, or —
 // for custom rows, where the item number is optional — a name/description.
 const rowHasContent = (r) => r.isCustom ? !!(r.itemName || r.description) : !!r.itemNo;
 
@@ -63,6 +62,8 @@ export function DeliveryNoteCard({ req, user, onOpen }) {
 }
 
 /* ── Full create/edit form ────────────────────────────────────────── */
+// Desktop: form on one side, the approved item list (src/skuData.js) always
+// open beside it. Phones: the same blocks stacked.
 export function DeliveryNoteForm({ req, user, note, onBack }) {
   const branchInfo = getBranchInfo(req.branchNumber);
   const branchNumber   = req.branchNumber;
@@ -86,7 +87,6 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const [generalRemarks, setRemarks]  = useState(existing?.generalRemarks || '');
   const [technicianName, setTechnician] = useState(existing?.technicianName || '');
   const [recipientName, setRecipient]   = useState(existing?.recipientName || '');
-  const [libraryItems, setLibraryItems] = useState([]);
 
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
@@ -94,54 +94,38 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
   const [confirmDel, setConfirmDel] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [layout, setLayout] = useState(null);
-
-  useEffect(() => {
-    getBoqLibraryItems().then(setLibraryItems);
-  }, []);
+  const [justAdded, setJustAdded] = useState(null);
 
   const isSaved = savedId != null;
   const hasItems = items.some(rowHasContent);
 
   const addItem       = () => setItems(rows => [...rows, emptyRow()]);
-  const removeItem     = key => setItems(rows => rows.length > 1 ? rows.filter(r => r.key !== key) : rows);
+  const removeItem     = key => setItems(rows => rows.length > 1 ? rows.filter(r => r.key !== key) : [emptyRow()]);
   const duplicateItem = key => setItems(rows => {
     const idx = rows.findIndex(r => r.key === key);
     if (idx === -1) return rows;
     return [...rows.slice(0, idx + 1), { ...rows[idx], key: newKey() }, ...rows.slice(idx + 1)];
   });
-  const selectBoqItem = (key, boqItem) => setItems(rows => rows.map(r => r.key === key
-    ? { ...r, itemNo: boqItem.itemNo, category: boqItem.category, description: boqItem.description, unit: boqItem.unit, qty: 1, isCustom: false, itemName: '', savedToLibrary: false }
-    : r));
+  // Picking an item fills its number and description exactly as in the file.
+  const fillSku = (r, sku) => ({ ...r, itemNo: sku.itemNo, description: sku.description, isCustom: false, itemName: '' });
+  const selectSku = (key, sku) => setItems(rows => rows.map(r => r.key === key ? fillSku(r, sku) : r));
+  // From the side list: fill the first empty row, or add a new one.
+  const addFromList = (sku) => {
+    const target = items.find(r => !rowHasContent(r));
+    const key = target ? target.key : newKey();
+    setItems(rows => target
+      ? rows.map(r => r.key === key ? fillSku(r, sku) : r)
+      : [...rows, fillSku({ ...emptyRow(), key }, sku)]);
+    setJustAdded(key);
+    setTimeout(() => setJustAdded(k => (k === key ? null : k)), 1500);
+  };
   const startCustomItem = (key, prefillName) => setItems(rows => rows.map(r => r.key === key
-    ? { ...r, isCustom: true, itemNo: '', category: 'Custom', itemName: prefillName || '', description: '', unit: '', qty: 1, savedToLibrary: false }
+    ? { ...r, isCustom: true, itemNo: '', itemName: prefillName || '', description: '' }
     : r));
-  const useBoqSearch = (key) => setItems(rows => rows.map(r => r.key === key
-    ? { ...r, isCustom: false, itemNo: '', category: '', itemName: '', description: '', unit: '', savedToLibrary: false }
+  const backToList = (key) => setItems(rows => rows.map(r => r.key === key
+    ? { ...r, isCustom: false, itemNo: '', itemName: '', description: '' }
     : r));
   const updateItemField = (key, field, value) => setItems(rows => rows.map(r => r.key === key ? { ...r, [field]: value } : r));
-
-  const [savingLibraryKey, setSavingLibraryKey] = useState(null);
-  const [libraryError, setLibraryError] = useState(false);
-  const saveRowToLibrary = async (key) => {
-    const row = items.find(r => r.key === key);
-    if (!row) return;
-    setSavingLibraryKey(key);
-    setLibraryError(false);
-    const saved = await createBoqLibraryItem({
-      itemNo: row.itemNo,
-      category: 'Custom',
-      description: [row.itemName, row.description].filter(Boolean).join(' — '),
-      unit: row.unit,
-      createdBy: user.username,
-    });
-    setSavingLibraryKey(null);
-    if (saved) {
-      setLibraryItems(prev => [saved, ...prev]);
-      setItems(rows => rows.map(r => r.key === key ? { ...r, savedToLibrary: true } : r));
-    } else {
-      setLibraryError(true);
-    }
-  };
 
   const buildPayload = () => ({
     requestId: req.id,
@@ -217,6 +201,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     layout.overflow && '⚠️ One section is taller than a full page / قسم أطول من صفحة كاملة',
   ].filter(Boolean) : [];
 
+  const usedItemNos = useMemo(() => items.filter(r => !r.isCustom && r.itemNo).map(r => r.itemNo), [items]);
   const s = DELIVERY_NOTE_STATUS[status];
 
   return (
@@ -226,192 +211,178 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
 
       <button className="back-btn mb16" onClick={onBack}>← Back to Request / رجوع</button>
 
-      {/* Header info */}
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <div>
-            <div className="card-id">DELIVERY NOTE / إشعار استلام</div>
-            <div className="card-branch">{number || '(assigned on save)'}</div>
-            {isSaved && <div className="card-date mt4">Created {formatDate(createdAt)} by {createdBy}</div>}
+      <div className="dn-layout">
+        <div className="dn-main">
+          {/* Header + details */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div>
+                <div className="card-id">DELIVERY NOTE / إشعار استلام</div>
+                <div className="card-branch">{number || '(assigned on save)'}</div>
+                {isSaved && <div className="card-date mt4">Created {formatDate(createdAt)} by {createdBy}</div>}
+              </div>
+              <StatusBadge status={s} />
+            </div>
+
+            <div className="section-title">Request Info (locked) / بيانات الطلب</div>
+            <div className="dn-info-grid">
+              <div className="dn-info-cell"><div className="info-label">Request Number</div><div className="info-value">{req.id}</div></div>
+              <div className="dn-info-cell"><div className="info-label">Branch</div><div className="info-value">Herfy {branchNumber}{branchName && branchName !== `Herfy ${branchNumber}` ? ` · ${branchName}` : ''}</div></div>
+              <div className="dn-info-cell"><div className="info-label">City / Region</div><div className="info-value">{cityRegion || '—'}</div></div>
+              <div className="dn-info-cell"><div className="info-label">Branch Location</div><div className="info-value">{branchLocation || '—'}</div></div>
+              <div className="dn-info-cell"><div className="info-label">Request Date</div><div className="info-value">{requestDate}</div></div>
+            </div>
+
+            <div className="section-title">Editable Details / بيانات قابلة للتعديل</div>
+            <div className="dn-fields">
+              <div className="form-group">
+                <label className="label">Ticket Number <span>/ رقم التذكرة</span></label>
+                <input className="input" value={wrpNumber} onChange={e => setWrp(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="label">Completion Date <span>/ تاريخ الإنجاز</span></label>
+                <input className="input" type="date" value={completionDate} onChange={e => setComp(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="label">Service Technician <span>/ الفني المسؤول</span></label>
+                <input className="input" value={technicianName} onChange={e => setTechnician(e.target.value)} />
+              </div>
+              <div className="form-group">
+                <label className="label">Recipient <span>/ المستلم</span></label>
+                <input className="input" value={recipientName} onChange={e => setRecipient(e.target.value)} />
+              </div>
+            </div>
           </div>
-          <StatusBadge status={s} />
-        </div>
 
-        <div className="section-title">Request Info (locked) / بيانات الطلب</div>
-        <div className="dn-info-grid">
-          <div className="dn-info-cell"><div className="info-label">Request Number</div><div className="info-value">{req.id}</div></div>
-          <div className="dn-info-cell"><div className="info-label">Branch Number</div><div className="info-value">Herfy {branchNumber}</div></div>
-          <div className="dn-info-cell"><div className="info-label">Branch Name</div><div className="info-value">{branchName || '—'}</div></div>
-          <div className="dn-info-cell"><div className="info-label">City / Region</div><div className="info-value">{cityRegion || '—'}</div></div>
-          <div className="dn-info-cell" style={{ gridColumn: '1 / -1' }}><div className="info-label">Branch Location</div><div className="info-value">{branchLocation || '—'}</div></div>
-          <div className="dn-info-cell"><div className="info-label">Request Date</div><div className="info-value">{requestDate}</div></div>
-        </div>
+          {/* Items */}
+          <div className="card">
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>Items / البنود</div>
+            <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>
+              Pick from the approved list — the item number and description fill in automatically. No rates or prices.
+            </div>
 
-        <div className="section-title">Editable Details / بيانات قابلة للتعديل</div>
-        <div className="form-group">
-          <label className="label">Ticket Number <span>/ رقم التذكرة</span></label>
-          <input className="input" value={wrpNumber} onChange={e => setWrp(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="label">Completion Date <span>/ تاريخ الإنجاز</span></label>
-          <input className="input" type="date" value={completionDate} onChange={e => setComp(e.target.value)} />
-        </div>
-        <div className="form-group">
-          <label className="label">Service Technician <span>/ الفني المسؤول</span></label>
-          <input className="input" value={technicianName} onChange={e => setTechnician(e.target.value)} />
-        </div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="label">Recipient <span>/ المستلم</span></label>
-          <input className="input" value={recipientName} onChange={e => setRecipient(e.target.value)} />
-        </div>
-      </div>
-
-      {/* Items */}
-      <div className="card">
-        <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 4 }}>BOQ Items / بنود الأعمال</div>
-        <div style={{ fontSize: 12, color: 'var(--gray-400)', marginBottom: 14 }}>No rates, prices, or totals — acknowledgment of completed work only</div>
-
-        <div className="dn-table-wrap">
-          <table className="dn-items-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>BOQ Item</th>
-                <th>Description</th>
-                <th>Unit</th>
-                <th>Qty</th>
-                <th>Serial No.</th>
-                <th>Remarks</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
+            <div className="dn-rows">
               {items.map((row, i) => (
-                <tr key={row.key}>
-                  {row.isCustom ? (
-                    <>
-                      <td className="dn-col-no">
-                        <input className="input" placeholder="Optional" value={row.itemNo} onChange={e => updateItemField(row.key, 'itemNo', e.target.value)} />
-                      </td>
-                      <td className="dn-col-picker">
+                <div key={row.key} className={`dn-row${justAdded === row.key ? ' dn-row-flash' : ''}`}>
+                  <div className="dn-row-head">
+                    <span className="dn-row-index">{i + 1}</span>
+                    <div className="dn-row-pick">
+                      {row.isCustom ? (
                         <div className="dn-custom-name-row">
-                          <input className="input" placeholder="Item Name / اسم البند" value={row.itemName} onChange={e => updateItemField(row.key, 'itemName', e.target.value)} />
-                          <button type="button" className="dn-icon-btn" title="Search BOQ list instead" onClick={() => useBoqSearch(row.key)}>🔍</button>
+                          <input className="input" placeholder="Custom item name / اسم البند" value={row.itemName}
+                            onChange={e => updateItemField(row.key, 'itemName', e.target.value)} />
+                          <button type="button" className="dn-icon-btn" title="Pick from the approved list instead" onClick={() => backToList(row.key)}>🔍</button>
                         </div>
-                      </td>
-                      <td className="dn-col-desc">
-                        <input className="input" placeholder="Description / الوصف" value={row.description} onChange={e => updateItemField(row.key, 'description', e.target.value)} />
-                      </td>
-                      <td className="dn-col-unit">
-                        <input className="input" placeholder="Unit" value={row.unit} onChange={e => updateItemField(row.key, 'unit', e.target.value)} />
-                      </td>
-                    </>
-                  ) : (
-                    <>
-                      <td className="dn-col-no">{row.itemNo || '—'}</td>
-                      <td className="dn-col-picker">
-                        <BoqItemPicker
-                          value={row.itemNo ? `${row.itemNo} – ${row.description}` : ''}
-                          onSelect={item => selectBoqItem(row.key, item)}
-                          onCreateCustom={name => startCustomItem(row.key, name)}
-                          libraryItems={libraryItems}
-                        />
-                      </td>
-                      <td className="dn-col-desc">{row.description || '—'}</td>
-                      <td className="dn-col-unit">{row.unit || '—'}</td>
-                    </>
+                      ) : (
+                        <SkuPicker value={row.itemNo} onSelect={sku => selectSku(row.key, sku)}
+                          onCreateCustom={name => startCustomItem(row.key, name)} />
+                      )}
+                    </div>
+                    <div className="dn-row-actions">
+                      <button type="button" className="dn-icon-btn" title="Duplicate" onClick={() => duplicateItem(row.key)}>⧉</button>
+                      <button type="button" className="dn-icon-btn dn-icon-btn-danger" title="Remove" onClick={() => removeItem(row.key)}>✕</button>
+                    </div>
+                  </div>
+
+                  {row.isCustom ? (
+                    <div className="dn-row-fields">
+                      <label className="dn-mini">Item No. <span>/ رقم البند</span>
+                        <input className="input" placeholder="Optional" value={row.itemNo} onChange={e => updateItemField(row.key, 'itemNo', e.target.value)} />
+                      </label>
+                      <label className="dn-mini dn-mini-wide">Description <span>/ الوصف</span>
+                        <input className="input" value={row.description} onChange={e => updateItemField(row.key, 'description', e.target.value)} />
+                      </label>
+                    </div>
+                  ) : rowHasContent(row) && (
+                    <div className="dn-row-chosen">
+                      <span className="sku-row-no">{row.itemNo}</span>
+                      <span>{row.description}</span>
+                    </div>
                   )}
-                  <td className="dn-col-qty">
-                    <input
-                      className="input" type="number"
-                      min={decimalUnits.has(row.unit) ? 0.01 : 1}
-                      step={decimalUnits.has(row.unit) ? 0.01 : 1}
-                      value={row.qty}
-                      onChange={e => updateItemField(row.key, 'qty', e.target.value)}
-                    />
-                  </td>
-                  <td className="dn-col-remarks">
-                    <input className="input" value={row.serial || ''} onChange={e => updateItemField(row.key, 'serial', e.target.value)} />
-                  </td>
-                  <td className="dn-col-remarks">
-                    <input className="input" value={row.remarks} onChange={e => updateItemField(row.key, 'remarks', e.target.value)} />
-                  </td>
-                  <td className="dn-col-actions">
-                    {row.isCustom && (
-                      row.savedToLibrary
-                        ? <span className="dn-icon-btn dn-icon-btn-saved" title="Saved to BOQ Library">✓</span>
-                        : <button type="button" className="dn-icon-btn" title="Save to BOQ Library / حفظ في مكتبة البنود"
-                            disabled={!rowHasContent(row) || savingLibraryKey === row.key}
-                            onClick={() => saveRowToLibrary(row.key)}>
-                            {savingLibraryKey === row.key ? '⏳' : '💾'}
-                          </button>
-                    )}
-                    <button type="button" className="dn-icon-btn" title="Duplicate" onClick={() => duplicateItem(row.key)}>⧉</button>
-                    <button type="button" className="dn-icon-btn dn-icon-btn-danger" title="Remove" onClick={() => removeItem(row.key)}>✕</button>
-                  </td>
-                </tr>
+
+                  <div className="dn-row-fields">
+                    <label className="dn-mini">Qty <span>/ العدد</span>
+                      <input className="input" type="number"
+                        min={decimalUnits.has(row.unit) ? 0.01 : 1}
+                        step={decimalUnits.has(row.unit) ? 0.01 : 1}
+                        value={row.qty} onChange={e => updateItemField(row.key, 'qty', e.target.value)} />
+                    </label>
+                    <label className="dn-mini">Unit <span>/ الوحدة</span>
+                      <input className="input" value={row.unit || ''} onChange={e => updateItemField(row.key, 'unit', e.target.value)} />
+                    </label>
+                    <label className="dn-mini">Serial No. <span>/ الرقم التسلسلي</span>
+                      <input className="input" value={row.serial || ''} onChange={e => updateItemField(row.key, 'serial', e.target.value)} />
+                    </label>
+                    <label className="dn-mini dn-mini-wide">Remarks <span>/ ملاحظات</span>
+                      <input className="input" value={row.remarks || ''} onChange={e => updateItemField(row.key, 'remarks', e.target.value)} />
+                    </label>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
 
-        <button type="button" className="btn btn-outline mt12" onClick={addItem}>＋ Add Item / إضافة بند</button>
-        {libraryError && <div className="error-msg" style={{ textAlign: 'center', marginTop: 8 }}>Failed to save to BOQ Library — check your connection (or that the boq_library_items table has been created) / فشل الحفظ في المكتبة</div>}
-      </div>
-
-      {/* Remarks + confirmation */}
-      <div className="card">
-        <div className="form-group">
-          <label className="label">Technician Report <span>/ تقرير الفني</span></label>
-          <textarea className="textarea" rows={3} value={generalRemarks} onChange={e => setRemarks(e.target.value)} />
-        </div>
-        <div className="note-box note-box-blue" style={{ fontSize: 13, lineHeight: 1.8 }}>
-          <div className="ar-rtl" style={{ marginBottom: 8 }}>أقرّ باستلام الجهاز والملحقات الموضحة أعلاه.</div>
-          <div>I acknowledge receipt of the equipment and accessories listed above.</div>
-        </div>
-      </div>
-
-      {/* Status + actions */}
-      <div className="card">
-        <div className="form-group">
-          <label className="label">Status / الحالة</label>
-          <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
-            <option value="draft">Draft / مسودة</option>
-            <option value="ready_for_signature">Ready for Signature / جاهز للتوقيع</option>
-            <option value="signed">Signed / موقّع</option>
-            <option value="cancelled">Cancelled / ملغى</option>
-          </select>
-        </div>
-
-        <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
-          {saved ? '✅ Saved!' : saving ? 'Saving...' : isSaved ? '💾 Update Delivery Note / تحديث الإشعار' : '💾 Save Draft / حفظ كمسودة'}
-        </button>
-        {saveError && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Save failed — check your connection (or that the delivery_notes table has been created) and try again / فشل الحفظ</div>}
-        <button className="btn btn-outline mb8" onClick={doPreview}>👁 Preview / معاينة</button>
-        <button
-          className="btn mb8"
-          style={{ background: '#1e293b', color: '#fff', border: 'none' }}
-          onClick={doExport}
-          disabled={exporting || !hasItems}>
-          {exporting ? '⏳ Generating PDF...' : '📄 Export PDF / تصدير PDF'}
-        </button>
-        {layoutIssues.length > 0 && (
-          <div className="note-box note-box-amber" style={{ fontSize: 13, marginBottom: 8 }}>
-            {layoutIssues.map(t => <div key={t}>{t}</div>)}
+            <button type="button" className="btn btn-outline mt12" onClick={addItem}>＋ Add Item / إضافة بند</button>
           </div>
-        )}
-        {!hasItems && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Add at least one BOQ item before exporting / أضف بندًا واحدًا على الأقل قبل التصدير</div>}
 
-        {isSaved && (
-          <ConfirmationDialog
-            pending={confirmDel}
-            onRequestConfirm={() => setConfirmDel(true)}
-            onConfirm={handleDelete}
-            onCancel={() => setConfirmDel(false)}
-            triggerLabel="🗑️ Delete Delivery Note / حذف الإشعار"
-            busy={saving}
-          />
-        )}
+          {/* Report + confirmation */}
+          <div className="card">
+            <div className="form-group">
+              <label className="label">Technician Report <span>/ تقرير الفني</span></label>
+              <textarea className="textarea" rows={3} value={generalRemarks} onChange={e => setRemarks(e.target.value)} />
+            </div>
+            <div className="note-box note-box-blue" style={{ fontSize: 13, lineHeight: 1.8 }}>
+              <div className="ar-rtl" style={{ marginBottom: 8 }}>أقرّ باستلام الجهاز والملحقات الموضحة أعلاه.</div>
+              <div>I acknowledge receipt of the equipment and accessories listed above.</div>
+            </div>
+          </div>
+
+          {/* Status + actions */}
+          <div className="card">
+            <div className="form-group">
+              <label className="label">Status / الحالة</label>
+              <select className="select" value={status} onChange={e => setStatus(e.target.value)}>
+                <option value="draft">Draft / مسودة</option>
+                <option value="ready_for_signature">Ready for Signature / جاهز للتوقيع</option>
+                <option value="signed">Signed / موقّع</option>
+                <option value="cancelled">Cancelled / ملغى</option>
+              </select>
+            </div>
+
+            <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
+              {saved ? '✅ Saved!' : saving ? 'Saving...' : isSaved ? '💾 Update Delivery Note / تحديث الإشعار' : '💾 Save Draft / حفظ كمسودة'}
+            </button>
+            {saveError && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Save failed — check your connection (or that the delivery_notes table has been created) and try again / فشل الحفظ</div>}
+            <button className="btn btn-outline mb8" onClick={doPreview}>👁 Preview / معاينة</button>
+            <button
+              className="btn mb8"
+              style={{ background: '#1e293b', color: '#fff', border: 'none' }}
+              onClick={doExport}
+              disabled={exporting || !hasItems}>
+              {exporting ? '⏳ Generating PDF...' : '📄 Export PDF / تصدير PDF'}
+            </button>
+            {layoutIssues.length > 0 && (
+              <div className="note-box note-box-amber" style={{ fontSize: 13, marginBottom: 8 }}>
+                {layoutIssues.map(t => <div key={t}>{t}</div>)}
+              </div>
+            )}
+            {!hasItems && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Add at least one item before exporting / أضف بندًا واحدًا على الأقل قبل التصدير</div>}
+
+            {isSaved && (
+              <ConfirmationDialog
+                pending={confirmDel}
+                onRequestConfirm={() => setConfirmDel(true)}
+                onConfirm={handleDelete}
+                onCancel={() => setConfirmDel(false)}
+                triggerLabel="🗑️ Delete Delivery Note / حذف الإشعار"
+                busy={saving}
+              />
+            )}
+          </div>
+        </div>
+
+        <aside className="dn-side card">
+          <SkuBrowser usedItemNos={usedItemNos} onPick={addFromList} />
+        </aside>
       </div>
     </div>
   );

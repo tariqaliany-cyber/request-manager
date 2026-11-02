@@ -104,6 +104,13 @@
   .problem .h-ar { margin-top: 11.32px; }
   .problem .h-en { margin-top: 1.02px; }
   .problem-text { font-size: 14.13px; line-height: 1.6; margin-top: 6px; }
+  /* Work items (approved list): number + description, one per line */
+  .items-label { font-size: 12px; line-height: 15.6px; color: var(--label); margin-top: 8px; display: none; }
+  .items { display: none; }
+  .has-items .items-label, .has-items .items { display: block; }
+  .item { display: flex; gap: 10px; font-size: 13px; line-height: 1.5; margin-top: 2px; }
+  .item-no { font-weight: 700; min-width: 44px; direction: ltr; text-align: right; flex-shrink: 0; }
+  .item-desc { flex: 1; direction: ltr; text-align: right; }
 
   /* Photos */
   .photos .h-ar { margin-top: 8.32px; }
@@ -186,10 +193,12 @@
     </div>
   </div>
 
-  <div class="problem">
+  <div class="problem" id="problem">
     <span class="ln h-ar">وصف المشكلة</span>
     <span class="ln h-en en">Problem description</span>
     <span class="ln problem-text" data-field="problemDescription"></span>
+    <span class="items-label">البنود المنفذة<span class="sep" style="padding:0 .6em">/</span><span dir="ltr">Work items</span></span>
+    <div class="items" id="items"></div>
   </div>
 
   <div class="photos">
@@ -225,6 +234,7 @@
    *   ticketNumber, problemDescription,           (shown exactly as given)
    *   reportNo, workOrder, serviceDate,
    *   clientAr, clientEn, assetAr, assetEn,
+   *   items: [{ itemNo, description }],          (approved work items)
    *   photos: { before: [url], during: [url], after: [url] },
    *   fileName
    * }
@@ -236,6 +246,18 @@
       el.textContent = str(current[el.getAttribute('data-field')]);
     });
     document.getElementById('ticket-cell').classList.toggle('ticket-empty', !str(current.ticketNumber));
+
+    var list = document.getElementById('items');
+    list.innerHTML = '';
+    (current.items || []).forEach(function (it) {
+      var row = document.createElement('div');
+      row.className = 'item';
+      row.innerHTML = '<span class="item-no"></span><span class="item-desc"></span>';
+      row.firstChild.textContent = str(it.itemNo);
+      row.lastChild.textContent = str(it.description);
+      list.appendChild(row);
+    });
+    document.getElementById('problem').classList.toggle('has-items', (current.items || []).length > 0);
     if (current.fileName) document.title = current.fileName;
 
     var groups = buildGroups(current.photos || {});

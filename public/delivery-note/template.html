@@ -116,6 +116,10 @@
   .td-ar { font-size: 12.7pt; line-height: 16.51pt; }
   .td-en { font-size: 9pt;    line-height: 11.7pt;  margin-top: -0.92pt; }
   .c-serial .td-ar, .c-qty .td-ar { direction: ltr; text-align: right; }
+  /* Item text can be Arabic or English (approved list is English, e.g.
+     "6.10  24 Hrs Sign…"): take the direction from the text itself so a
+     leading item number stays in place, still right-aligned. */
+  .c-desc .td-ar, .c-desc .td-en { unicode-bidi: plaintext; text-align: right; }
 
   /* Technician report + receipt acknowledgement */
   .sec-report .h-ar  { margin-top: 13.89pt; }

@@ -337,26 +337,42 @@ body {
 .dn-info-cell { padding: 8px 12px; border-bottom: 1px solid var(--gray-100); border-right: 1px solid var(--gray-100); background: var(--gray-50); }
 .dn-info-cell:nth-child(even) { border-right: none; }
 
-/* ── Delivery Note: items table ───────────────────────────────── */
-.dn-table-wrap { overflow-x: auto; }
-table.dn-items-table { width: 100%; min-width: 780px; border-collapse: collapse; }
-table.dn-items-table th {
-  text-align: left; font-size: 11px; font-weight: 800; color: var(--gray-400);
-  text-transform: uppercase; letter-spacing: .4px; padding: 6px 8px; border-bottom: 2px solid var(--gray-200);
+/* ── Delivery Note: form + approved-item list side by side ───── */
+.dn-layout { display: grid; gap: 16px; align-items: start; }
+.dn-main { min-width: 0; }
+.dn-side { padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 70vh; }
+@media (min-width: 1024px) {
+  .dn-layout { grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); }
+  /* Fits the window from where it starts (below the header and Back link),
+     so the list's last item is reachable without scrolling the page. */
+  .dn-side { position: sticky; top: 16px; max-height: calc(100vh - 140px); margin-bottom: 0; }
 }
-table.dn-items-table td { padding: 6px 8px; border-bottom: 1px solid var(--gray-100); vertical-align: middle; }
-table.dn-items-table .dn-col-no { width: 70px; color: var(--gray-400); font-size: 12px; }
-table.dn-items-table .dn-col-no input { padding: 8px; }
-table.dn-items-table .dn-col-picker { width: 220px; position: relative; }
-table.dn-items-table .dn-col-desc { max-width: 260px; font-size: 12px; color: var(--gray-600); }
-table.dn-items-table .dn-col-desc input { padding: 8px; }
-table.dn-items-table .dn-col-unit { width: 70px; font-size: 12px; }
-table.dn-items-table .dn-col-unit input { padding: 8px; }
-table.dn-items-table .dn-col-qty { width: 80px; }
-table.dn-items-table .dn-col-qty input { padding: 8px; }
-table.dn-items-table .dn-col-remarks { width: 160px; }
-table.dn-items-table .dn-col-remarks input { padding: 8px; }
-table.dn-items-table .dn-col-actions { width: 100px; white-space: nowrap; }
+
+.dn-fields { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+
+/* Item rows */
+.dn-rows { display: flex; flex-direction: column; gap: 12px; }
+.dn-row {
+  border: 1.5px solid var(--gray-200); border-radius: 10px; padding: 12px;
+  transition: background .4s, border-color .4s;
+}
+.dn-row-flash { background: #F0FDF4; border-color: #86EFAC; }
+.dn-row-head { display: flex; gap: 8px; align-items: center; }
+.dn-row-index {
+  width: 26px; height: 26px; border-radius: 50%; background: var(--gray-100); color: var(--gray-600);
+  font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.dn-row-pick { flex: 1; min-width: 0; }
+.dn-row-actions { display: flex; flex-shrink: 0; }
+.dn-row-chosen {
+  display: flex; gap: 10px; align-items: baseline; margin-top: 8px; padding: 8px 10px;
+  background: var(--gray-50); border-radius: 8px; font-size: 13px; color: var(--gray-800);
+}
+.dn-row-fields { display: grid; grid-template-columns: 90px 110px minmax(0, 1fr) minmax(0, 1.4fr); gap: 8px; margin-top: 10px; }
+.dn-mini { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 700; color: var(--gray-600); }
+.dn-mini span { font-weight: 400; color: var(--gray-400); }
+.dn-mini .input { padding: 8px; }
+.dn-row-fields:has(> .dn-mini:nth-child(2):last-child) { grid-template-columns: 140px minmax(0, 1fr); }
 
 .dn-custom-name-row { display: flex; gap: 4px; align-items: center; }
 .dn-custom-name-row .input { flex: 1; }
@@ -370,36 +386,37 @@ table.dn-items-table .dn-col-actions { width: 100px; white-space: nowrap; }
 .dn-icon-btn:hover { border-color: var(--tariq-color); color: var(--tariq-color); }
 .dn-icon-btn:disabled { opacity: .4; cursor: not-allowed; }
 .dn-icon-btn-danger:hover { border-color: #EF4444; color: #EF4444; }
-.dn-icon-btn-saved { border-color: #16A34A; color: #16A34A; cursor: default; }
 
-/* ── Delivery Note: BOQ item searchable dropdown ──────────────── */
-.dn-picker { position: relative; }
-.dn-picker-list {
+/* ── Approved items (SKU): row picker dropdown + side list ────── */
+.sku-picker { position: relative; }
+.sku-dropdown {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 50;
-  max-height: 320px; overflow-y: auto;
   background: #fff; border: 1.5px solid var(--gray-200); border-radius: 10px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--shadow); overflow: hidden;
 }
-.dn-picker-group {
-  position: sticky; top: 0; background: var(--gray-100); color: var(--gray-600);
-  font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .4px;
-  padding: 6px 10px;
+.sku-dropdown .sku-list { max-height: 320px; }
+.sku-list { overflow-y: auto; overscroll-behavior: contain; }
+.sku-row {
+  display: flex; gap: 10px; align-items: baseline; padding: 9px 12px; cursor: pointer;
+  font-size: 13px; border-bottom: 1px solid var(--gray-100);
 }
-.dn-picker-item { padding: 8px 10px; cursor: pointer; display: flex; gap: 8px; align-items: baseline; font-size: 13px; }
-.dn-picker-item:hover { background: var(--gray-50); }
-.dn-picker-item-no { font-weight: 700; color: var(--tariq-color); flex-shrink: 0; min-width: 26px; }
-.dn-picker-item-desc { flex: 1; color: var(--gray-800); }
-.dn-picker-item-unit { color: var(--gray-400); font-size: 11px; flex-shrink: 0; }
-.dn-picker-empty { padding: 12px; font-size: 13px; color: var(--gray-400); text-align: center; }
-.dn-picker-custom { border-top: 1px solid var(--gray-200); }
-.dn-picker-item-custom { color: var(--tariq-color); font-weight: 700; display: block; }
+.sku-row:hover, .sku-row-active { background: var(--gray-50); }
+.sku-row-active { box-shadow: inset 3px 0 0 var(--tariq-color); }
+.sku-row-no { font-weight: 700; color: var(--tariq-color); min-width: 48px; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.sku-row-desc { flex: 1; color: var(--gray-800); line-height: 1.45; }
+.sku-row-check { color: #16A34A; font-weight: 800; flex-shrink: 0; }
+.sku-row-chosen { background: #F0FDF4; }
+.sku-row-custom { color: var(--tariq-color); font-weight: 700; border-top: 1px solid var(--gray-200); border-bottom: none; }
+.sku-empty { padding: 14px; font-size: 13px; color: var(--gray-400); text-align: center; }
 
-/* ── Delivery Note: Herfy receipt/signature/stamp box ─────────── */
-.dn-stamp-heading { text-align: center; margin-top: 18px; margin-bottom: 8px; font-weight: 800; font-size: 14px; color: var(--gray-800); }
-.dn-stamp-heading > div { line-height: 1.5; }
-.dn-stamp-box {
-  border: 2px solid var(--gray-800); border-radius: 8px;
-  height: 160px; background: var(--gray-50);
+.sku-browser { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.sku-browser-head { padding: 16px 16px 12px; border-bottom: 1px solid var(--gray-200); }
+.sku-browser-list { flex: 1; min-height: 0; }
+
+@media (max-width: 600px) {
+  .dn-fields { grid-template-columns: 1fr; }
+  .dn-row-fields { grid-template-columns: 1fr 1fr; }
+  .dn-mini-wide { grid-column: 1 / -1; }
 }
 
 @media (max-width: 600px) {

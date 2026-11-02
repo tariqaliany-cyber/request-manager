@@ -10,12 +10,12 @@ import { ADDRESS_AR } from './branchDataAr';
 
 export const DELIVERY_TEMPLATE_URL = '/delivery-note/template.html';
 
-// Custom items keep a short "item name" and a longer "description" as
-// separate fields (see DeliveryNoteSection.jsx) — the template's item
-// column has one main line, so combine them there.
+// The template's item column has one main line: the item number exactly as
+// in the approved list (src/skuData.js), then its description. Custom items
+// keep a short "item name" and a longer "description" — combine them too.
 function itemDescription(it) {
-  if (it.isCustom) return [it.itemName, it.description].filter(Boolean).join(' — ');
-  return it.description || '';
+  const text = it.isCustom ? [it.itemName, it.description].filter(Boolean).join(' — ') : (it.description || '');
+  return [it.itemNo, text].filter(Boolean).join('  ');
 }
 
 const join = (...parts) => parts.filter(Boolean).join('');

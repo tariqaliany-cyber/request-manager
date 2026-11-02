@@ -16,7 +16,9 @@ const urls = (photos) => (photos || []).map(photoSrc).filter(Boolean);
 // Maps the open request to the template's fields. The ticket number and
 // problem description are passed exactly as entered (leading zeros kept);
 // anything the request doesn't record stays empty in the report.
-export function buildMaintenanceReportData(req) {
+// `items` are the work items of the request's delivery note, shown by item
+// number and description from the approved list (src/skuData.js).
+export function buildMaintenanceReportData(req, items = []) {
   const branchNo = req.branchNumber ? String(req.branchNumber) : '';
   const address = getBranchInfo(branchNo)?.address || '';
   const addressAr = ADDRESS_AR[address] || address;
@@ -32,6 +34,12 @@ export function buildMaintenanceReportData(req) {
     clientEn: branchNo ? join(`Herfy ${branchNo}`, address && ` · ${address}`) : '',
     assetAr: workshop ? 'فريق الورشة' : '',
     assetEn: workshop ? 'Workshop team' : '',
+    items: items
+      .filter(it => it.itemNo || it.description || it.itemName)
+      .map(it => ({
+        itemNo: it.itemNo || '',
+        description: it.isCustom ? [it.itemName, it.description].filter(Boolean).join(' — ') : (it.description || ''),
+      })),
     // Site photo types map to the report's before / during / after groups.
     photos: {
       before: urls(req.problemPhotos),

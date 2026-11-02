@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import {
   getRequestById, updateRequest, deleteRequest, compressImage, canManageDeliveryNotes,
-  STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
+  getDeliveryNotesByRequest, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
 } from '../storage';
 import { buildMaintenanceReportData, exportMaintenanceReportPdf, MAINTENANCE_REPORT_URL } from '../generateMaintenanceReport';
 import { getBranchInfo } from '../branchData';
@@ -80,9 +80,20 @@ export default function TariqRequestDetail({ req, user, onClose }) {
 
   // The report reads the ticket number and problem description as they are
   // in the form right now, so they show in the preview before saving.
+  // Work items come from the request's latest delivery note that isn't
+  // cancelled (re-read after leaving the delivery note form).
+  const [noteItems, setNoteItems] = useState([]);
+  useEffect(() => {
+    if (dnOpen) return;
+    getDeliveryNotesByRequest(req.id).then(notes => {
+      const latest = notes.find(n => n.status !== 'cancelled');
+      setNoteItems(latest?.items || []);
+    });
+  }, [req.id, dnOpen]);
+
   const reportData = useMemo(
-    () => buildMaintenanceReportData({ ...fresh, ticketNumber: ticket, problemDescription: desc }),
-    [fresh, ticket, desc]
+    () => buildMaintenanceReportData({ ...fresh, ticketNumber: ticket, problemDescription: desc }, noteItems),
+    [fresh, ticket, desc, noteItems]
   );
 
   const save = async () => {
