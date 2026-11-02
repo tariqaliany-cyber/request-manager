@@ -268,16 +268,14 @@ export function buildServiceReportHtml(req, { print = true } = {}) {
   }
   .details-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     border-top: none;
   }
   .details-cell {
     padding: 7px 12px;
-    border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
   }
-  .details-cell:nth-child(even) { border-right: none; }
-  .details-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .details-cell:last-child { border-right: none; }
   .details-cell .dlabel {
     font-size: 8px;
     font-weight: 700;
@@ -358,10 +356,6 @@ export function buildServiceReportHtml(req, { print = true } = {}) {
       REPORT DETAILS <span style="font-weight:600;opacity:0.85;">/ <span class="ar">تفاصيل التقرير</span></span>
     </div>
     <div class="details-grid">
-      <div class="details-cell">
-        <div class="dlabel">Coordinator / <span class="ar">المنسق</span></div>
-        <div class="dvalue">Tariq / <span class="ar">طارق</span></div>
-      </div>
       <div class="details-cell">
         <div class="dlabel">Print Date / <span class="ar">تاريخ الطباعة</span></div>
         <div class="dvalue">${esc(now)}</div>

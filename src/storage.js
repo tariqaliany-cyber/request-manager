@@ -9,8 +9,18 @@ const supabase = createClient(
 export const USERS = {
   essa:  { password: 'essa123',  role: 'essa',  name: 'Essa',  nameAr: 'عيسى'  },
   majed: { password: 'majed123', role: 'majed', name: 'Majed', nameAr: 'ماجد'  },
+  abdullah: { password: 'abdullah123', role: 'majed', name: 'Abdullah', nameAr: 'عبدالله' },
   tariq: { password: 'tariq123', role: 'tariq', name: 'Tariq', nameAr: 'طارق'  },
 };
+
+// Workshop technicians: every 'majed'-role user gets the Arabic job view and
+// can be picked in the Assign To list. assigned_to holds their username.
+export const TECHNICIANS = Object.entries(USERS)
+  .filter(([, u]) => u.role === 'majed')
+  .map(([username, u]) => ({ username, name: u.name, nameAr: u.nameAr }));
+
+export const technicianName = (username) =>
+  TECHNICIANS.find(t => t.username === username)?.name || 'Workshop';
 
 export const STATUS = {
   received:    { en: 'Request Received', ar: 'تم استلام الطلب', color: '#3B82F6', bg: '#EFF6FF' },

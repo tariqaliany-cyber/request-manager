@@ -91,20 +91,20 @@ export default function MajedView({ user, onLogout }) {
         </div>
       </header>
       <div className="page">
-        <MajedList onSelect={openJob} />
+        <MajedList user={user} onSelect={openJob} />
       </div>
     </div>
   );
 }
 
 /* ── Job List ───────────────────────────────────────── */
-function MajedList({ onSelect }) {
+function MajedList({ user, onSelect }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [showDone, setShowDone] = useState(false);
 
   useEffect(() => {
-    getRequestListItems({ assignedTo: 'majed' }).then(reqs => {
+    getRequestListItems({ assignedTo: user.username }).then(reqs => {
       setRequests(reqs);
       setLoading(false);
     });

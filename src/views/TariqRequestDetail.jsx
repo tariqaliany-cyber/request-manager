@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   getRequestById, updateRequest, deleteRequest, compressImage, canManageDeliveryNotes,
   STATUS, PRIORITY, PAYMENT_STATUS, formatDate, logActivity,
+  TECHNICIANS,
 } from '../storage';
 import { generateServiceReportPdf, buildServiceReportHtml } from '../generateReport';
 import { getBranchInfo } from '../branchData';
@@ -307,7 +308,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
                 <label className="label">Assign To / إسناد إلى</label>
                 <select className="select" value={assignedTo} onChange={e => setAssignedTo(e.target.value)}>
                   <option value="">— Not Assigned / غير مسند —</option>
-                  <option value="majed">Workshop Team / فريق الورشة</option>
+                  {TECHNICIANS.map(t => <option key={t.username} value={t.username}>{t.name} / {t.nameAr}</option>)}
                 </select>
               </div>
               <div className="form-group">
