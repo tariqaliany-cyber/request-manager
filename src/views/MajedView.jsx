@@ -327,6 +327,28 @@ function MajedDetail({ req, user }) {
   return (
     <div>
       {lightbox && <PhotoLightbox photos={lightbox.photos} startIndex={lightbox.index} onClose={() => setLightbox(null)} />}
+
+      {/* First thing Majed sees when he opens a job */}
+      {canSeeRepairCost(user) && (
+        <div className="card" style={{ border: '2px solid #563b2c' }}>
+          <label htmlFor="repair-cost" style={{ display: 'block', fontSize: 17, fontWeight: 700, marginBottom: 10 }}>💰 أدخل قيمة الإصلاح</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <input id="repair-cost" className="input" type="number" inputMode="decimal" min="0" step="any"
+              placeholder="0" value={repairCost} onChange={e => setRepairCost(e.target.value)}
+              disabled={isCompleted} style={{ flex: 1, fontSize: 20, fontWeight: 700, direction: 'ltr', textAlign: 'right' }} />
+            <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--gray-600)' }}>ريال</span>
+          </div>
+          {!isCompleted && (
+            <button className="btn btn-primary-majed" onClick={saveRepairCost}
+              disabled={saving || String(repairCost) === String(fresh.repairCost ?? '')}
+              style={{ width: '100%', marginTop: 10 }}>
+              💾 حفظ القيمة
+            </button>
+          )}
+          {costSaved && <div style={{ color: '#16A34A', fontWeight: 700, fontSize: 14, marginTop: 8, textAlign: 'center' }}>✅ تم الحفظ</div>}
+          <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 8 }}>🔒 يظهر لك ولطارق فقط</div>
+        </div>
+      )}
       <div className="card">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div className="card-branch">هرفي {fresh.branchNumber}</div>
@@ -377,27 +399,6 @@ function MajedDetail({ req, user }) {
           <button className="btn btn-primary-green" onClick={markStarted} disabled={saving}>
             🚀 بدء العمل
           </button>
-        </div>
-      )}
-
-      {canSeeRepairCost(user) && (
-        <div className="card">
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <label htmlFor="repair-cost" style={{ fontSize: 16, fontWeight: 700, whiteSpace: 'nowrap' }}>قيمة الإصلاح</label>
-            <input id="repair-cost" className="input" type="number" inputMode="decimal" min="0" step="any"
-              placeholder="0" value={repairCost} onChange={e => setRepairCost(e.target.value)}
-              disabled={isCompleted} style={{ flex: 1, direction: 'ltr', textAlign: 'right' }} />
-            <span style={{ fontSize: 14, color: 'var(--gray-600)' }}>ريال</span>
-          </div>
-          {!isCompleted && (
-            <button className="btn btn-outline btn-sm" onClick={saveRepairCost}
-              disabled={saving || String(repairCost) === String(fresh.repairCost ?? '')}
-              style={{ marginTop: 10 }}>
-              💾 حفظ
-            </button>
-          )}
-          {costSaved && <div style={{ color: '#16A34A', fontWeight: 700, fontSize: 13, marginTop: 8 }}>✅ تم الحفظ</div>}
-          <div style={{ fontSize: 11, color: 'var(--gray-400)', marginTop: 8 }}>🔒 يظهر لك ولطارق فقط</div>
         </div>
       )}
 
