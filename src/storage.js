@@ -227,6 +227,8 @@ const DN_FIELD_MAP = {
   completionDate:       'completion_date',
   wrpNumber:            'wrp_number',
   generalRemarks:       'general_remarks',
+  technicianName:       'technician_name',
+  recipientName:        'recipient_name',
 };
 
 const dnToDb = (obj) => {
@@ -251,6 +253,8 @@ const dnFromDb = (row) => ({
   wrpNumber:            row.wrp_number      || '',
   items:                row.items           || [],
   generalRemarks:       row.general_remarks || '',
+  technicianName:       row.technician_name || '',
+  recipientName:        row.recipient_name  || '',
 });
 
 export const getDeliveryNotesByRequest = async (requestId) => {

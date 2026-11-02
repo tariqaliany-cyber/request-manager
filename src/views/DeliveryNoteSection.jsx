@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   getDeliveryNotesByRequest, createDeliveryNote, updateDeliveryNote, deleteDeliveryNote,
   getBoqLibraryItems, createBoqLibraryItem, logActivity,
   DELIVERY_NOTE_STATUS, formatDate,
 } from '../storage';
 import { getBranchInfo } from '../branchData';
-import { generateDeliveryNotePdf, buildDeliveryNoteHtml } from '../generateDeliveryNote';
+import { buildDeliveryData, exportDeliveryNotePdf, DELIVERY_TEMPLATE_URL } from '../generateDeliveryNote';
 import BoqItemPicker from '../components/BoqItemPicker';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmationDialog from '../components/ConfirmationDialog';
@@ -13,7 +13,7 @@ import PDFPreview from '../components/PDFPreview';
 
 const newKey = () => Math.random().toString(36).slice(2);
 const emptyRow = () => ({
-  key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '',
+  key: newKey(), itemNo: '', category: '', description: '', unit: '', qty: 1, remarks: '', serial: '',
   itemName: '', isCustom: false, savedToLibrary: false,
 });
 const decimalUnits = new Set(['m', 'm²']);
@@ -84,13 +84,16 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     existing?.items?.length ? existing.items.map(it => ({ ...it, key: newKey() })) : [emptyRow()]
   );
   const [generalRemarks, setRemarks]  = useState(existing?.generalRemarks || '');
+  const [technicianName, setTechnician] = useState(existing?.technicianName || '');
+  const [recipientName, setRecipient]   = useState(existing?.recipientName || '');
   const [libraryItems, setLibraryItems] = useState([]);
 
   const [saving, setSaving]     = useState(false);
   const [saved, setSaved]       = useState(false);
   const [exporting, setExporting] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
-  const [previewHtml, setPreviewHtml] = useState(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [layout, setLayout] = useState(null);
 
   useEffect(() => {
     getBoqLibraryItems().then(setLibraryItems);
@@ -148,6 +151,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     wrpNumber,
     items: items.filter(rowHasContent).map(({ key, ...rest }) => rest),
     generalRemarks,
+    technicianName, recipientName,
   });
 
   const [saveError, setSaveError] = useState(false);
@@ -189,28 +193,36 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
     onBack();
   };
 
-  const noteForPdf = () => ({
-    number: number || '(unsaved draft)',
-    requestNumber: req.id,
-    wrpNumber, branchNumber, branchName, branchLocation, cityRegion,
-    requestDate, completionDate,
+  // What the template shows — rebuilt only when an edited field changes,
+  // so the open preview re-fills live as the form is edited.
+  const deliveryData = useMemo(() => buildDeliveryData({
+    number,
+    wrpNumber, branchNumber, branchLocation,
+    completionDate,
     items: items.filter(rowHasContent),
-    generalRemarks,
-  });
+    generalRemarks, technicianName, recipientName,
+  }), [number, wrpNumber, branchNumber, branchLocation, completionDate, items, generalRemarks, technicianName, recipientName]);
 
-  const doPreview = () => setPreviewHtml(buildDeliveryNoteHtml(noteForPdf(), { print: false }));
+  const doPreview = () => setPreviewOpen(true);
   const doExport = async () => {
     if (!hasItems) return;
     setExporting(true);
-    await generateDeliveryNotePdf(noteForPdf(), { print: true });
+    await exportDeliveryNotePdf(deliveryData);
     setExporting(false);
   };
+
+  // Filled by the preview from the template's getDeliveryLayout().
+  const layoutIssues = layout ? [
+    layout.pageCount > 1 && `ℹ️ The note continues onto ${layout.pageCount} pages / السند ${layout.pageCount} صفحات`,
+    layout.overflow && '⚠️ One section is taller than a full page / قسم أطول من صفحة كاملة',
+  ].filter(Boolean) : [];
 
   const s = DELIVERY_NOTE_STATUS[status];
 
   return (
     <div>
-      <PDFPreview html={previewHtml} onClose={() => setPreviewHtml(null)} />
+      <PDFPreview src={previewOpen ? DELIVERY_TEMPLATE_URL : null} data={deliveryData}
+        onLayout={setLayout} onClose={() => setPreviewOpen(false)} />
 
       <button className="back-btn mb16" onClick={onBack}>← Back to Request / رجوع</button>
 
@@ -240,9 +252,17 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
           <label className="label">Ticket Number <span>/ رقم التذكرة</span></label>
           <input className="input" value={wrpNumber} onChange={e => setWrp(e.target.value)} />
         </div>
-        <div className="form-group" style={{ marginBottom: 0 }}>
+        <div className="form-group">
           <label className="label">Completion Date <span>/ تاريخ الإنجاز</span></label>
           <input className="input" type="date" value={completionDate} onChange={e => setComp(e.target.value)} />
+        </div>
+        <div className="form-group">
+          <label className="label">Service Technician <span>/ الفني المسؤول</span></label>
+          <input className="input" value={technicianName} onChange={e => setTechnician(e.target.value)} />
+        </div>
+        <div className="form-group" style={{ marginBottom: 0 }}>
+          <label className="label">Recipient <span>/ المستلم</span></label>
+          <input className="input" value={recipientName} onChange={e => setRecipient(e.target.value)} />
         </div>
       </div>
 
@@ -260,6 +280,7 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
                 <th>Description</th>
                 <th>Unit</th>
                 <th>Qty</th>
+                <th>Serial No.</th>
                 <th>Remarks</th>
                 <th>Action</th>
               </tr>
@@ -310,6 +331,9 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
                     />
                   </td>
                   <td className="dn-col-remarks">
+                    <input className="input" value={row.serial || ''} onChange={e => updateItemField(row.key, 'serial', e.target.value)} />
+                  </td>
+                  <td className="dn-col-remarks">
                     <input className="input" value={row.remarks} onChange={e => updateItemField(row.key, 'remarks', e.target.value)} />
                   </td>
                   <td className="dn-col-actions">
@@ -338,23 +362,13 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
       {/* Remarks + confirmation */}
       <div className="card">
         <div className="form-group">
-          <label className="label">General Remarks <span>/ ملاحظات عامة</span></label>
+          <label className="label">Technician Report <span>/ تقرير الفني</span></label>
           <textarea className="textarea" rows={3} value={generalRemarks} onChange={e => setRemarks(e.target.value)} />
         </div>
         <div className="note-box note-box-blue" style={{ fontSize: 13, lineHeight: 1.8 }}>
-          <div className="ar-rtl" style={{ marginBottom: 8 }}>
-            نقر نحن الموقعين أدناه بأن الأعمال الموضحة أعلاه قد تم تنفيذها وتسليمها للموقع، وتم استلامها وفقاً للبنود والكميات المذكورة في هذا الإشعار.
-          </div>
-          <div>
-            We, the undersigned, confirm that the works described above have been completed and delivered to the site and have been received according to the items and quantities stated in this Delivery Note.
-          </div>
+          <div className="ar-rtl" style={{ marginBottom: 8 }}>أقرّ باستلام الجهاز والملحقات الموضحة أعلاه.</div>
+          <div>I acknowledge receipt of the equipment and accessories listed above.</div>
         </div>
-
-        <div className="dn-stamp-heading">
-          <div className="ar-rtl">استلام وختم هرفي</div>
-          <div>HERFY RECEIPT, SIGNATURE &amp; STAMP</div>
-        </div>
-        <div className="dn-stamp-box" />
       </div>
 
       {/* Status + actions */}
@@ -381,6 +395,11 @@ export function DeliveryNoteForm({ req, user, note, onBack }) {
           disabled={exporting || !hasItems}>
           {exporting ? '⏳ Generating PDF...' : '📄 Export PDF / تصدير PDF'}
         </button>
+        {layoutIssues.length > 0 && (
+          <div className="note-box note-box-amber" style={{ fontSize: 13, marginBottom: 8 }}>
+            {layoutIssues.map(t => <div key={t}>{t}</div>)}
+          </div>
+        )}
         {!hasItems && <div className="error-msg" style={{ textAlign: 'center', marginTop: -4, marginBottom: 8 }}>Add at least one BOQ item before exporting / أضف بندًا واحدًا على الأقل قبل التصدير</div>}
 
         {isSaved && (

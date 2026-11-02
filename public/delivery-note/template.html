@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<!--
+  Altasis — Maintenance Delivery Note (bilingual, A4).
+  Built to match Altasis-Delivery-Bilingual.pdf. All geometry is in pt
+  (1pt = 1/72in, same unit as the PDF) and was measured from that file:
+  content spans x 37.2pt → 558.08pt; each line's margin is set so its
+  baseline lands where the reference PDF puts it.
+
+  The app fills it with window.setDeliveryData(data). Empty fields stay
+  empty — nothing is substituted.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delivery Note</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=block" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:      #333333;   /* main text */
+    --ink-2:    #535353;   /* English sub-lines */
+    --bar:      #474747;   /* title bar */
+    --box:      #f1f1f1;   /* info box */
+    --thead:    #efefef;   /* table header */
+    --rule:     #c6c6c6;   /* table row dividers */
+    --sig-rule: #666666;   /* signature lines */
+  }
+
+  @page { size: A4 portrait; margin: 0; }
+
+  html, body { background: #fff; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    font-weight: 400;
+    color: var(--ink);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page {
+    position: relative;
+    width: 595.28pt; height: 841.89pt;
+    padding: 0 37.2pt;
+    overflow: hidden;
+    background: #fff;
+    text-align: right;
+  }
+
+  /* One text line = block with a fixed line box; margins below are solved
+     from the reference baselines (Tajawal: ascent 1.02em/descent .38em,
+     bold 1.07/.41). */
+  .ln { display: block; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .en { direction: ltr; text-align: right; color: var(--ink-2); }
+  .b  { font-weight: 700; }
+
+  .logo {
+    position: absolute; top: 13.21pt; left: 186.02pt;
+    width: 372.05pt; height: 115.14pt;
+  }
+
+  /* Title bar */
+  .title-bar {
+    margin-top: 140.4pt; height: 63.6pt;
+    background: var(--bar); color: #fff;
+    padding-right: 16pt;
+    display: flow-root; /* keep the title's margin inside the bar */
+  }
+  .title-ar { font-size: 26.2pt; line-height: 34.06pt; margin-top: 8.32pt; margin-right: 4pt; font-weight: 700; white-space: nowrap; }
+  .title-en { font-size: 14.2pt; line-height: 18.46pt; margin-top: -1.36pt; color: #fff; white-space: nowrap; }
+
+  /* Info box: delivery no. / work order / date */
+  .info {
+    margin-top: 10.8pt; height: 59.4pt;
+    background: var(--box);
+    display: flex;
+  }
+  .info-cell { padding-right: 14.2pt; }
+  .info-cell:nth-child(1) { width: 171.7pt; }
+  .info-cell:nth-child(2) { width: 172.5pt; }
+  .info-cell:nth-child(3) { flex: 1; }
+  .info-ar  { font-size: 10.6pt; line-height: 13.78pt; margin-top: 5.42pt; }
+  .info-en  { font-size: 8.8pt;  line-height: 11.44pt; margin-top: -0.63pt; }
+  .info-val { font-size: 13.6pt; line-height: 17.68pt; margin-top: 6.47pt; font-weight: 700; direction: ltr; text-align: right; }
+
+  /* Body blocks sit 2pt in from the content edge, as in the reference */
+  .body-block { padding-right: 2pt; }
+
+  .party-ar { font-size: 14.3pt; line-height: 18.59pt; margin-top: 15.69pt; font-weight: 700; }
+  .party-en { font-size: 10.8pt; line-height: 14.04pt; margin-top: -2.55pt; }
+  .tech-ar  { font-size: 12pt;   line-height: 15.6pt;  margin-top: 9.5pt; }
+  .tech-en  { font-size: 9pt;    line-height: 11.7pt;  margin-top: -1.39pt; }
+  .gap      { display: inline-block; width: 0.6em; }
+
+  .h-ar { font-size: 14.3pt; line-height: 18.59pt; font-weight: 700; }
+  .h-en { font-size: 10.8pt; line-height: 14.04pt; }
+  .sec-items .h-ar  { margin-top: 19.12pt; }
+  .sec-items .h-en  { margin-top: -2.45pt; }
+
+  /* Items table */
+  .thead {
+    margin-top: 7.04pt; height: 34.8pt;
+    background: var(--thead);
+    display: flex;
+  }
+  .row { display: flex; border-bottom: 0.6pt solid var(--rule); }
+  .c-desc   { width: 279.4pt; padding-right: 15.2pt; }
+  .c-serial { width: 166pt;   padding-right: 15.2pt; }
+  .c-qty    { flex: 1;        padding-right: 15.2pt; }
+  .th-ar { font-size: 10.5pt; line-height: 13.65pt; margin-top: 3.62pt; }
+  .th-en { font-size: 8.8pt;  line-height: 11.44pt; margin-top: -0.5pt; }
+  .row .cell { padding-top: 7.43pt; padding-bottom: 8.78pt; }
+  .td-ar { font-size: 12.7pt; line-height: 16.51pt; }
+  .td-en { font-size: 9pt;    line-height: 11.7pt;  margin-top: -0.92pt; }
+  .c-serial .td-ar, .c-qty .td-ar { direction: ltr; text-align: right; }
+
+  /* Technician report + receipt acknowledgement */
+  .sec-report .h-ar  { margin-top: 13.89pt; }
+  .sec-report .h-en  { margin-top: -3.95pt; }
+  .p-ar { font-size: 12pt; line-height: 15.6pt; }
+  .p-en { font-size: 9pt;  line-height: 11.7pt; margin-top: -1.29pt; }
+  .sec-report .p-ar { margin-top: 11.4pt; }
+  .sec-ack .h-ar    { margin-top: 28.72pt; }
+  .sec-ack .h-en    { margin-top: -2.55pt; }
+  .sec-ack .p-ar    { margin-top: 6.4pt; }
+
+  /* Signatures */
+  .sigs { margin-top: 40.63pt; display: flex; justify-content: space-between; }
+  .sig { border-top: 0.6pt solid var(--sig-rule); padding-right: 2pt; }
+  .sig-recipient  { width: 234.28pt; }   /* 323.8pt → 558.08pt */
+  .sig-technician { width: 221.4pt; }    /* 37.2pt → 258.6pt */
+  .sig-ar { font-size: 10.4pt; line-height: 13.52pt; margin-top: 5.41pt; }
+  .sig-en { font-size: 9pt;    line-height: 11.7pt;  margin-top: -0.46pt; }
+  .sig-ar .gap { width: 11.2pt; }
+
+  /* Footer (vector text in the reference: 8pt Tajawal) */
+  .footer {
+    position: absolute; left: 37pt; right: 37pt; top: 801.4pt;
+    border-top: 1pt solid #6b6b6b;
+    direction: ltr; display: flex; justify-content: space-between;
+    font-size: 8pt; line-height: 10.4pt; color: #4d4d4d;
+    padding-top: 7.74pt; white-space: pre;
+  }
+
+  @media screen {
+    html, body { background: #e9e9e9; }
+    body { padding: 16px 0; }
+    .page { margin: 0 auto; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+    .page + .page { margin-top: 16px; }
+  }
+  @media print {
+    .page { break-after: page; }
+    .page:last-child { break-after: auto; }
+  }
+
+  /* Continuation pages (added automatically when content doesn't fit):
+     no letterhead, content starts 20mm down, table header repeats. */
+  .page.cont { padding-top: 56.7pt; }
+  .page.cont > .flow > .thead:first-child { margin-top: 0; }
+  #source { display: none; }
+</style>
+</head>
+<body>
+<div id="pages">
+<div class="page" id="page">
+  <img class="logo" src="altasis-logo.png" alt="Altasis Alistratiji" />
+
+  <div class="title-bar">
+    <span class="ln title-ar">سند تسليم بعد الصيانة</span>
+    <span class="ln title-en en">Maintenance Delivery Note</span>
+  </div>
+
+  <div class="info">
+    <div class="info-cell">
+      <span class="ln info-ar">رقم سند التسليم</span>
+      <span class="ln info-en en">Delivery note no.</span>
+      <span class="ln info-val" data-field="deliveryNo" data-single></span>
+    </div>
+    <div class="info-cell">
+      <span class="ln info-ar">أمر الصيانة</span>
+      <span class="ln info-en en">Work order</span>
+      <span class="ln info-val" data-field="workOrder" data-single></span>
+    </div>
+    <div class="info-cell">
+      <span class="ln info-ar">تاريخ التسليم</span>
+      <span class="ln info-en en">Delivery date</span>
+      <span class="ln info-val" data-field="deliveryDate" data-single></span>
+    </div>
+  </div>
+
+  <div class="body-block">
+    <span class="ln party-ar" data-field="partyAr" data-single></span>
+    <span class="ln party-en en" data-field="partyEn" data-single></span>
+    <span class="ln tech-ar" data-single>الفني المسؤول<span class="gap"></span><span data-field="technicianAr"></span></span>
+    <span class="ln tech-en en" data-single>Service technician<span class="gap"></span><span data-field="technicianEn"></span></span>
+  </div>
+
+  <div class="body-block sec-items">
+    <span class="ln h-ar">الأجهزة والملحقات المسلّمة</span>
+    <span class="ln h-en en">Delivered equipment and accessories</span>
+  </div>
+
+  <div class="thead" id="thead">
+    <div class="c-desc"><span class="ln th-ar">وصف البند</span><span class="ln th-en en">Item description</span></div>
+    <div class="c-serial"><span class="ln th-ar">الرقم التسلسلي</span><span class="ln th-en en">Serial number</span></div>
+    <div class="c-qty"><span class="ln th-ar">العدد</span><span class="ln th-en en">Qty</span></div>
+  </div>
+  <div class="flow"></div>
+
+  <div class="footer"><span>ALTASIS   /   MAINTENANCE</span><span class="page-no">01 / 01</span></div>
+</div>
+</div>
+
+<!-- Blocks placed after the item rows by paginate(); each moves to a new
+     page whole when it doesn't fit (the acknowledgement stays with the
+     signatures). -->
+<div id="source">
+  <div class="body-block sec-report" data-block>
+    <span class="ln h-ar">تقرير الفني</span>
+    <span class="ln h-en en">Technician report</span>
+    <span class="ln p-ar" data-field="reportAr"></span>
+    <span class="ln p-en en" data-field="reportEn"></span>
+  </div>
+
+  <div data-block>
+    <div class="body-block sec-ack">
+      <span class="ln h-ar">إقرار الاستلام</span>
+      <span class="ln h-en en">Receipt acknowledgement</span>
+      <span class="ln p-ar">أقرّ باستلام الجهاز والملحقات الموضحة أعلاه.</span>
+      <span class="ln p-en en">I acknowledge receipt of the equipment and accessories listed above.</span>
+    </div>
+    <div class="sigs">
+      <div class="sig sig-recipient">
+        <span class="ln sig-ar">توقيع المستلم<span class="gap"></span><span data-field="recipientAr"></span></span>
+        <span class="ln sig-en en">Recipient signature<span class="gap"></span><span data-field="recipientEn"></span></span>
+      </div>
+      <div class="sig sig-technician">
+        <span class="ln sig-ar">توقيع الفني</span>
+        <span class="ln sig-en en">Technician signature</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="page-tpl">
+  <div class="page cont">
+    <div class="flow"></div>
+    <div class="footer"><span>ALTASIS   /   MAINTENANCE</span><span class="page-no"></span></div>
+  </div>
+</template>
+
+<template id="row-tpl">
+  <div class="row">
+    <div class="cell c-desc"><span class="ln td-ar" data-col="descAr" data-single></span><span class="ln td-en en" data-col="descEn" data-single></span></div>
+    <div class="cell c-serial"><span class="ln td-ar" data-col="serial" data-single></span></div>
+    <div class="cell c-qty"><span class="ln td-ar" data-col="qty" data-single></span></div>
+  </div>
+</template>
+
+<script>
+  var str = function (v) { return v == null ? '' : String(v); };
+
+  /*
+   * data = {
+   *   deliveryNo, workOrder, deliveryDate,
+   *   partyAr, partyEn, technicianAr, technicianEn,
+   *   items: [{ descAr, descEn, serial, qty }],
+   *   reportAr, reportEn, recipientAr, recipientEn,
+   *   fileName
+   * }
+   * Resolves once fonts and the logo are ready, so callers can print.
+   */
+  var current = {};
+  var layout = { itemCount: 0, pageCount: 1, overflow: false };
+
+  window.setDeliveryData = function (data) {
+    current = data || {};
+    document.querySelectorAll('[data-field]').forEach(function (el) {
+      el.textContent = str(current[el.getAttribute('data-field')]);
+    });
+    if (current.fileName) document.title = current.fileName;
+
+    var logo = document.querySelector('.logo');
+    var logoReady = logo.complete ? Promise.resolve() : new Promise(function (r) { logo.onload = logo.onerror = r; });
+    // Pagination measures text, so it waits for Tajawal to load.
+    return Promise.all([document.fonts.ready, logoReady]).then(paginate);
+  };
+
+  // Content must end this far above the footer rule (801.4pt).
+  var LIMIT_PX = 787 * 96 / 72;
+
+  function paginate() {
+    var first = document.querySelector('.page');
+    document.querySelectorAll('.page.cont').forEach(function (p) { p.remove(); });
+    first.querySelector('.flow').innerHTML = '';
+
+    var rowTpl = document.getElementById('row-tpl').content.firstElementChild;
+    var blocks = (current.items || []).map(function (it) {
+      var row = rowTpl.cloneNode(true);
+      row.querySelectorAll('[data-col]').forEach(function (el) {
+        el.textContent = str(it[el.getAttribute('data-col')]);
+      });
+      return row;
+    });
+    document.querySelectorAll('#source > [data-block]').forEach(function (b) {
+      blocks.push(b.cloneNode(true));
+    });
+
+    var page = first, flow = first.querySelector('.flow');
+    var fits = function (el) {
+      return el.getBoundingClientRect().bottom - page.getBoundingClientRect().top <= LIMIT_PX;
+    };
+    var newPage = function () {
+      page = document.getElementById('page-tpl').content.firstElementChild.cloneNode(true);
+      document.getElementById('pages').appendChild(page);
+      flow = page.querySelector('.flow');
+    };
+
+    layout.overflow = false;
+    blocks.forEach(function (block) {
+      var isRow = block.classList.contains('row');
+      flow.appendChild(block);
+      if (fits(block)) return;
+      // Doesn't fit: move it to a fresh page (repeating the table header
+      // when item rows continue there).
+      block.remove();
+      newPage();
+      if (isRow) {
+        var head = document.getElementById('thead').cloneNode(true);
+        head.removeAttribute('id');
+        flow.appendChild(head);
+      }
+      flow.appendChild(block);
+      if (!fits(block)) layout.overflow = true; // taller than a whole page
+    });
+
+    var pages = document.querySelectorAll('.page');
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    pages.forEach(function (p, i) {
+      p.querySelector('.page-no').textContent = pad(i + 1) + ' / ' + pad(pages.length);
+    });
+    layout.itemCount = (current.items || []).length;
+    layout.pageCount = pages.length;
+  }
+
+  // Lets the app tell the user when the note runs onto more pages.
+  window.getDeliveryLayout = function () {
+    return { itemCount: layout.itemCount, pageCount: layout.pageCount, overflow: layout.overflow };
+  };
+</script>
+</body>
+</html>

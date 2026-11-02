@@ -46,3 +46,7 @@ create index if not exists activity_log_created_at_idx on activity_log(created_a
 
 -- Repair cost entered by Majed (private to Majed and Tariq in the UI)
 alter table requests add column if not exists repair_cost numeric;
+
+-- Delivery note template: technician and recipient names (serial numbers live inside items jsonb)
+alter table delivery_notes add column if not exists technician_name text default '';
+alter table delivery_notes add column if not exists recipient_name text default '';
