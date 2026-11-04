@@ -127,10 +127,9 @@
   .cap-ar { font-size: 14.13px; line-height: 18.37px; margin-top: 4.29px; }
   .cap-en { font-size: 11.2px;  line-height: 14.56px; margin-top: -0.53px; }
 
-  /* Client signature / stamp — full report width */
-  .sig { margin-top: 12.3px; height: 144px; border: 1px solid #aaaaaa; padding-right: 12px; }
-  .sig-ar { font-size: 14.13px; line-height: 18.37px; margin-top: 7.29px; }
-  .sig-en { font-size: 11.2px;  line-height: 14.56px; margin-top: -1.53px; }
+  /* Company stamp — bottom-left corner, above the footer rule */
+  .stamp { position: absolute; left: 49px; bottom: 52px; width: 140px; height: 140px; }
+  .stamp-reserve { height: 152px; }   /* keeps photos clear of the stamp */
 
   .footer {
     position: absolute; left: 49px; right: 49px; bottom: 21px;   /* rule at 1081px */
@@ -207,10 +206,8 @@
     <div class="groups" id="groups"></div>
   </div>
 
-  <div class="sig" id="sig">
-    <span class="ln sig-ar">توقيع/ختم العميل</span>
-    <span class="ln sig-en en">Client signature / stamp</span>
-  </div>
+  <div class="stamp-reserve" id="sig"></div>
+  <img class="stamp" src="/maintenance-report/stamp.png" alt="Altasis Alistratiji Est." />
 
   <div class="footer" id="footer"><span>ALTASIS   /   MAINTENANCE</span><span dir="rtl">التأسيس الاستراتيجي</span></div>
 </div>
@@ -323,7 +320,7 @@
     var below = capEn.getBoundingClientRect().bottom - capAr.getBoundingClientRect().top
       + parseFloat(getComputedStyle(capAr).marginTop);
     var sig = document.getElementById('sig');
-    var sigBlock = sig.offsetHeight + parseFloat(getComputedStyle(sig).marginTop);
+    var sigBlock = sig.offsetHeight;
     var avail = FOOTER_TOP - FOOTER_GAP - gridTop - below - sigBlock;
 
     var many = groups.some(function (g) { return g.querySelectorAll('.cell').length > 1; });
