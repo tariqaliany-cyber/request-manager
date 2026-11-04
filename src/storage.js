@@ -1,8 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
+// Exported only so the Tariq-only Price List module (priceListApi.js) can use
+// the same client/session. The auth session lives in sessionStorage (same
+// lifetime as the app's own login) so a Tariq session can never linger in a
+// shared browser after the tab is closed.
+export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  { auth: { storage: typeof window !== 'undefined' ? window.sessionStorage : undefined, detectSessionInUrl: false } }
 );
 
 // ── Auth ─────────────────────────────────────────────
@@ -10,8 +15,11 @@ export const USERS = {
   essa:  { password: 'essa123',  role: 'essa',  name: 'Essa',  nameAr: 'عيسى'  },
   majed: { password: 'majed123', role: 'majed', name: 'Majed', nameAr: 'ماجد'  },
   abdullah: { password: 'abdullah123', role: 'majed', name: 'Abdullah', nameAr: 'عبدالله' },
-  tariq: { password: 'tariq123', role: 'tariq', name: 'Tariq', nameAr: 'طارق'  },
+  // Tariq has NO password here on purpose: he signs in through Supabase Auth
+  // (password stored as a bcrypt hash server-side), see authenticate() below.
+  tariq: { role: 'tariq', name: 'Tariq', nameAr: 'طارق'  },
 };
+const TARIQ_AUTH_EMAIL = 'tariq@request-manager.example';
 
 // Every 'majed'-role user is a workshop technician: they all share the Arabic
 // job view and see every job assigned to the workshop (assigned_to = 'majed').
@@ -52,11 +60,28 @@ export const DELIVERY_NOTE_STATUS = {
   cancelled:           { en: 'Cancelled',            ar: 'ملغى',             color: '#EF4444', bg: '#FEF2F2' },
 };
 
-export const authenticate = (username, password) => {
-  const u = USERS[username.toLowerCase()];
-  if (u && u.password === password) return { username: username.toLowerCase(), ...u };
+// Price List is confidential: only Tariq (and nobody else, whatever their
+// role) may see it. This is the UI gate; the real enforcement is the database
+// (RLS in supabase_migration_v3_price_list.sql) which only answers to Tariq's
+// Supabase Auth session.
+export const canAccessPriceList = (user) => user?.username === 'tariq' && user?.role === 'tariq';
+
+export const authenticate = async (username, password) => {
+  const key = username.toLowerCase();
+  const u = USERS[key];
+  if (!u) return null;
+  if (key === 'tariq') {
+    const { data, error } = await supabase.auth.signInWithPassword({ email: TARIQ_AUTH_EMAIL, password });
+    if (error || !data?.session) return null;
+    return { username: key, ...u };
+  }
+  // Anyone else: make sure no leftover privileged session exists in this browser.
+  try { await supabase.auth.signOut(); } catch {}
+  if (u.password === password) return { username: key, ...u };
   return null;
 };
+
+export const signOutSession = async () => { try { await supabase.auth.signOut(); } catch {} };
 
 // ── Photos ────────────────────────────────────────────
 // Photo array items used to be plain base64 data-URL strings. New uploads

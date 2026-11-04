@@ -11,8 +11,9 @@ export default function Login({ onLogin }) {
     e.preventDefault();
     setError('');
     setLoading(true);
-    setTimeout(() => {
-      const user = authenticate(username.trim(), password);
+    setTimeout(async () => {
+      let user = null;
+      try { user = await authenticate(username.trim(), password); } catch {}
       if (user) { onLogin(user); }
       else { setError('Incorrect username or password / اسم المستخدم أو كلمة المرور غير صحيحة'); }
       setLoading(false);

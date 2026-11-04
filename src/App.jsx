@@ -2,6 +2,7 @@ import { useState, useEffect, Suspense, lazy } from 'react';
 import Login from './views/Login';
 import EssaView from './views/EssaView';
 import MajedView from './views/MajedView';
+import { signOutSession } from './storage';
 
 // Tariq's admin bundle (sidebar, unified request page, delivery notes, etc.)
 // is the largest part of the app and only ever reached by one role — load
@@ -23,6 +24,7 @@ export default function App() {
 
   const handleLogout = () => {
     sessionStorage.removeItem('maint_user');
+    signOutSession();
     setUser(null);
   };
 
