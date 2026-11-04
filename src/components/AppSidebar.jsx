@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { canAccessPriceList } from '../storage';
 
 const STATUS_FILTERS = [
   { key: 'unassigned',  icon: '⚠️', label: 'Unassigned',  labelAr: 'غير مسندة' },
@@ -96,6 +97,17 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
             <span className="sidebar-item-icon">➕</span>
             {!collapsed && 'طلب جديد / New Request'}
           </button>
+
+          {/* Tariq-only. Rendered for no one else (Issa/Essa, Majed, Abdullah never see it). */}
+          {canAccessPriceList(user) && (
+            <button
+              className={`sidebar-item ${activeFilter === 'pricelist' ? 'active' : ''}`}
+              title="Price List / قائمة الأسعار"
+              onClick={() => onFilter('pricelist')}>
+              <span className="sidebar-item-icon">💰</span>
+              {!collapsed && 'قائمة الأسعار / Price List'}
+            </button>
+          )}
         </nav>
 
         <div className="sidebar-user-section">

@@ -23,6 +23,7 @@ A bilingual (Arabic/English) maintenance request management system built for Her
 - Bilingual interface (Arabic & English)
 - Workshop comments and progress photos
 - Admin controls: notes to client, notes to workshop, visibility toggles
+- **Price List** (Tariq only) — three confidential price lists (HVAC & Cold Room, MEP & Décor, Signages) with search, quantity and SAR totals. Data lives only in the database, locked by RLS to Tariq's Supabase Auth account (`supabase_migration_v3_price_list.sql`); Tariq signs in through Supabase Auth (hashed password)
 - **PDF service report export** (Tariq only) — bilingual, includes logo, photos, and full request history
 
 ---

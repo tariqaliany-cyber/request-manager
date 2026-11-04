@@ -1,10 +1,13 @@
-import { useState, useEffect, useRef } from 'react';
-import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, canAccessPriceList, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
 import { getBranchInfo, BRANCHES, branchLabel } from '../branchData';
 import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
 import StatusBadge from '../components/StatusBadge';
 import TariqRequestDetail from './TariqRequestDetail';
+
+// Loaded only when Tariq opens it; contains no data (prices come from the locked database).
+const PriceList = lazy(() => import('./PriceList'));
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -64,6 +67,7 @@ export default function TariqView({ user, onLogout }) {
     : filter === 'scheduled'  ? '📅 Scheduled / مجدولة'
     : filter === 'in_progress'? '🔧 In Progress / قيد التنفيذ'
     : filter === 'completed'  ? '✅ Completed / مكتملة'
+    : filter === 'pricelist'  ? '💰 Price List / قائمة الأسعار'
     : 'Dashboard';
 
   const showBack = !!(selected || newReqMode);
@@ -106,6 +110,10 @@ export default function TariqView({ user, onLogout }) {
               user={user}
               onClose={() => { setSelected(null); refresh(); }}
             />
+          ) : filter === 'pricelist' && canAccessPriceList(user) ? (
+            <Suspense fallback={<div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">Loading...</div></div>}>
+              <PriceList user={user} onLogout={onLogout} />
+            </Suspense>
           ) : (
             <TariqDashboard
               onSelect={setSelected}

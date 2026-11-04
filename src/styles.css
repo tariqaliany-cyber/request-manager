@@ -790,3 +790,66 @@ body {
   .tariq-desktop-table { display: block; }
   .tariq-mobile-only   { display: none !important; }
 }
+
+/* ── Price List (Tariq only) ─────────────────────── */
+.pl-wrap { max-width: 980px; margin: 0 auto; padding-bottom: 90px; }
+.pl-intro { font-size: 14px; font-weight: 700; color: var(--gray-600); margin: 4px 0 14px; }
+.pl-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.pl-card { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: left; background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 18px; cursor: pointer; font-family: inherit; box-shadow: var(--shadow-sm); transition: transform .1s, box-shadow .1s; }
+.pl-card:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+.pl-card-icon { font-size: 28px; }
+.pl-card-title { font-size: 16px; font-weight: 800; color: var(--gray-800); }
+.pl-card-ar { font-size: 13px; color: var(--gray-600); }
+.pl-card-src { font-size: 11px; color: var(--gray-400); margin-top: 6px; }
+.pl-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.pl-back { background: none; border: none; cursor: pointer; font: inherit; font-size: 13px; font-weight: 700; color: var(--gray-600); padding: 6px 8px; border-radius: 7px; }
+.pl-back:hover { background: var(--gray-200); }
+.pl-title { font-size: 17px; font-weight: 800; color: var(--gray-800); }
+.pl-title-ar { font-weight: 600; font-size: 14px; color: var(--gray-600); }
+.pl-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.pl-tab { flex: 1; border: 1px solid var(--gray-200); background: #fff; border-radius: 9px; padding: 8px 10px; font: inherit; font-size: 13px; font-weight: 700; color: var(--gray-600); cursor: pointer; }
+.pl-tab.on { background: var(--tariq-color); color: #fff; border-color: var(--tariq-color); }
+.pl-tab-n { margin-left: 6px; background: var(--gold); color: #1E293B; border-radius: 99px; padding: 1px 7px; font-size: 11px; }
+.pl-tools { display: flex; gap: 8px; flex-wrap: wrap; position: sticky; top: 0; z-index: 5; background: var(--bg); padding: 4px 0 6px; }
+.pl-search { flex: 1 1 240px; min-width: 0; }
+.pl-sec { flex: 0 1 260px; min-width: 0; }
+.pl-count { font-size: 12px; color: var(--gray-400); margin: 2px 2px 8px; display: flex; justify-content: space-between; align-items: center; }
+.pl-only { display: inline-flex; gap: 5px; align-items: center; color: var(--gray-600); font-weight: 700; cursor: pointer; }
+.pl-list { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); overflow: hidden; }
+.pl-section { background: var(--gray-50); border-bottom: 1px solid var(--gray-100); padding: 6px 12px; font-size: 11px; font-weight: 800; color: var(--gray-600); text-transform: uppercase; letter-spacing: .3px; }
+.pl-row { border-bottom: 1px solid var(--gray-100); }
+.pl-row.on { background: #fdf6f0; }
+.pl-row-main { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; cursor: pointer; }
+.pl-chk { flex: none; width: 20px; height: 20px; margin-top: 2px; border: 1.5px solid var(--gray-400); border-radius: 6px; font-size: 13px; line-height: 17px; text-align: center; color: #fff; }
+.pl-chk.on { background: var(--tariq-color); border-color: var(--tariq-color); }
+.pl-row-body { flex: 1; min-width: 0; }
+.pl-row-meta { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 2px; }
+.pl-no { font-size: 11px; font-weight: 800; color: var(--tariq-color); }
+.pl-cat { font-size: 10.5px; background: var(--gray-100); color: var(--gray-600); border-radius: 5px; padding: 1px 6px; }
+.pl-desc { font-size: 13px; color: var(--gray-800); line-height: 1.4; white-space: pre-line; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pl-desc.open, .pl-desc-ar.open { -webkit-line-clamp: unset; display: block; }
+.pl-desc-ar { font-size: 12px; color: var(--gray-600); line-height: 1.4; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.pl-parent { font-size: 12px; color: var(--gray-400); font-style: italic; }
+.pl-note { font-size: 11.5px; color: var(--gray-600); background: var(--gray-50); border-radius: 6px; padding: 6px 8px; margin-top: 4px; white-space: pre-line; }
+.pl-link { background: none; border: none; padding: 2px 0; font: inherit; font-size: 11.5px; font-weight: 700; color: #3B82F6; cursor: pointer; }
+.pl-price { flex: none; text-align: right; font-size: 13px; line-height: 1.3; }
+.pl-price span { display: block; font-size: 11px; color: var(--gray-400); }
+.pl-qty-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 0 12px 10px 42px; }
+.pl-stepper { display: inline-flex; align-items: center; border: 1px solid var(--gray-200); border-radius: 9px; background: #fff; overflow: hidden; }
+.pl-stepper button { width: 34px; height: 32px; border: none; background: var(--gray-100); font-size: 18px; cursor: pointer; color: var(--gray-800); }
+.pl-stepper input { width: 64px; height: 32px; border: none; text-align: center; font: inherit; font-weight: 700; outline: none; -moz-appearance: textfield; }
+.pl-line { font-size: 12.5px; color: var(--gray-600); }
+.pl-line b { color: var(--gray-800); font-size: 14px; }
+.pl-msg { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius); padding: 28px 16px; text-align: center; color: var(--gray-600); font-size: 13.5px; }
+.pl-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; background: #fff; border-top: 2px solid var(--tariq-color); box-shadow: 0 -4px 16px rgba(0,0,0,.1); }
+.pl-bar-main { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 16px; cursor: pointer; font-size: 13px; font-weight: 700; color: var(--gray-600); }
+.pl-grand { font-size: 16px; font-weight: 800; color: var(--tariq-color); }
+.pl-sum { max-height: 40vh; overflow: auto; padding: 8px 16px; border-bottom: 1px solid var(--gray-100); }
+.pl-sum-head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+.pl-sum-row { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 4px 0; border-top: 1px solid var(--gray-100); }
+.pl-sum-d { min-width: 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.pl-sum-m { flex: none; text-align: right; color: var(--gray-600); }
+@media (min-width: 1024px) {
+  .pl-bar { left: 240px; }
+  .tariq-main.sidebar-collapsed .pl-bar { left: 64px; }
+}
