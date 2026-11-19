@@ -8,6 +8,8 @@ import TariqRequestDetail from './TariqRequestDetail';
 
 // Loaded only when Tariq opens it; contains no data (prices come from the locked database).
 const PriceList = lazy(() => import('./PriceList'));
+// Region map (boundaries + branch areas) in its own chunk; it fades in once loaded.
+const RegionMap = lazy(() => import('../components/RegionMap'));
 
 function ProgressBar({ value }) {
   const pct = Math.min(100, Math.max(0, Number(value) || 0));
@@ -384,6 +386,8 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           </div>
         </div>
 
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap requests={all} onSelect={onSelect} /></Suspense>}
+
         {/* Notifications button */}
         <button
           onClick={filter === 'updates' ? () => onFilter('all') : openNotifications}
@@ -513,6 +517,8 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
             </div>
           ))}
         </div>
+
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap requests={all} onSelect={onSelect} /></Suspense>}
 
         {/* Two panels: active requests + recent notifications */}
         {filter !== 'updates' && (
