@@ -853,3 +853,18 @@ body {
   .pl-bar { left: 240px; }
   .tariq-main.sidebar-collapsed .pl-bar { left: 64px; }
 }
+
+/* ── Outlook draft panel (TariqRequestDetail) ────── */
+.outlook-panel { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--gray-200); }
+.outlook-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.outlook-label { font-size: 12px; color: var(--gray-400); }
+.outlook-value { font-size: 13px; margin-top: 2px; overflow-wrap: anywhere; }
+.outlook-muted { font-size: 12px; color: var(--gray-400); margin-top: 6px; }
+.outlook-error { margin-top: 8px; padding: 10px 14px; background: #FEF2F2; border: 1.5px solid #FECACA; border-radius: 10px; font-size: 12px; color: #DC2626; line-height: 1.5; overflow-wrap: anywhere; }
+.outlook-finder { margin-top: 10px; padding: 10px; border: 1px solid var(--gray-200); border-radius: 10px; }
+.outlook-finder input { min-width: 0; padding: 8px 10px; border: 1.5px solid var(--gray-200); border-radius: 8px; font-size: 13px; }
+.outlook-result { display: block; width: 100%; text-align: left; margin-top: 8px; padding: 8px 10px; background: #fff; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; cursor: pointer; }
+.outlook-result:hover { border-color: #0F6CBD; background: #F5F9FF; }
+.btn-outlook { background: #0F6CBD; color: #fff; }
+.btn-link { display: block; margin: 8px auto 0; background: none; border: none; color: #0F6CBD; font-size: 13px; cursor: pointer; text-decoration: underline; }
+.outlook-preview { margin-top: 10px; padding: 12px 0; background: #fff; border: 1px solid var(--gray-200); border-radius: 10px; overflow-x: auto; }

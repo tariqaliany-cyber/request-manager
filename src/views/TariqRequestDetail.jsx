@@ -12,6 +12,7 @@ import ConfirmationDialog from '../components/ConfirmationDialog';
 import PDFPreview from '../components/PDFPreview';
 import ActivityTimeline from '../components/ActivityTimeline';
 import GenerateDocumentMenu from '../components/GenerateDocumentMenu';
+import OutlookClosePanel from '../components/OutlookClosePanel';
 
 function formatSAR(amount) {
   const n = Number(amount);
@@ -160,6 +161,33 @@ export default function TariqRequestDetail({ req, user, onClose }) {
     setStatus('completed');
     setCompleting(false);
   };
+
+  // Called by the Outlook panel only after the draft and both PDFs are ready.
+  const closeAfterOutlookDraft = async ({ reused }) => {
+    const updated = await updateRequest(fresh.id, {
+      status: 'completed',
+      finalSummary,
+      showWorkDoneToEssa:         showWorkDone,
+      showCompletionPhotosToEssa: showCompletion,
+    });
+    if (!updated) return false;
+    if (fresh.status !== 'completed') {
+      logActivity({ requestId: fresh.id, action: 'status_changed', actor: user.name, actorRole: user.role,
+        detail: `${STATUS[fresh.status]?.en || fresh.status} → ${STATUS.completed.en}` });
+    }
+    logActivity({ requestId: fresh.id, action: 'outlook_draft', actor: user.name, actorRole: user.role,
+      detail: `${reused ? 'Reused' : 'Created'} draft with Delivery Note + Service Report attached` });
+    setFresh(updated);
+    setStatus('completed');
+    return true;
+  };
+
+  // The draft is built from the saved request, so unsaved edits to the
+  // fields it uses must be saved first.
+  const outlookBlocked =
+    branch.trim() !== String(fresh.branchNumber ?? '').trim() || ticket.trim() !== String(fresh.ticketNumber ?? '').trim()
+      ? 'Save your changes to the branch or ticket number first (💾 Save Changes), then try again.'
+      : '';
 
   const PHOTO_FIELD = { problem: 'problemPhotos', progress: 'progressPhotos', completion: 'completionPhotos' };
 
@@ -388,6 +416,13 @@ export default function TariqRequestDetail({ req, user, onClose }) {
             )}
 
             <div className="card">
+              <OutlookClosePanel
+                req={fresh}
+                reportData={reportData}
+                blockedReason={outlookBlocked}
+                onCloseRequest={closeAfterOutlookDraft}
+                onRequestUpdated={(patch) => setFresh(f => ({ ...f, ...patch }))}
+              />
               <button className="btn btn-primary-tariq mb8" onClick={save} disabled={saving}>
                 {saved ? '✅ Saved!' : saving ? 'Saving...' : '💾 Save Changes / حفظ التغييرات'}
               </button>

@@ -120,6 +120,10 @@ const FIELD_MAP = {
   dueDate:                      'due_date',
   repairCost:                   'repair_cost',
   ticketNumber:                 'ticket_number',
+  outlookMessageId:             'outlook_message_id',
+  outlookMessageSubject:        'outlook_message_subject',
+  outlookDraftId:               'outlook_draft_id',
+  outlookDraftLink:             'outlook_draft_link',
 };
 
 const toDb = (obj) => {
@@ -158,6 +162,11 @@ const fromDb = (row) => ({
   dueDate:                      row.due_date             || null,
   repairCost:                   row.repair_cost          ?? null,
   ticketNumber:                 row.ticket_number        ?? '',   // text: keeps leading zeros
+  // Outlook (supabase_migration_v4_outlook.sql): Herfy's original email + our draft
+  outlookMessageId:             row.outlook_message_id      || '',
+  outlookMessageSubject:        row.outlook_message_subject || '',
+  outlookDraftId:               row.outlook_draft_id        || '',
+  outlookDraftLink:             row.outlook_draft_link      || '',
 });
 
 // ── CRUD ─────────────────────────────────────────────
@@ -366,6 +375,7 @@ const ACTION_LABELS = {
   dn_created:        { en: '📄 Delivery Note created',      ar: 'إنشاء إشعار استلام'     },
   dn_signed:         { en: '✍️ Delivery Note signed',       ar: 'توقيع إشعار الاستلام'   },
   request_created:   { en: '🆕 Request created',            ar: 'إنشاء الطلب'            },
+  outlook_draft:     { en: '📧 Outlook draft prepared',     ar: 'تجهيز مسودة Outlook'    },
 };
 
 export const ACTION_LABELS_MAP = ACTION_LABELS;
