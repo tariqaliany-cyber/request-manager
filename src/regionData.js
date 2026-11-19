@@ -1,10 +1,8 @@
 // Which administrative region each branch area (the "area" column of
 // location.xlsx / branchData.js) belongs to, plus the area's approximate
-// city-centre coordinates [lon, lat]. The branch list has no per-branch
-// coordinates (its map links are short goo.gl URLs), so branch points on the
-// region map are drawn at their city, fanned out slightly when a city has
-// several branches. A new area missing here shows under «غير محدد».
-import { getBranchInfo } from './branchData';
+// city-centre coordinates [lon, lat]. The region map uses a branch's own pin
+// (branchGeo.js) when it has one, and falls back to this for branches without
+// a map link. A new area missing here and without a pin shows under «غير محدد».
 
 export const AREA_REGION = {
   'Riyadh City':    ['riyadh', 46.72, 24.71],
@@ -78,11 +76,3 @@ export const AREA_REGION = {
   'Rafhaa':         ['northern', 43.49, 29.63],
   'Turaif':         ['northern', 38.66, 31.67],
 };
-
-// { region, lon, lat, area } for a branch number, or null when unknown.
-export function branchRegion(branchNumber) {
-  const info = getBranchInfo(branchNumber);
-  const hit = info && AREA_REGION[info.area];
-  if (!hit) return null;
-  return { region: hit[0], lon: hit[1], lat: hit[2], area: info.area };
-}
