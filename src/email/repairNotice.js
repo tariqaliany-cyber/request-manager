@@ -11,13 +11,13 @@
 export const NOTICE_LOGO_CID = 'altases-logo';
 export const NOTICE_ICON_CID = 'altases-repair-icon';
 
-// Signature lines, exactly as in the current email.
+// Signature lines, as in the current email (website instead of the old e-mail line).
 export const NOTICE_SIGNATURE = {
   company:  'ALTASES',
   legal:    'Altasis Alistratiji. Contracting Est.',
   services: 'General Contracting & Maintenance Services',
   phone:    '+966 50 071 5710',
-  email:    'info@tastra.work',
+  website:  'www.altases.sa',
   location: 'Dammam, Saudi Arabia',
 };
 
@@ -84,7 +84,7 @@ export function buildRepairNoticeHtml({ branchNumber, ticketNumber }, imgSrc = {
       ${esc(s.legal)}<br>
       <span style="white-space:nowrap;">${esc(s.services)}</span><br>
       <b>T:</b> ${esc(s.phone)}<br>
-      <b>E:</b> <a href="mailto:${esc(s.email)}" style="color:#0563C1;text-decoration:underline;">${esc(s.email)}</a><br>
+      <b>W:</b> <a href="https://${esc(s.website)}" style="color:#0563C1;text-decoration:underline;">${esc(s.website)}</a><br>
       <b>Location:</b> ${esc(s.location)}
     </td>
     <td valign="middle" align="right" width="155" style="width:155px;"><img src="${logo}" width="150" height="47" alt="Altasis Alistratiji" style="display:block;width:150px;height:47px;border:0;"></td>

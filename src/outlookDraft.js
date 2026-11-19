@@ -1,12 +1,11 @@
 // ── Close Ticket & Open Outlook Draft (client side) ────────────────
-// Renders the Delivery Note and Service Report PDFs, has the server
-// (api/outlook.js) create or reuse the draft in info@altases.sa, uploads both
-// PDFs to it and confirms they are attached. Closing the request and opening
+// Renders the Service Report PDF, has the server
+// (api/outlook.js) create or reuse the draft in info@altases.sa, uploads the
+// PDF to it and confirms it is attached. Closing the request and opening
 // Outlook Web happen in the view only after this resolves; any failure throws
 // with a readable reason and leaves the request untouched.
 
-import { getDeliveryNotesByRequest, supabase } from './storage';
-import { buildDeliveryData, DELIVERY_TEMPLATE_URL } from './generateDeliveryNote';
+import { supabase } from './storage';
 import { MAINTENANCE_REPORT_URL } from './generateMaintenanceReport';
 import { renderTemplatePdf } from './renderPdfFile';
 
@@ -46,18 +45,10 @@ const pdfName = (base) => `${String(base || 'Document').replace(/[^A-Za-z0-9 ._(
 
 // onStep(text) reports progress for the button label.
 export async function prepareOutlookDraft({ requestId, reportData, onStep = () => {} }) {
-  // 1. Export both PDFs with the existing templates.
-  onStep('Exporting Delivery Note…');
-  const notes = await getDeliveryNotesByRequest(requestId);
-  const note = notes.find(n => n.status !== 'cancelled');
-  if (!note) throw new Error('This request has no Delivery Note yet. Create one in the Delivery Note tab first.');
-  const dnData = buildDeliveryData(note);
-  let dnPdf, reportPdf;
-  try {
-    dnPdf = await renderTemplatePdf({ src: DELIVERY_TEMPLATE_URL, fillName: 'setDeliveryData', data: dnData });
-  } catch (e) { throw new Error(`Delivery Note PDF export failed: ${e.message}`); }
-
+  // 1. Export the Service Report with the existing template. The Delivery
+  //    Note is a separate signed paper, so it is not attached here.
   onStep('Exporting Service Report…');
+  let reportPdf;
   try {
     reportPdf = await renderTemplatePdf({ src: MAINTENANCE_REPORT_URL, fillName: 'setMaintenanceReportData', data: reportData });
   } catch (e) { throw new Error(`Service Report PDF export failed: ${e.message}`); }
@@ -66,9 +57,8 @@ export async function prepareOutlookDraft({ requestId, reportData, onStep = () =
   onStep('Preparing Outlook draft…');
   const draft = await api('draft', { json: { requestId } });
 
-  // 3. Attach both files (a retry replaces same-name files, never duplicates).
+  // 3. Attach the report (a retry replaces the same-name file, never duplicates).
   const files = [
-    { label: 'Delivery Note', name: pdfName(dnData.fileName), blob: dnPdf },
     { label: 'Service Report', name: pdfName(reportData.fileName), blob: reportPdf },
   ];
   let attachments = draft.attachments || [];

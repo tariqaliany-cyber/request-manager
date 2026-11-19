@@ -4,7 +4,7 @@ import { buildRepairNoticeHtml, noticeSubject, branchDigits } from '../email/rep
 import { formatDate } from '../storage';
 
 /* "Close Ticket & Open Outlook Draft" — Tariq's request page.
- * Order matters: PDFs + draft + both attachments must all succeed before the
+ * Order matters: PDF + draft + attachment must all succeed before the
  * request is closed and Outlook Web opens. Any failure shows the reason and
  * leaves the request open with a Retry button. */
 export default function OutlookClosePanel({ req, reportData, blockedReason, onCloseRequest, onRequestUpdated }) {
@@ -113,7 +113,7 @@ export default function OutlookClosePanel({ req, reportData, blockedReason, onCl
         {busy ? `⏳ ${step || 'Working…'}` : error ? '🔁 Retry: Close Ticket & Open Outlook Draft' : '📧 Close Ticket & Open Outlook Draft'}
       </button>
       <div className="outlook-muted" style={{ textAlign: 'center' }}>
-        Attaches the Delivery Note + Service Report PDFs. The email is never sent automatically.
+        Attaches the Service Report PDF (the Delivery Note goes on paper). The email is never sent automatically.
       </div>
 
       {error && (

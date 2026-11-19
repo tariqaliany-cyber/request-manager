@@ -162,7 +162,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
     setCompleting(false);
   };
 
-  // Called by the Outlook panel only after the draft and both PDFs are ready.
+  // Called by the Outlook panel only after the draft and the report PDF are ready.
   const closeAfterOutlookDraft = async ({ reused }) => {
     const updated = await updateRequest(fresh.id, {
       status: 'completed',
@@ -176,7 +176,7 @@ export default function TariqRequestDetail({ req, user, onClose }) {
         detail: `${STATUS[fresh.status]?.en || fresh.status} → ${STATUS.completed.en}` });
     }
     logActivity({ requestId: fresh.id, action: 'outlook_draft', actor: user.name, actorRole: user.role,
-      detail: `${reused ? 'Reused' : 'Created'} draft with Delivery Note + Service Report attached` });
+      detail: `${reused ? 'Reused' : 'Created'} draft with Service Report attached` });
     setFresh(updated);
     setStatus('completed');
     return true;

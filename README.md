@@ -91,12 +91,12 @@ public/
 
 On a request page (Tariq), **📧 Close Ticket & Open Outlook Draft**:
 
-1. Renders the Delivery Note and Service Report templates to PDF files (`src/renderPdfFile.js`).
+1. Renders the Service Report template to a PDF file (the Delivery Note is a separate signed paper and is not attached) (`src/renderPdfFile.js`).
 2. Calls `api/outlook.js` (Vercel function), which uses Microsoft Graph to create a draft in `info@altases.sa`:
    a reply in Herfy's thread (`createReply`) when the request is linked to the original email
    (**Link email** on the request page), otherwise a new draft "Herfy [branch] – Notice of Repair Completion".
    The body is the "Notice of Repair Completion" template (`src/email/repairNotice.js`).
-3. Attaches both PDFs and checks they are on the draft.
+3. Attaches the report PDF and checks it is on the draft.
 4. Only then closes the request and opens the draft in Outlook Web. Nothing is sent automatically.
 
 The draft id is saved on the request and reused on the next click. On any failure the reason is shown and the request stays open.
