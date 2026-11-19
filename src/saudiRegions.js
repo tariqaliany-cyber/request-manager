@@ -11,6 +11,11 @@ export function project(lon, lat) {
   return [(lon - GEO.minLon) * GEO.cos * GEO.k + GEO.pad, (GEO.maxLat - lat) * GEO.k + GEO.pad];
 }
 
+// [x, y] in the map's viewBox → [lon, lat].
+export function unproject(x, y) {
+  return [(x - GEO.pad) / (GEO.cos * GEO.k) + GEO.minLon, GEO.maxLat - (y - GEO.pad) / GEO.k];
+}
+
 export const REGIONS = [
  {
   "id": "riyadh",

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { STATUS } from '../storage';
 import { branchLabel, getBranchInfo } from '../branchData';
 import { AREA_AR } from '../branchDataAr';
-import { MAP_W, MAP_H, REGIONS, project } from '../saudiRegions';
+import { MAP_W, MAP_H, REGIONS, project, unproject } from '../saudiRegions';
 import { AREA_REGION } from '../regionData';
 import { BRANCH_GEO } from '../branchGeo';
 import StatusBadge from './StatusBadge';
@@ -32,6 +32,43 @@ const isDark = (count, max) => count > 0 && (max <= 1 || (count - 1) / (max - 1)
 const FULL_VB = [0, 0, MAP_W, MAP_H];
 const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const NO_DISTRICT = 'حي غير محدد';
+
+// ── OpenStreetMap street tiles (only while zoomed in) ──
+// Standard OSM tiles; usage policy: https://operations.osmfoundation.org/policies/tiles/
+// (attribution shown on the map; light, interactive use only). Each tile is
+// drawn at its projected corners, so it lines up with the region shapes and
+// branch pins drawn in this map's own projection.
+const TILE_URL = (z, x, y) => `https://tile.openstreetmap.org/${z}/${x}/${y}.png`;
+const lon2tile = (lon, z) => Math.floor((lon + 180) / 360 * 2 ** z);
+const lat2tile = (lat, z) => {
+  const r = lat * Math.PI / 180;
+  return Math.floor((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * 2 ** z);
+};
+const tile2lon = (x, z) => x / 2 ** z * 360 - 180;
+const tile2lat = (y, z) => Math.atan(Math.sinh(Math.PI * (1 - 2 * y / 2 ** z))) * 180 / Math.PI;
+
+// Tiles covering viewBox `vb` when the map is `screenW` px wide.
+function tilesFor(vb, screenW) {
+  const [lonA, latA] = unproject(vb[0], vb[1]);
+  const [lonB, latB] = unproject(vb[0] + vb[2], vb[1] + vb[3]);
+  // Zoom where one 256px tile is about 256 screen px wide.
+  let z = Math.round(Math.log2(360 * screenW / ((lonB - lonA) * 256)));
+  z = Math.min(18, Math.max(4, z));
+  let x0, x1, y0, y1;
+  for (;;) {
+    x0 = lon2tile(lonA, z); x1 = lon2tile(lonB, z);
+    y0 = lat2tile(latA, z); y1 = lat2tile(latB, z);
+    if ((x1 - x0 + 1) * (y1 - y0 + 1) <= 48 || z <= 4) break;
+    z--;
+  }
+  const out = [];
+  for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) {
+    const [ax, ay] = project(tile2lon(x, z), tile2lat(y, z));
+    const [bx, by] = project(tile2lon(x + 1, z), tile2lat(y + 1, z));
+    out.push({ key: `${z}/${x}/${y}`, href: TILE_URL(z, x, y), x: ax, y: ay, w: bx - ax, h: by - ay });
+  }
+  return out;
+}
 const REGION_BY_ID = Object.fromEntries(REGIONS.map(r => [r.id, r]));
 
 // Smallest map width (viewBox units, 1 unit ≈ 2.7 km) per drill level, so a
@@ -85,6 +122,7 @@ export default function RegionMap({ requests, onSelect }) {
   const [showUnknown, setUnknown] = useState(false);
   const [vb, setVb]               = useState(FULL_VB);
   const [scale, setScale]         = useState(1);      // screen px per viewBox unit at full-country zoom
+  const [tileVb, setTileVb]       = useState(null);   // where the zoom is heading: tiles load for that view
   const vbRef   = useRef(FULL_VB);
   const svgRef  = useRef(null);
   const pathRef = useRef({});
@@ -133,6 +171,7 @@ export default function RegionMap({ requests, onSelect }) {
         target = [b.x + b.width / 2 - w / 2, b.y + b.height / 2 - h / 2, w, h];
       }
     }
+    setTileVb(level > 0 ? target : null);
     const from = vbRef.current, start = performance.now(), dur = 520;
     let raf;
     const step = (now) => {
@@ -178,6 +217,7 @@ export default function RegionMap({ requests, onSelect }) {
   const k = Math.max(1, 0.7 / scale);
   const zoom = MAP_W / vb[2] / k;
   const px = MAP_W / vb[2] * scale;
+  const tiles = useMemo(() => (tileVb ? tilesFor(tileVb, scale * MAP_W) : []), [tileVb, scale]);
 
   // Bubble names that would overlap a busier neighbour's are left off the map
   // (the count stays; the name is in the chips under the map).
@@ -229,15 +269,27 @@ export default function RegionMap({ requests, onSelect }) {
 
         <div className="rm-map-wrap">
           <svg ref={svgRef} className="rm-svg" viewBox={vb.map(v => v.toFixed(4)).join(' ')} role="img" aria-label="Open requests per region of Saudi Arabia">
+            {tiles.length > 0 && (
+              <g className="rm-tiles">
+                {tiles.map(t => (
+                  // +0.5% overlap hides hairline seams between neighbouring tiles.
+                  <image key={t.key} href={t.href} x={t.x} y={t.y} width={t.w * 1.005} height={t.h * 1.005}
+                    preserveAspectRatio="none" />
+                ))}
+              </g>
+            )}
             {REGIONS.map((r, idx) => {
               const n = byRegion[r.id];
               const on = path[0] === r.id;
+              // Zoomed in, the streets show through: the chosen region is
+              // clear (outlined) and the others are washed out.
+              const fill = !expanded ? fillFor(n, max) : on ? 'transparent' : 'rgba(241,245,249,.75)';
               return (
                 <path key={r.id}
                   ref={el => { pathRef.current[r.id] = el; }}
                   d={r.d}
-                  className={`rm-region${on ? ' on' : ''}${expanded && !on ? ' dim' : ''}`}
-                  style={{ fill: expanded && on ? '#F6EEE6' : fillFor(n, max), animationDelay: `${idx * 35}ms`, strokeWidth: (on ? 2.2 : 1) / zoom }}
+                  className={`rm-region${on ? ' on' : ''}${expanded && !on ? ' wash' : ''}`}
+                  style={{ fill, animationDelay: `${idx * 35}ms`, strokeWidth: (on ? 2.2 : 1) / zoom }}
                   onClick={() => (level === 0 || !on ? pickRegion(r.id) : null)}>
                   <title>{`${r.ar} ${n}`}</title>
                 </path>
@@ -306,6 +358,11 @@ export default function RegionMap({ requests, onSelect }) {
 
           {expanded && level > 0 && (
             <button className="rm-reset" onClick={() => goTo(level - 1)}>‹ رجوع</button>
+          )}
+          {tiles.length > 0 && (
+            <a className="rm-attrib" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">
+              © OpenStreetMap contributors
+            </a>
           )}
         </div>
 

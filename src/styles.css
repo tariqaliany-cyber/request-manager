@@ -928,6 +928,10 @@ body {
 .rm-crumb { background: none; border: none; padding: 2px 4px; font: inherit; color: #0F6CBD; cursor: pointer; border-radius: 4px; }
 .rm-crumb:hover { background: #F5F9FF; text-decoration: underline; }
 .rm-crumb-sep { color: var(--gray-400); margin: 0 4px; }
+.rm-tiles image { filter: saturate(.75) contrast(.95); }
+.rm-attrib { position: absolute; right: 0; bottom: 0; font-size: 10px; padding: 2px 6px; background: rgba(255,255,255,.85);
+  color: var(--gray-600); text-decoration: none; border-top-left-radius: 6px; }
+.rm-attrib:hover { text-decoration: underline; }
 .rm-chips-label { font-size: 12px; font-weight: 700; color: var(--gray-600); align-self: center; }
 .rm-bubble { cursor: pointer; animation: rm-pop .4s ease-out both; transform-box: fill-box; transform-origin: center; }
 .rm-bubble circle { fill: var(--tariq-color); stroke: #fff; fill-opacity: .92; }
