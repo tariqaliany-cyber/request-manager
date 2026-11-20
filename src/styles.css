@@ -1,5 +1,7 @@
 /* ── Reset & Base ─────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Form controls don't inherit the page font by default; make them use Tajawal too. */
+button, input, select, textarea { font-family: inherit; }
 
 :root {
   --essa-color:  #EEF2F7;
@@ -31,7 +33,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   background: var(--gray-100);
   color: var(--gray-800);
   min-height: 100dvh;
