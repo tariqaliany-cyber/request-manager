@@ -68,7 +68,7 @@ export const DELIVERY_NOTE_STATUS = {
 export const canAccessPriceList = (user) => user?.username === 'tariq' && user?.role === 'tariq';
 
 export const authenticate = async (username, password) => {
-  const key = username.toLowerCase();
+  const key = String(username ?? "").trim().toLowerCase();
   const u = USERS[key];
   if (!u) return null;
   if (key === 'tariq') {
@@ -78,7 +78,10 @@ export const authenticate = async (username, password) => {
   }
   // Anyone else: make sure no leftover privileged session exists in this browser.
   try { await supabase.auth.signOut(); } catch {}
-  if (u.password === password) return { username: key, ...u };
+  // Phone keyboards often capitalise the first letter or add a trailing space
+  // ("Ahmad123 "), so accept those slips for these simple accounts.
+  const pw = String(password ?? '').trim();
+  if (pw === u.password || pw.charAt(0).toLowerCase() + pw.slice(1) === u.password) return { username: key, ...u };
   return null;
 };
 
