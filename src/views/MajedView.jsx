@@ -4,6 +4,8 @@ import { BRANCHES, branchLabel } from '../branchData';
 import { AREA_AR, ADDRESS_AR } from '../branchDataAr';
 import PhotoLightbox from '../components/PhotoLightbox';
 import StatusBadge from '../components/StatusBadge';
+import { TripBanner, useLocationBroadcast } from '../components/TechTrip';
+import { acceptRequest, endTrip, getMyActiveTrip } from '../trips';
 
 // Majed reads Arabic only — this whole view is Arabic and right-to-left.
 
@@ -37,6 +39,33 @@ const backBtnStyle = {
 
 export default function MajedView({ user, onLogout }) {
   const [selected, setSelected] = useState(null);
+  // «متوجه للفرع»: the technician's active trip, and his phone's position
+  // being shared for it (kept running on every screen until he arrives).
+  const [myTrip, setMyTrip]     = useState(null);
+  const [tripBusy, setTripBusy] = useState(false);
+  const broadcast = useLocationBroadcast(myTrip);
+
+  useEffect(() => { getMyActiveTrip(user.username).then(setMyTrip); }, [user.username]);
+
+  const acceptJob = async (req) => {
+    setTripBusy(true);
+    const { trip, error } = await acceptRequest(req.id, user);
+    if (trip) setMyTrip({ ...trip, request: { id: req.id, branchNumber: req.branchNumber, status: req.status } });
+    setTripBusy(false);
+    return error;
+  };
+
+  const finishTrip = async (status) => {
+    if (status === 'cancelled' && !window.confirm('إلغاء التوجه للفرع وإيقاف مشاركة الموقع؟')) return;
+    setTripBusy(true);
+    if (await endTrip(myTrip, status, user)) setMyTrip(null);
+    setTripBusy(false);
+  };
+
+  const banner = (
+    <TripBanner trip={myTrip} broadcast={broadcast} busy={tripBusy}
+      onArrived={() => finishTrip('arrived')} onCancel={() => finishTrip('cancelled')} />
+  );
 
   // Opening a job pushes a history entry so the phone's own back button
   // returns to the list instead of leaving the app.
@@ -67,7 +96,8 @@ export default function MajedView({ user, onLogout }) {
           </div>
         </header>
         <div className="page">
-          <MajedDetail req={selected} user={user} />
+          {banner}
+          <MajedDetail req={selected} user={user} myTrip={myTrip} onAccept={acceptJob} tripBusy={tripBusy} />
           <button onClick={goBack} style={{ ...backBtnStyle, width: '100%', marginTop: 8, padding: 14 }}>
             → رجوع إلى أعمالي
           </button>
@@ -91,6 +121,7 @@ export default function MajedView({ user, onLogout }) {
         </div>
       </header>
       <div className="page">
+        {banner}
         <MajedList onSelect={openJob} />
       </div>
     </div>
@@ -172,7 +203,8 @@ function MajedList({ onSelect }) {
 }
 
 /* ── Job Detail ─────────────────────────────────────── */
-function MajedDetail({ req, user }) {
+function MajedDetail({ req, user, myTrip, onAccept, tripBusy }) {
+  const [acceptError, setAcceptError] = useState('');
   const [fresh, setFresh]       = useState(req);
   const [comment, setComment]         = useState('');
   const [workDone, setWorkDone]       = useState(req.workDone || '');
@@ -393,6 +425,29 @@ function MajedDetail({ req, user }) {
           </>
         )}
       </div>
+
+      {!fresh.majedStarted && !isCompleted && myTrip?.requestId !== fresh.id && (
+        <div className="card">
+          {myTrip ? (
+            <div className="note-box note-box-amber">🚗 أنت متوجه حالياً لطلب آخر — اضغط «تم الوصول» أو «إلغاء» فوق قبل قبول طلب جديد.</div>
+          ) : (
+            <>
+              <button className="btn btn-primary-majed" disabled={tripBusy}
+                onClick={async () => { setAcceptError(''); const err = await onAccept(fresh); if (err) setAcceptError(err); }}>
+                ✅ تم قبول الطلب
+              </button>
+              <div style={{ fontSize: 12, color: 'var(--gray-600)', marginTop: 8, lineHeight: 1.6 }}>
+                بعد القبول بيطلب منك الجوال السماح بمشاركة موقعك، ويتابع المنسق وصولك للفرع لين تضغط «تم الوصول».
+              </div>
+              {acceptError && (
+                <div style={{ color: '#DC2626', fontWeight: 700, fontSize: 13, marginTop: 8 }}>
+                  {acceptError === 'taken' ? 'فني آخر قبل هذا الطلب ومتوجه له.' : 'تعذّر قبول الطلب، حاول مرة ثانية.'}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {!fresh.majedStarted && !isCompleted && (
         <div className="card">

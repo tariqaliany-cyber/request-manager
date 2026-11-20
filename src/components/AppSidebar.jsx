@@ -60,6 +60,14 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
             {unreadCount > 0 && <span className="sidebar-badge">{unreadCount}</span>}
           </button>
 
+          <button
+            className={`sidebar-item ${activeFilter === 'tracking' ? 'active' : ''}`}
+            data-tip="On the way / متوجه للفرع" aria-label="On the way / متوجه للفرع"
+            onClick={() => onFilter('tracking')}>
+            <span className="sidebar-item-icon">🚗</span>
+            {!collapsed && 'متوجه للفرع / On the way'}
+          </button>
+
           {!collapsed && <div className="sidebar-section-label">الأعطال</div>}
 
           {STATUS_FILTERS.map(f => (
