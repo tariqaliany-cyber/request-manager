@@ -426,7 +426,8 @@ function MajedDetail({ req, user, myTrip, onAccept, tripBusy }) {
         )}
       </div>
 
-      {!fresh.majedStarted && !isCompleted && myTrip?.requestId !== fresh.id && (
+      {/* On every open job, started or not: a technician can head to the branch again. */}
+      {!isCompleted && myTrip?.requestId !== fresh.id && (
         <div className="card">
           {myTrip ? (
             <div className="note-box note-box-amber">🚗 أنت متوجه حالياً لطلب آخر — اضغط «تم الوصول» أو «إلغاء» فوق قبل قبول طلب جديد.</div>
