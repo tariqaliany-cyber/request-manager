@@ -15,6 +15,7 @@ export const USERS = {
   essa:  { password: 'essa123',  role: 'essa',  name: 'Essa',  nameAr: 'عيسى'  },
   majed: { password: 'majed123', role: 'majed', name: 'Majed', nameAr: 'ماجد'  },
   abdullah: { password: 'abdullah123', role: 'majed', name: 'Abdullah', nameAr: 'عبدالله' },
+  ahmad:    { password: 'ahmad123',    role: 'majed', name: 'Ahmad',    nameAr: 'أحمد'    },
   // Tariq has NO password here on purpose: he signs in through Supabase Auth
   // (password stored as a bcrypt hash server-side), see authenticate() below.
   tariq: { role: 'tariq', name: 'Tariq', nameAr: 'طارق'  },
