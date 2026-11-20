@@ -137,7 +137,7 @@ function groupBy(items, keyFn) {
 // `hero`: the dashboard's main view — region bubbles with overdue badges, KPIs
 // above the map, and a side column ranking the regions with the chosen
 // region's details. Without it, the compact map card (names + counts, chips).
-export default function RegionMap({ requests, onSelect, hero = false }) {
+export default function RegionMap({ requests, onSelect, hero = false, sideTop = null }) {
   // Drill path: [regionId, area, district, branch]; [] = whole country.
   const [path, setPath]           = useState([]);
   const [focus, setFocus]         = useState(null);   // hero: region shown in the side panel (null = busiest)
@@ -377,6 +377,7 @@ export default function RegionMap({ requests, onSelect, hero = false }) {
 
   const side = hero && (
     <aside className="rm-side" dir="rtl">
+      {sideTop}
       <div className="rm-panel">
         <div className="rm-panel-title">
           <span>ترتيب المناطق</span>

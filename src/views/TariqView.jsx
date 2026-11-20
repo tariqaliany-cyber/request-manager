@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, canAccessPriceList, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
+import { getRequestListItems, getRequestById, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, canAccessPriceList, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
 import { getBranchInfo, BRANCHES, branchLabel } from '../branchData';
 import AppSidebar from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
 import StatusBadge from '../components/StatusBadge';
 import TariqRequestDetail from './TariqRequestDetail';
+import { OnTheWayCard, LiveTrackingPage, useActiveTrips } from '../components/LiveTracking';
 
 // Loaded only when Tariq opens it; contains no data (prices come from the locked database).
 const PriceList = lazy(() => import('./PriceList'));
@@ -69,6 +70,7 @@ export default function TariqView({ user, onLogout }) {
     : filter === 'in_progress'? '🔧 In Progress / قيد التنفيذ'
     : filter === 'completed'  ? '✅ Completed / مكتملة'
     : filter === 'pricelist'  ? '💰 Price List / قائمة الأسعار'
+    : filter === 'tracking'   ? '🚗 On the way / متوجه للفرع'
     : 'Dashboard';
 
   const showBack = !!(selected || newReqMode);
@@ -109,6 +111,8 @@ export default function TariqView({ user, onLogout }) {
               user={user}
               onClose={() => { setSelected(null); refresh(); }}
             />
+          ) : filter === 'tracking' ? (
+            <LiveTrackingPage onOpenRequest={async (id) => { const r = await getRequestById(id); if (r) setSelected(r); }} />
           ) : filter === 'pricelist' && canAccessPriceList(user) ? (
             <Suspense fallback={<div className="empty-state"><div className="empty-icon">⏳</div><div className="empty-title">Loading...</div></div>}>
               <PriceList user={user} onLogout={onLogout} />
@@ -262,6 +266,9 @@ function TariqNewRequestForm({ onClose }) {
 const PAGE_SIZE = 20;
 
 function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
+  // «متوجه للفرع»: technicians who accepted a job and haven't arrived yet (live).
+  const { trips } = useActiveTrips();
+  const onTheWay = <OnTheWayCard trips={trips} onOpen={() => onFilter('tracking')} />;
   const [all, setAll]         = useState([]);
   const [notifs, setNotifs]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -383,7 +390,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           </div>
         </div>
 
-        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero requests={all} onSelect={onSelect} /></Suspense>}
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero sideTop={onTheWay} requests={all} onSelect={onSelect} /></Suspense>}
 
         {/* Notifications button */}
         <button
@@ -500,7 +507,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
         {/* Map first: open requests by region, with the region ranking and the
             chosen region's details beside it (open / overdue / unassigned are
             on the map card, so the KPI row below carries the rest). */}
-        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero requests={all} onSelect={onSelect} /></Suspense>}
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero sideTop={onTheWay} requests={all} onSelect={onSelect} /></Suspense>}
 
         <div className="dash-kpi-row">
           {[

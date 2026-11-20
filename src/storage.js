@@ -376,6 +376,9 @@ const ACTION_LABELS = {
   dn_signed:         { en: '✍️ Delivery Note signed',       ar: 'توقيع إشعار الاستلام'   },
   request_created:   { en: '🆕 Request created',            ar: 'إنشاء الطلب'            },
   outlook_draft:     { en: '📧 Outlook draft prepared',     ar: 'تجهيز مسودة Outlook'    },
+  trip_accepted:     { en: '🚗 Accepted, heading to branch',ar: 'تم قبول الطلب ومتوجه للفرع' },
+  trip_arrived:      { en: '📍 Arrived at branch',          ar: 'تم الوصول للفرع'        },
+  trip_cancelled:    { en: '↩️ Trip cancelled',             ar: 'إلغاء التوجه للفرع'     },
 };
 
 export const ACTION_LABELS_MAP = ACTION_LABELS;
