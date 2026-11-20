@@ -53,6 +53,10 @@ export default function Login({ onLogin }) {
               placeholder="••••••"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              autoComplete="current-password"
+              spellCheck={false}
               required
             />
           </div>
