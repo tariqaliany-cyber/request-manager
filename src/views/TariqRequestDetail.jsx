@@ -257,8 +257,8 @@ export default function TariqRequestDetail({ req, user, onClose }) {
             {/* Entered by Majed; private to Majed and Tariq */}
             <span title="Entered by Majed — visible to Majed and Tariq only" style={{
               fontSize: 12, fontWeight: 800, whiteSpace: 'nowrap',
-              color: fresh.repairCost != null ? '#563b2c' : '#94A3B8',
-              background: fresh.repairCost != null ? '#fdf6f0' : '#F8FAFC',
+              color: fresh.repairCost != null ? '#1E3A5F' : '#94A3B8',
+              background: fresh.repairCost != null ? '#E8EEF6' : '#F8FAFC',
               border: '1px solid ' + (fresh.repairCost != null ? '#e8d5c4' : '#E2E8F0'),
               padding: '3px 10px', borderRadius: 20,
             }}>

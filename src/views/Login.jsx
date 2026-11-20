@@ -24,9 +24,9 @@ export default function Login({ onLogin }) {
     <div className="login-wrap">
       <div className="login-card">
         <img
-          src="/logo-full.jpeg"
-          alt="Altasis Alistratiji"
-          style={{ width: '75%', maxWidth: 260, margin: '0 auto 28px', display: 'block' }}
+          src="/altases-logo.webp"
+          alt="ALTASES General Contracting"
+          style={{ width: '70%', maxWidth: 230, margin: '0 auto 24px', display: 'block', mixBlendMode: 'multiply' }}
         />
 
         {error && <div className="login-error">{error}</div>}

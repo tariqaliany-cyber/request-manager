@@ -1,4 +1,4 @@
-import { useState } from 'react';
+
 import { canAccessPriceList } from '../storage';
 
 const STATUS_FILTERS = [
@@ -16,32 +16,25 @@ const STATUS_FILTERS = [
  * Report export already exists via that same page). Adding a sidebar
  * entry with no real screen behind it would be a fake button.
  */
-export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onNewRequest, unreadCount, collapsed, onToggleCollapse, drawerOpen, onCloseDrawer }) {
+/*
+ * Desktop: always the narrow icon rail — each item's name shows beside it on
+ * hover (data-tip, styled in styles.css). Phone: the drawer shows full labels.
+ */
+export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onNewRequest, unreadCount, drawerOpen, onCloseDrawer }) {
+  const collapsed = !drawerOpen;
   return (
     <>
       {drawerOpen && <div className="sidebar-scrim" onClick={onCloseDrawer} />}
       <aside className={`tariq-sidebar ${collapsed ? 'collapsed' : ''} ${drawerOpen ? 'drawer-open' : ''}`}>
-        <div className="sidebar-brand">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <img
-              src="/herfy-logo.png" alt="Herfy"
-              style={{ height: 34, width: 'auto', display: collapsed ? 'none' : 'block', marginBottom: 12,
-                       filter: 'brightness(0) invert(1)', opacity: 0.85 }}
-            />
-            <button
-              className="sidebar-collapse-btn"
-              onClick={onToggleCollapse}
-              title={collapsed ? 'Expand / توسيع' : 'Collapse / طي'}>
-              {collapsed ? '»' : '«'}
-            </button>
-          </div>
+        <div className="sidebar-brand" data-tip={collapsed ? 'ALTASES · مدير الصيانة' : undefined}>
+          <AltasesMark size={collapsed ? 30 : 34} style={{ marginBottom: collapsed ? 0 : 12 }} />
           {!collapsed && (
             <>
               <div style={{ color: '#fff', fontWeight: 800, fontSize: 15, letterSpacing: '-.2px' }}>
                 مدير الصيانة
               </div>
               <div style={{ color: 'rgba(255,255,255,.38)', fontSize: 11, marginTop: 2 }}>
-                لوحة التحكم الإدارية
+                التأسيس الاستراتيجي · هرفي
               </div>
             </>
           )}
@@ -52,7 +45,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
 
           <button
             className={`sidebar-item ${activeFilter === 'all' ? 'active' : ''}`}
-            title="Dashboard / الرئيسية"
+            data-tip="Dashboard / الرئيسية" aria-label="Dashboard / الرئيسية"
             onClick={() => onFilter('all')}>
             <span className="sidebar-item-icon">🏠</span>
             {!collapsed && 'الرئيسية / Dashboard'}
@@ -60,7 +53,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
 
           <button
             className={`sidebar-item ${activeFilter === 'updates' ? 'active' : ''}`}
-            title="Updates / التحديثات"
+            data-tip="Updates / التحديثات" aria-label="Updates / التحديثات"
             onClick={() => onFilter('updates')}>
             <span className="sidebar-item-icon">🔔</span>
             {!collapsed && 'التحديثات / Updates'}
@@ -73,7 +66,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
             <button
               key={f.key}
               className={`sidebar-item ${activeFilter === f.key ? 'active' : ''}`}
-              title={f.label}
+              data-tip={`${f.label} / ${f.labelAr}`} aria-label={f.label}
               onClick={() => onFilter(f.key)}>
               <span className="sidebar-item-icon">{f.icon}</span>
               {!collapsed && (
@@ -91,7 +84,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
 
           <button
             className={`sidebar-item ${activeFilter === 'new' ? 'active' : ''}`}
-            title="New Request / طلب جديد"
+            data-tip="New Request / طلب جديد" aria-label="New Request / طلب جديد"
             onClick={onNewRequest}
             style={{ background: 'rgba(212,168,67,.15)', marginBottom: 4 }}>
             <span className="sidebar-item-icon">➕</span>
@@ -102,7 +95,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
           {canAccessPriceList(user) && (
             <button
               className={`sidebar-item ${activeFilter === 'pricelist' ? 'active' : ''}`}
-              title="Price List / قائمة الأسعار"
+              data-tip="Price List / قائمة الأسعار" aria-label="Price List / قائمة الأسعار"
               onClick={() => onFilter('pricelist')}>
               <span className="sidebar-item-icon">💰</span>
               {!collapsed && 'قائمة الأسعار / Price List'}
@@ -122,7 +115,7 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
           )}
           <button
             onClick={onLogout}
-            title="خروج"
+            data-tip="Logout / خروج" aria-label="Logout"
             style={{ background: 'rgba(255,255,255,.08)', border: 'none', color: 'rgba(255,255,255,.5)',
                      borderRadius: 6, padding: '5px 8px', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
             {collapsed ? '⏻' : 'خروج'}
@@ -133,14 +126,12 @@ export default function AppSidebar({ user, onLogout, activeFilter, onFilter, onN
   );
 }
 
-export function useSidebarCollapse() {
-  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('tariq_sidebar_collapsed') === '1');
-  const toggle = () => {
-    setCollapsed(v => {
-      const next = !v;
-      localStorage.setItem('tariq_sidebar_collapsed', next ? '1' : '0');
-      return next;
-    });
-  };
-  return [collapsed, toggle];
+// ALTASES (التأسيس الاستراتيجي) logo mark, drawn inline so it stays crisp on the dark sidebar.
+export function AltasesMark({ size = 32, color = '#fff', style }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" fill={color} style={{ display: 'block', ...style }} aria-label="ALTASES">
+      <path d="M0 0H49V30L0 61Z" /><path d="M51 0H100V34Z" /><path d="M51 31L100 63V96L51 64Z" /><path d="M49 64V100H0V95Z" />
+    </svg>
+  );
 }
+

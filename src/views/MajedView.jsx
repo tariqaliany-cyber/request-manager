@@ -31,7 +31,7 @@ const formatDateAr = (iso) => {
 };
 
 const backBtnStyle = {
-  background: '#563b2c', color: '#fff', border: 'none', borderRadius: 10,
+  background: '#1E3A5F', color: '#fff', border: 'none', borderRadius: 10,
   padding: '10px 18px', fontSize: 16, fontWeight: 700, cursor: 'pointer',
 };
 
@@ -137,7 +137,7 @@ function MajedList({ onSelect }) {
         <div className="card-desc">{req.problemDescription}</div>
         <div className="card-footer">
           <span className="card-date">{formatDateAr(req.createdAt)}</span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: '#563b2c' }}>افتح ‹</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#1E3A5F' }}>افتح ‹</span>
         </div>
       </div>
     );
@@ -330,7 +330,7 @@ function MajedDetail({ req, user }) {
 
       {/* First thing Majed sees when he opens a job */}
       {canSeeRepairCost(user) && (
-        <div className="card" style={{ border: '2px solid #563b2c' }}>
+        <div className="card" style={{ border: '2px solid #1E3A5F' }}>
           <label htmlFor="repair-cost" style={{ display: 'block', fontSize: 17, fontWeight: 700, marginBottom: 10 }}>💰 أدخل قيمة الإصلاح</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <input id="repair-cost" className="input" type="number" inputMode="decimal" min="0" step="any"
