@@ -137,38 +137,140 @@ function LiveMap({ tech, techName, dest, branchNum, fitKey }) {
   const [logoOk, setLogoOk] = useState(true);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [view, setView] = useState(null);
-  const [follow, setFollow] = useState(true);
+  // 'fit'  — keep the technician and the branch both in view (default)
+  // 'lock' — stick to the technician: he stays in the centre at any zoom
+  // 'free' — the user zoomed / dragged; leave the view alone
+  const [mode, setMode] = useState('fit');
+  const [full, setFull] = useState(false);
+  const viewRef = useRef(null); viewRef.current = view;
+  const modeRef = useRef(mode); modeRef.current = mode;
+  const animRef = useRef(0);
 
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
+    const r = el.getBoundingClientRect();
+    setSize({ w: r.width, h: r.height });   // right away, not only on the first resize callback
     const ro = new ResizeObserver(([e]) => setSize({ w: e.contentRect.width, h: e.contentRect.height }));
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
   const points = useMemo(() => [dest, tech].filter(Boolean), [dest, tech]);
+  const fit = () => fitView(points, size.w, size.h);
+  const stopGlide = () => cancelAnimationFrame(animRef.current);
+  useEffect(() => stopGlide, []);
 
-  // Fit on a new trip / resize; afterwards only re-fit (while following) when
-  // the technician gets near the edge, so the marker glides instead of jumping.
-  useEffect(() => { setFollow(true); setView(fitView(points, size.w, size.h)); }, [fitKey, size.w, size.h]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Glide the view's centre to (cx, cy) at the current zoom.
+  const glideTo = (cx, cy, ms = 900) => {
+    stopGlide();
+    const from = viewRef.current;
+    if (!from) return;
+    const t0 = performance.now();
+    const step = (now) => {
+      const t = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - t, 3);
+      setView({ z: from.z, cx: from.cx + (cx - from.cx) * e, cy: from.cy + (cy - from.cy) * e });
+      if (t < 1) animRef.current = requestAnimationFrame(step);
+    };
+    animRef.current = requestAnimationFrame(step);
+  };
+
+  const centreOnTech = (z, animate) => {
+    if (!tech) return;
+    const [x, y] = worldPx(tech.lat, tech.lng, z);
+    if (animate && viewRef.current?.z === z) glideTo(x, y);
+    else { stopGlide(); viewRef.current = { z, cx: x, cy: y }; setView(viewRef.current); }
+  };
+
+  // Another trip: start from "both in view". Resize: keep the lock, else re-fit.
+  useEffect(() => { stopGlide(); setMode('fit'); setView(fitView(points, size.w, size.h)); }, [fitKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (modeRef.current === 'lock' && tech) centreOnTech(viewRef.current?.z || 16, false);
+    else if (modeRef.current === 'fit' || !viewRef.current) setView(fit());
+  }, [size.w, size.h]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A new position: locked → glide so he stays centred; fitting → re-fit only
+  // when he nears the edge (so the marker glides instead of the map jumping).
   const hadTech = useRef(!!tech);
   useEffect(() => {
-    if (!view || !follow) return;
-    if (tech && !hadTech.current) { hadTech.current = true; setView(fitView(points, size.w, size.h)); return; }
-    hadTech.current = !!tech;
-    if (!tech) return;
-    const [x, y] = worldPx(tech.lat, tech.lng, view.z);
-    const sx = x - view.cx + size.w / 2, sy = y - view.cy + size.h / 2;
-    const m = 70;
-    if (sx < m || sy < m || sx > size.w - m || sy > size.h - m) setView(fitView(points, size.w, size.h));
+    const v = viewRef.current;
+    if (!v) return;
+    if (!tech) { hadTech.current = false; return; }
+    if (modeRef.current === 'lock') { centreOnTech(v.z, true); return; }
+    if (modeRef.current !== 'fit') return;
+    if (!hadTech.current) { hadTech.current = true; setView(fit()); return; }
+    const [x, y] = worldPx(tech.lat, tech.lng, v.z);
+    const sx = x - v.cx + size.w / 2, sy = y - v.cy + size.h / 2, m = 70;
+    if (sx < m || sy < m || sx > size.w - m || sy > size.h - m) setView(fit());
   }, [tech?.lat, tech?.lng]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const zoomBy = (d) => setView(v => {
-    if (!v) return v;
-    const z = Math.min(18, Math.max(4, v.z + d)), k = 2 ** (z - v.z);
-    return { z, cx: v.cx * k, cy: v.cy * k };
-  });
+  // Zooming keeps the lock: the technician stays in the centre.
+  const zoomBy = (d) => {
+    const v = viewRef.current;
+    if (!v) return;
+    const z = Math.min(19, Math.max(4, v.z + d));
+    if (z === v.z) return;
+    if (modeRef.current === 'lock' && tech) { centreOnTech(z, false); return; }
+    stopGlide();
+    const k = 2 ** (z - v.z);
+    setMode('free');
+    viewRef.current = { z, cx: v.cx * k, cy: v.cy * k };   // so quick repeat clicks add up
+    setView(viewRef.current);
+  };
+  const zoomRef = useRef(zoomBy); zoomRef.current = zoomBy;
+
+  // Mouse wheel / trackpad zoom.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    let acc = 0;
+    const onWheel = (e) => {
+      e.preventDefault();
+      acc += e.deltaY;
+      if (Math.abs(acc) >= 80) { zoomRef.current(acc < 0 ? 1 : -1); acc = 0; }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
+  // Drag to look around (this releases the lock).
+  const drag = useRef(null);
+  const [dragging, setDragging] = useState(false);
+  const onPointerDown = (e) => {
+    if (e.button !== 0 || e.target.closest('button, a')) return;
+    drag.current = { x: e.clientX, y: e.clientY, v: viewRef.current, moved: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    const d = drag.current;
+    if (!d || !d.v) return;
+    const dx = e.clientX - d.x, dy = e.clientY - d.y;
+    if (!d.moved && Math.hypot(dx, dy) < 4) return;
+    if (!d.moved) { d.moved = true; stopGlide(); setMode('free'); setDragging(true); }
+    setView({ z: d.v.z, cx: d.v.cx - dx, cy: d.v.cy - dy });
+  };
+  const onPointerUp = () => { drag.current = null; setDragging(false); };
+
+  const toggleLock = () => {
+    if (modeRef.current === 'lock') { setMode('free'); return; }
+    if (!tech) return;
+    setMode('lock');
+    centreOnTech(Math.max(viewRef.current?.z || 16, 16), false);
+  };
+
+  // Full screen for the map (Esc or the button leaves it).
+  useEffect(() => {
+    const onFs = () => setFull(!!document.fullscreenElement && document.fullscreenElement === boxRef.current?.parentElement);
+    document.addEventListener('fullscreenchange', onFs);
+    return () => document.removeEventListener('fullscreenchange', onFs);
+  }, []);
+  const canFull = typeof document !== 'undefined' && !!document.fullscreenEnabled;
+  const toggleFull = () => {
+    const wrap = boxRef.current?.parentElement;
+    if (!wrap) return;
+    if (document.fullscreenElement) document.exitFullscreen();
+    else wrap.requestFullscreen?.();
+  };
 
   const tiles = [];
   if (view && size.w) {
@@ -182,9 +284,11 @@ function LiveMap({ tech, techName, dest, branchNum, fitKey }) {
     }
   }
   const at = (p) => { const [x, y] = worldPx(p.lat, p.lng, view.z); return [x - view.cx + size.w / 2, y - view.cy + size.h / 2]; };
+  const locked = mode === 'lock' && !!tech;
 
   return (
-    <div className="lt-map" ref={boxRef}>
+    <div className={`lt-map${dragging ? ' dragging' : ''}`} ref={boxRef}
+      onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerUp}>
       <div className="lt-tiles">
         {tiles.map(t => <img key={t.key} src={t.src} alt="" draggable="false" style={{ left: t.left, top: t.top }} />)}
       </div>
@@ -197,17 +301,30 @@ function LiveMap({ tech, techName, dest, branchNum, fitKey }) {
           <div className="lt-dest-tip" />
         </div>
       ); })()}
-      {view && tech && (() => { const [x, y] = at(tech); return (
-        <div className="lt-tech" style={{ transform: `translate(${x}px, ${y}px)` }}>
-          <div className="lt-tech-pulse" />
-          <div className="lt-tech-dot">🚗</div>
-          <div className="lt-tech-name">{techName}</div>
-        </div>
-      ); })()}
+      {view && tech && (() => {
+        // Locked: the map glides under him, so he is drawn in the centre.
+        const [x, y] = locked ? [size.w / 2, size.h / 2] : at(tech);
+        return (
+          <div className={`lt-tech${locked ? ' locked' : ''}`} style={{ transform: `translate(${x}px, ${y}px)` }}>
+            <div className="lt-tech-pulse" />
+            <div className="lt-tech-dot">🚗</div>
+            <div className="lt-tech-name">{techName}</div>
+          </div>
+        );
+      })()}
+      <button className={`lt-lock${locked ? ' on' : ''}`} onClick={toggleLock} disabled={!tech}
+        title={locked ? 'إلغاء التثبيت على الفني' : 'تثبيت الخريطة على الفني'}>
+        {locked ? '📌 مثبّتة على الفني' : '🎯 ثبّت على الفني'}
+      </button>
       <div className="lt-zoom">
-        <button onClick={() => { setFollow(false); zoomBy(1); }} aria-label="تكبير">＋</button>
-        <button onClick={() => { setFollow(false); zoomBy(-1); }} aria-label="تصغير">－</button>
-        <button onClick={() => { setFollow(true); setView(fitView(points, size.w, size.h)); }} aria-label="إظهار الفني والفرع" title="إظهار الفني والفرع">⤢</button>
+        <button onClick={() => zoomBy(1)} aria-label="تكبير" title="تكبير">＋</button>
+        <button onClick={() => zoomBy(-1)} aria-label="تصغير" title="تصغير">－</button>
+        <button onClick={() => { stopGlide(); setMode('fit'); setView(fit()); }} aria-label="إظهار الفني والفرع" title="إظهار الفني والفرع">⤢</button>
+        {canFull && (
+          <button onClick={toggleFull} aria-label={full ? 'خروج من ملء الشاشة' : 'ملء الشاشة'} title={full ? 'خروج من ملء الشاشة' : 'ملء الشاشة'}>
+            {full ? '🗗' : '⛶'}
+          </button>
+        )}
       </div>
       <a className="lt-attrib" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">© OpenStreetMap contributors</a>
     </div>
