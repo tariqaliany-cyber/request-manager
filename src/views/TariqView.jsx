@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { getRequestListItems, createRequest, getRecentNotifications, logActivity, getLastRead, setLastRead, ACTION_LABELS_MAP, canAccessPriceList, STATUS, PRIORITY, PAYMENT_STATUS, formatDate, compressImage } from '../storage';
 import { getBranchInfo, BRANCHES, branchLabel } from '../branchData';
-import AppSidebar, { useSidebarCollapse } from '../components/AppSidebar';
+import AppSidebar from '../components/AppSidebar';
 import AppHeader from '../components/AppHeader';
 import StatusBadge from '../components/StatusBadge';
 import TariqRequestDetail from './TariqRequestDetail';
@@ -41,7 +41,6 @@ export default function TariqView({ user, onLogout }) {
   const [filter, setFilter]             = useState('all');
   const [unreadCount, setUnreadCount]   = useState(0);
   const [newReqMode, setNewReqMode]     = useState(false);
-  const [collapsed, toggleCollapsed]    = useSidebarCollapse();
   const [drawerOpen, setDrawerOpen]     = useState(false);
   const refresh = () => setTick(n => n + 1);
 
@@ -83,14 +82,12 @@ export default function TariqView({ user, onLogout }) {
         onFilter={handleFilter}
         onNewRequest={openNewRequest}
         unreadCount={unreadCount}
-        collapsed={collapsed}
-        onToggleCollapse={toggleCollapsed}
         drawerOpen={drawerOpen}
         onCloseDrawer={() => setDrawerOpen(false)}
       />
 
-      {/* ── Main content area ── */}
-      <div className={`tariq-main ${collapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* ── Main content area (beside the icon rail) ── */}
+      <div className="tariq-main sidebar-collapsed">
 
         <AppHeader
           title={topbarTitle}
@@ -335,7 +332,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
     { key: 'all',         label: 'All',         color: 'var(--tariq-color)' },
     { key: 'unassigned',  label: 'Unassigned',  color: '#EF4444' },
     { key: 'scheduled',   label: 'Scheduled',   color: '#D97706' },
-    { key: 'in_progress', label: 'In Progress', color: '#563b2c' },
+    { key: 'in_progress', label: 'In Progress', color: '#1E3A5F' },
     { key: 'completed',   label: 'Completed',   color: '#16A34A' },
   ];
 
@@ -369,7 +366,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
             <div className="stat-lbl">Pending</div>
           </div>
           <div className="stat-card">
-            <div className="stat-num" style={{ color: '#563b2c' }}>{counts.in_progress}</div>
+            <div className="stat-num" style={{ color: '#1E3A5F' }}>{counts.in_progress}</div>
             <div className="stat-lbl">Active</div>
           </div>
           <div className="stat-card">
@@ -386,7 +383,7 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           </div>
         </div>
 
-        {filter !== 'updates' && <Suspense fallback={null}><RegionMap requests={all} onSelect={onSelect} /></Suspense>}
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero requests={all} onSelect={onSelect} /></Suspense>}
 
         {/* Notifications button */}
         <button
@@ -500,14 +497,23 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
           delivery_notes table doesn't exist in production yet (see Phase 8
           notes), so a widget built on it would silently show 0 and lie. */}
       <div className="tariq-desktop-panel">
+        {/* Map first: open requests by region, with the region ranking and the
+            chosen region's details beside it (open / overdue / unassigned are
+            on the map card, so the KPI row below carries the rest). */}
+        {filter !== 'updates' && <Suspense fallback={null}><RegionMap hero requests={all} onSelect={onSelect} /></Suspense>}
+
         <div className="dash-kpi-row">
           {[
             { num: counts.all,         label: 'Total',       labelAr: 'الإجمالي',     color: 'var(--tariq-color)', border: 'var(--tariq-color)' },
-            { num: counts.unassigned,  label: 'Pending',     labelAr: 'غير مسندة',    color: '#EF4444',            border: '#EF4444' },
-            { num: counts.in_progress, label: 'In Progress', labelAr: 'قيد التنفيذ',  color: '#563b2c',            border: '#563b2c' },
+            ...(filter === 'updates' ? [
+              { num: counts.unassigned, label: 'Pending',    labelAr: 'غير مسندة',    color: '#EF4444',            border: '#EF4444' },
+            ] : []),
+            { num: counts.in_progress, label: 'In Progress', labelAr: 'قيد التنفيذ',  color: '#1E3A5F',            border: '#1E3A5F' },
             { num: counts.scheduled,   label: 'Scheduled',   labelAr: 'مجدولة',       color: '#D97706',            border: '#D97706' },
             { num: counts.completed,   label: 'Completed',   labelAr: 'مكتملة',       color: '#16A34A',            border: '#16A34A' },
-            { num: counts.overdue,     label: 'Overdue',     labelAr: 'متأخرة',       color: '#DC2626',            border: '#DC2626' },
+            ...(filter === 'updates' ? [
+              { num: counts.overdue,   label: 'Overdue',     labelAr: 'متأخرة',       color: '#DC2626',            border: '#DC2626' },
+            ] : []),
             { num: counts.unpaid,      label: 'Unpaid',      labelAr: 'غير مدفوعة',   color: '#B45309',            border: '#B45309' },
           ].map(k => (
             <div key={k.label} className="dash-kpi-card" style={{ borderTopColor: k.border }}>
@@ -517,8 +523,6 @@ function TariqDashboard({ onSelect, tick, filter, onFilter, onUnreadCount }) {
             </div>
           ))}
         </div>
-
-        {filter !== 'updates' && <Suspense fallback={null}><RegionMap requests={all} onSelect={onSelect} /></Suspense>}
 
         {/* Two panels: active requests + recent notifications */}
         {filter !== 'updates' && (

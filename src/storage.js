@@ -30,7 +30,7 @@ export const canSeeRepairCost = (user) => user?.username === 'majed' || user?.ro
 export const STATUS = {
   received:    { en: 'Request Received', ar: 'تم استلام الطلب', color: '#3B82F6', bg: '#EFF6FF' },
   scheduled:   { en: 'Scheduled',        ar: 'مجدول',           color: '#D97706', bg: '#FFFBEB' },
-  in_progress: { en: 'In Progress',      ar: 'قيد التنفيذ',     color: '#563b2c', bg: '#fdf6f0' },
+  in_progress: { en: 'In Progress',      ar: 'قيد التنفيذ',     color: '#1E3A5F', bg: '#E8EEF6' },
   completed:   { en: 'Completed',        ar: 'مكتمل',           color: '#16A34A', bg: '#F0FDF4' },
 };
 
